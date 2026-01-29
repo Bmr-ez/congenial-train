@@ -47,17 +47,15 @@ bot = commands.Bot(command_prefix='!', intents=intents, case_insensitive=True)
 # Remove default help command to allow for custom implementation
 bot.remove_command('help')
 
-# Configure Gemini AI Multi-Key Rotation
-GEMINI_KEYS = [
-    os.getenv("GEMINI_KEY"),
-    os.getenv("GEMINI_KEY_2"),
-    os.getenv("GEMINI_KEY_3"),
-    os.getenv("GEMINI_KEY_4"),
-    os.getenv("GEMINI_KEY_5")
-]
-# Filter out None values
-GEMINI_KEYS = [k for k in GEMINI_KEYS if k]
+# Configure Gemini AI Key
+primary_key = os.getenv("GEMINI_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv("API_KEY")
+GEMINI_KEYS = [primary_key] if primary_key else []
 current_key_index = 0
+
+if GEMINI_KEYS:
+    logger.info(f"✅ Gemini API Key detected (Starting with: {GEMINI_KEYS[0][:5]}...)")
+else:
+    logger.error("❌ NO GEMINI API KEY FOUND IN RAILWAY/ENVIRONMENT VARIABLES")
 
 if not GEMINI_KEYS:
     logger.error("❌ NO GEMINI API KEYS FOUND IN ENVIRONMENT")
@@ -1050,8 +1048,8 @@ async def analyze_image_content(image_url):
             "}"
         )
 
-        # 2025/2026 Model Selection - Fallback list
-        models_to_try = ["gemini-3-flash-preview", "gemini-2.0-flash-latest", "gemini-2.0-flash-exp", "gemini-1.5-flash-latest"]
+        # Model Selection - Fallback list
+        models_to_try = ["gemini-3-flash-preview", "gemini-2.0-flash", "gemini-1.5-flash-latest"]
         last_error = None
 
         for model_name in models_to_try:
@@ -1552,8 +1550,15 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             # We include the system prompt at the very beginning of the history for this session
             # Actually, the simplest way is to pass 'config=types.GenerateContentConfig(system_instruction=...)'
             
-            # Fallback model list - prioritize user's choice
-            models_to_try = ["gemini-3-flash-preview", "gemini-2.0-flash-latest", "gemini-2.0-flash-exp", "gemini-1.5-flash-latest"]
+            # Fallback model list - prioritize user's choice and use standard names
+            models_to_try = [
+                "gemini-3-flash-preview", 
+                "gemini-2.0-flash", 
+                "gemini-2.0-flash-exp", 
+                "gemini-1.5-flash", 
+                "gemini-1.5-flash-latest",
+                "gemini-1.5-pro-latest"
+            ]
             response = None
             last_err = None
 
