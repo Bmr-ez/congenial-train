@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIME • AI ENTITY</title>
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
+
+    <!-- ICONS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --p: #00ffaa;
+            --p-deep: #00cc88;
+            --bg: #050505;
+            --card: #0d0d0f;
+            --border: rgba(255, 255, 255, 0.07);
+            --text-main: #ffffff;
+            --text-dim: #99999a;
+            --font-main: 'Outfit', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUND GRADIENTS --- */
+        .spotlight {
+            position: fixed;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(0, 255, 170, 0.07) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .s1 {
+            top: -10%;
+            right: -5%;
+        }
+
+        .s2 {
+            bottom: -10%;
+            left: -5%;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.05) 0%, transparent 70%);
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.7rem;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--p);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--p);
+        }
+
+        .btn-nav {
+            background: #fff;
+            color: #000;
+            padding: 0.7rem 1.6rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn-nav:hover {
+            background: var(--p);
+            transform: translateY(-2px);
+        }
+
+        /* --- HERO --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 8%;
+        }
+
+        .ai-badge {
+            background: rgba(0, 255, 170, 0.1);
+            color: var(--p);
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            padding: 0.5rem 1.2rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3.5rem, 10vw, 7.5rem);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2.5rem;
+            letter-spacing: -4px;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            max-width: 750px;
+            margin-bottom: 4.5rem;
+            font-weight: 300;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .btn-hero {
+            padding: 1.3rem 3.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: 0.4s;
+        }
+
+        .btn-p {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-p:hover {
+            background: var(--p);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 255, 170, 0.2);
+        }
+
+        .btn-s {
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border);
+        }
+
+        .btn-s:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* --- FEATURES --- */
+        .section {
+            padding: 12rem 8%;
+        }
+
+        .section-header {
+            text-align: left;
+            margin-bottom: 8rem;
+            max-width: 800px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+        }
+
+        .section-header p {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+        }
+
+        .f-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 5rem 3.5rem;
+            border-radius: 12px;
+            transition: 0.4s;
+        }
+
+        .f-card:hover {
+            border-color: var(--p);
+            transform: translateY(-10px);
+            background: #111114;
+        }
+
+        .f-card i {
+            font-size: 3rem;
+            color: var(--p);
+            margin-bottom: 3rem;
+        }
+
+        .f-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .f-card p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        /* --- COMMANDS --- */
+        .cmds {
+            background: #030303;
+        }
+
+        .cmd-list {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .cmd-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .cmd-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(0, 255, 170, 0.3);
+        }
+
+        .cmd-name {
+            font-weight: 700;
+            color: var(--p);
+            font-size: 1.2rem;
+        }
+
+        .cmd-info {
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 8rem 8% 5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .f-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6rem;
+        }
+
+        .f-brand h2 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .f-brand p {
+            color: var(--text-dim);
+            max-width: 350px;
+        }
+
+        .f-links {
+            display: flex;
+            gap: 5rem;
+        }
+
+        .f-group h5 {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .f-group ul {
+            list-style: none;
+        }
+
+        .f-group li {
+            margin-bottom: 1rem;
+        }
+
+        .f-group a {
+            text-decoration: none;
+            color: var(--text-dim);
+            transition: 0.3s;
+        }
+
+        .f-group a:hover {
+            color: var(--p);
+        }
+
+        .f-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .f-bottom p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .f-bottom span {
+            color: var(--p);
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 5px;
+        }
+
+        @media (max-width: 1024px) {
+
+            .features-grid,
+            .cmd-list,
+            .f-top,
+            .f-links {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .hero h1 {
+                font-size: 4rem;
+            }
+
+            .f-links {
+                gap: 3rem;
+            }
+
+            .f-bottom {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="spotlight s1"></div>
+    <div class="spotlight s2"></div>
+
+    <nav>
+        <a href="#" class="logo">PRIME<span>.</span></a>
+        <div class="nav-links">
+            <a href="#features">Protocols</a>
+            <a href="#commands">Commands</a>
+            <a href="#">Support</a>
+            <a href="#" class="btn-nav">Add to Discord</a>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="ai-badge">Advanced Neural Entity</div>
+            <h1>Supreme Artificial<br>Intelligence.</h1>
+            <p>Prime is a highly advanced AI entity designed to revolutionize your Discord community. Powered by neural
+                logic for unmatched moderation, creativity, and performance.</p>
+            <div class="hero-btns">
+                <a href="#" class="btn-hero btn-p">Invite Prime</a>
+                <a href="#features" class="btn-hero btn-s">System Features</a>
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section id="features" class="section">
+            <div class="section-header">
+                <h2>Intelligence Layers.</h2>
+                <p>Advanced protocols engineered for elite server performance.</p>
+            </div>
+            <div class="features-grid">
+                <div class="f-card">
+                    <i class="fas fa-brain"></i>
+                    <h3>Neural Learning</h3>
+                    <p>Advanced AI-driven responses and user reflection. Prime learns your server's vibe to provide
+                        smarter interactions.</p>
+                </div>
+                <div class="f-card">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3>Aegis Shield</h3>
+                    <p>Industrial-grade AI moderation. Automated raid protection, spam filtering, and severe slur
+                        detection.</p>
+                </div>
+                <div class="f-card">
+                    <i class="fas fa-sparkles"></i>
+                    <h3>Creative scout</h3>
+                    <p>Intelligent asset sourcing. Find SFX, overlays, and stock footage instantly using our
+                        neural-search command.</p>
+                </div>
+                <div class="f-card">
+                    <i class="fas fa-microchip"></i>
+                    <h3>Surgical Logic</h3>
+                    <p>Direct technical resource allocation. Instant access to professional software tools and
+                        documentation.</p>
+                </div>
+                <div class="f-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Growth Matrix</h3>
+                    <p>Intelligent leveling and engagement tracking. Watch your community evolve through automated XP
+                        logic.</p>
+                </div>
+                <div class="f-card">
+                    <i class="fas fa-id-card"></i>
+                    <h3>Visual Identity</h3>
+                    <p>Custom-rendered portfolio cards and prestige tracking. Show off your status with AI-generated
+                        visual IDs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMMANDS -->
+        <section id="commands" class="section cmds">
+            <div class="section-header" style="text-align: center; margin: 0 auto 8rem;">
+                <h2>Neural Commands</h2>
+                <p>Simple prefixes, powerful AI results.</p>
+            </div>
+            <div class="cmd-list">
+                <div class="cmd-card">
+                    <div class="cmd-name">!ask [query]</div>
+                    <div class="cmd-info">Direct AI interaction.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">!get [item]</div>
+                    <div class="cmd-info">Intelligent asset scouting.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">!profile</div>
+                    <div class="cmd-info">Render your neural ID.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">!level</div>
+                    <div class="cmd-info">Check XP matrix status.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">!aecrack</div>
+                    <div class="cmd-info">Receive technical cracks.</div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-name">!help</div>
+                    <div class="cmd-info">Open protocol database.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="f-top">
+            <div class="f-brand">
+                <h2>PRIME<span>.</span></h2>
+                <p>The definitive AI entity for elite Discord communities. Engineered by BMR.</p>
+            </div>
+            <div class="f-links">
+                <div class="f-group">
+                    <h5>ENTITY</h5>
+                    <ul>
+                        <li><a href="#">Invite Bot</a></li>
+                        <li><a href="#">Support Server</a></li>
+                        <li><a href="#">Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="f-group">
+                    <h5>PROTOCOLS</h5>
+                    <ul>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Security Core</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="f-bottom">
+            <p>© 2026 PRIME AI. ALL RIGHTS RESERVED.</p>
+            <span>BMR PROJECTS // RAXSTDIOZ</span>
+        </div>
+    </footer>
+
+</body>
+
+</html>

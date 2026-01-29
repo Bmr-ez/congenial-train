@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIME AI | COMMAND CENTER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;900&family=Outfit:wght@100;300;600;900&family=Space+Grotesk:wght@300;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="aura-container">
+        <div class="aura"></div>
+        <div class="aura aura-2"></div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">PRIME AI</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-robot"></i><span>AI Insights</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-shield-halved"></i><span>Moderation</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-server"></i><span>Guilds</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-pill">
+                <div class="avatar">B</div>
+                <div class="user-info">
+                    <div class="user-name">BMR</div>
+                    <div class="user-role">System Developer</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="top-bar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search system logs or users...">
+            </div>
+            <div class="top-actions">
+                <div class="status-indicator">
+                    <div class="dot online"></div>
+                    <span>SYSTEM ONLINE</span>
+                </div>
+                <button class="btn-icon"><i class="fas fa-bell"></i><span class="badge"></span></button>
+            </div>
+        </header>
+
+        <section class="dashboard-grid">
+            <!-- Welcome Card -->
+            <div class="card welcome-card">
+                <div class="welcome-text">
+                    <h2>Welcome back, <span>BMR</span>.</h2>
+                    <p>Prime AI is currently monitoring 12 servers with optimal performance levels.</p>
+                    <div class="metrics">
+                        <div class="metric">
+                            <span class="m-val">99.9%</span>
+                            <span class="m-label">Uptime</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-val">24ms</span>
+                            <span class="m-label">Latency</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="welcome-graphic">
+                    <div class="orb"></div>
+                </div>
+            </div>
+
+            <!-- Stats Mini Cards -->
+            <div class="stats-row">
+                <div class="card stat-card">
+                    <div class="stat-icon p-color"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>14,204</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="trend up">+12%</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon s-color"><i class="fas fa-terminal"></i></div>
+                    <div class="stat-info">
+                        <h3>42.5k</h3>
+                        <p>Cmds Executed</p>
+                    </div>
+                    <div class="trend up">+8%</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon t-color"><i class="fas fa-brain"></i></div>
+                    <div class="stat-info">
+                        <h3>1.2k</h3>
+                        <p>AI Reflections</p>
+                    </div>
+                    <div class="trend up">+24%</div>
+                </div>
+            </div>
+
+            <!-- Activity & Logs -->
+            <div class="card logs-card">
+                <div class="card-header">
+                    <h3>Neural Activity Feed</h3>
+                    <button class="btn-text">View All</button>
+                </div>
+                <div class="log-list">
+                    <div class="log-item">
+                        <div class="log-time">2m ago</div>
+                        <div class="log-content">
+                            <strong>AI Reflection:</strong> Updated vibe for <span class="mention">@Rayan</span> to
+                            'Creative'.
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">5m ago</div>
+                        <div class="log-content">
+                            <strong>Moderation:</strong> Auto-warned <span class="mention">@User123</span> for spam in
+                            #general.
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">12m ago</div>
+                        <div class="log-content">
+                            <strong>Level Up:</strong> <span class="mention">@Zion</span> reached Level 15 in server
+                            'Editor Hub'.
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">18m ago</div>
+                        <div class="log-content">
+                            <strong>Asset Finder:</strong> Provided 5 SFX links for 'cinematic transition'.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vibe Distribution -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3>User Vibe Analysis</h3>
+                </div>
+                <div class="vibe-chart">
+                    <div class="vibe-bar" style="--val: 45%; --color: var(--p);">
+                        <span class="v-label">Creative</span>
+                        <div class="v-progress"></div>
+                        <span class="v-percent">45%</span>
+                    </div>
+                    <div class="vibe-bar" style="--val: 30%; --color: var(--s);">
+                        <span class="v-label">Technical</span>
+                        <div class="v-progress"></div>
+                        <span class="v-percent">30%</span>
+                    </div>
+                    <div class="vibe-bar" style="--val: 15%; --color: #fff;">
+                        <span class="v-label">Casual</span>
+                        <div class="v-progress"></div>
+                        <span class="v-percent">15%</span>
+                    </div>
+                    <div class="vibe-bar" style="--val: 10%; --color: var(--t);">
+                        <span class="v-label">Toxic/Rude</span>
+                        <div class="v-progress"></div>
+                        <span class="v-percent">10%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

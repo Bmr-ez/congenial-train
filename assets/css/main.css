@@ -1,0 +1,348 @@
+:root {
+    --p: #00ffaa;
+    --s: #bc00ff;
+    --t: #ff0055;
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08);
+    --f-h: 'Unbounded', sans-serif;
+    --f-b: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: #fff;
+    font-family: var(--f-b);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- HYPER-LUXURY FX --- */
+.noise {
+    position: fixed;
+    inset: 0;
+    background: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.15;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.auras {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.aura {
+    position: absolute;
+    width: 60vw;
+    height: 60vw;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.2;
+    animation: drift 20s infinite alternate;
+}
+
+.a-1 {
+    background: var(--s);
+    top: -20%;
+    right: -10%;
+}
+
+.a-2 {
+    background: var(--p);
+    bottom: -20%;
+    left: -10%;
+    animation-delay: -5s;
+}
+
+@keyframes drift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(100px, 100px) scale(1.2);
+    }
+}
+
+/* --- NAVIGATION --- */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 2rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1001;
+    backdrop-filter: blur(20px);
+}
+
+.logo {
+    font-family: var(--f-h);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: 0.3s;
+}
+
+.nav-link:hover {
+    color: var(--p);
+}
+
+/* --- HERO: TITAN PHASE --- */
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 5%;
+    position: relative;
+}
+
+.hero-tag {
+    font-family: var(--f-h);
+    color: var(--p);
+    font-size: 0.7rem;
+    letter-spacing: 10px;
+    margin-bottom: 2rem;
+    display: block;
+}
+
+.hero h1 {
+    font-family: var(--f-h);
+    font-size: clamp(4rem, 15vw, 15rem);
+    font-weight: 900;
+    line-height: 0.8;
+    letter-spacing: -8px;
+    margin-bottom: 3rem;
+}
+
+.hero h1 span {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.2);
+}
+
+.hero-desc {
+    max-width: 600px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4rem;
+}
+
+.btn-group {
+    display: flex;
+    gap: 20px;
+}
+
+.btn {
+    padding: 1.5rem 4rem;
+    font-family: var(--f-h);
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    transition: 0.4s;
+    border: 1px solid var(--border);
+}
+
+.btn-p {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+.btn-p:hover {
+    background: var(--p);
+    border-color: var(--p);
+    box-shadow: 0 0 50px rgba(0, 255, 170, 0.3);
+}
+
+/* --- FEATURES: BENTO REVOLUTION --- */
+.features {
+    padding: 15rem 5%;
+}
+
+.f-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 200px;
+    gap: 1.5rem;
+}
+
+.f-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+.f-card:hover {
+    border-color: var(--p);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Bento Sizing */
+.span-4 {
+    grid-column: span 4;
+}
+
+.span-8 {
+    grid-column: span 8;
+}
+
+.span-6 {
+    grid-column: span 6;
+}
+
+.row-2 {
+    grid-row: span 2;
+}
+
+.row-3 {
+    grid-row: span 3;
+}
+
+.f-card h3 {
+    font-family: var(--f-h);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+}
+
+.f-card p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.6;
+}
+
+.f-card .f-icon {
+    font-size: 3rem;
+    color: var(--p);
+    margin-bottom: 2rem;
+}
+
+/* Feature specific styling */
+.vibe-visual {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    font-size: 15rem;
+    font-family: var(--f-h);
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+/* --- STATS: INDUSTRIAL --- */
+.stats {
+    padding: 10rem 5%;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4rem;
+}
+
+.stat-item h4 {
+    font-family: var(--f-h);
+    font-size: 6rem;
+    line-height: 1;
+    margin-bottom: 1rem;
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-item span {
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 5px;
+    color: var(--p);
+    font-size: 0.8rem;
+}
+
+/* --- FOOTER --- */
+footer {
+    padding: 10rem 5%;
+    background: #050505;
+    border-top: 1px solid var(--border);
+}
+
+.footer-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.footer-logo h2 {
+    font-family: var(--f-h);
+    font-size: 8rem;
+    letter-spacing: -10px;
+    margin-bottom: -2rem;
+}
+
+.footer-credits {
+    text-align: right;
+}
+
+.footer-credits h5 {
+    font-family: var(--f-h);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-credits p {
+    color: var(--p);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+    .f-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+    }
+
+    .span-4,
+    .span-8,
+    .span-6 {
+        grid-column: span 1;
+    }
+
+    .hero h1 {
+        font-size: 6rem;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
