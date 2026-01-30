@@ -1212,8 +1212,8 @@ async def handle_automatic_resources(message):
             
         prompt_lower = message.content.lower()
         # Expanded triggers and keywords for more intelligent proactive detection
-        resource_triggers = ['where to get', 'where can i get', 'where can i find', 'where to find', 'looking for', 'any good', 'is there a', 'need some', 'anyone got', 'get me', 'send me', 'find me', 'i need', 'i want', 'can someone send', 'anyone have', 'send over', 'gimme', 'is there a', 'looking for a']
-        resource_keywords = ['sfx', 'overlay', 'preset', 'font', 'texture', 'lut', 'vfx', 'pack', 'cc', 'brush', 'plugin', 'shake', 'quality', 'png', 'jpg', 'jpeg', 'image', 'img', 'asset', 'stock', 'clip', 'video', 'background', 'cloud', 'smoke', 'fire', 'flare', 'dust', 'grain', 'particles', 'light', 'leak', 'sound effect']
+        resource_triggers = ['where to get', 'where can i get', 'where can i find', 'where to find', 'looking for', 'any good', 'is there a', 'need some', 'anyone got', 'get me', 'send me', 'find me', 'i need', 'i want', 'can someone send', 'anyone have', 'send over', 'gimme', 'is there a', 'looking for a', 'any', 'suggest', 'provide']
+        resource_keywords = ['sfx', 'overlay', 'preset', 'font', 'texture', 'lut', 'vfx', 'pack', 'cc', 'brush', 'plugin', 'shake', 'quality', 'png', 'jpg', 'jpeg', 'image', 'img', 'asset', 'stock', 'clip', 'video', 'background', 'cloud', 'smoke', 'fire', 'flare', 'dust', 'grain', 'particles', 'light', 'leak', 'sound effect', 'overlay', 'background', 'gfx']
         
         has_trigger = any(trigger in prompt_lower for trigger in resource_triggers)
         has_keyword = any(kw in prompt_lower for kw in resource_keywords)
@@ -1235,17 +1235,18 @@ async def handle_automatic_resources(message):
                 
                 if is_file_asset:
                     image_path = None
-                    # For atmospheric assets, generation is elite
                     is_atmospheric = any(kw in search_query.lower() for kw in ['cloud', 'fire', 'smoke', 'flare', 'light', 'sky', 'stars', 'galaxy'])
                     
                     if is_atmospheric:
-                        image_path = await generate_image(f"{search_query} high quality isolated on black background")
-                    else:
+                        image_path = await generate_image(f"{search_query} high quality isolated on transparent-ready black background")
+                    
+                    # Fallback to search if generation failed or wasn't atmospheric
+                    if not image_path:
                         image_path = await search_and_download_image(search_query)
                     
                     if image_path and os.path.exists(image_path):
-                         await status_msg.edit(content=f"✅ **Found it.** Sending your **{search_query}** now.")
-                         await message.reply(content=f"Found some elite **{search_query}** for you. Hope it hits.", file=discord.File(image_path))
+                         await status_msg.edit(content=f"✅ **Found it.** Fulfilling your request for **{search_query}**.")
+                         await message.reply(content=f"here's the **{search_query}** asset you needed. hope it hits.", file=discord.File(image_path))
                          try: os.remove(image_path)
                          except: pass
                          return True
@@ -1261,15 +1262,19 @@ async def handle_automatic_resources(message):
                         context_info += f"- {res['title']}: {res['link']}\n"
 
                 prompt = f"""
-                A user is looking for {search_query}. 
+                The user is looking for '{search_query}'. 
                 {context_info}
                 
-                Suggest elite, high-quality sources. Mention the specific links I found if any.
-                Focus on quality over quantity. Talk like an elite creative partner who knows the industry secrets.
+                YOUR TASK: Provide direct links or advice on where to find THIS SPECIFIC ASSET.
+                CRITICAL: DO NOT lecture the user on design choices. DO NOT ask for context or vibe. 
+                STRICTLY provide the links found or suggest high-quality sites like TextureLabs, Envato, or Behance.
+                Keep it brief, elite, and helpful. No fluff.
                 """
                 
-                # Use a background task for Gemini response to avoid blocking if the sync version is slow
-                response = get_gemini_response(prompt, message.author.id, username=message.author.name)
+                # Use a cleaner prompt system to bypass the 'creative partner' lecturing
+                # We prepend a instruction to stop the chat vibing
+                clean_prompt = f"[SYSTEM: RESPOND BRIEFLY WITH LINKS ONLY. NO DESIGN LECTURES.] {prompt}"
+                response = get_gemini_response(clean_prompt, message.author.id, username=message.author.name)
                 
                 if response:
                     header = random.choice([
