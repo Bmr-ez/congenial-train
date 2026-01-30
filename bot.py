@@ -1568,11 +1568,13 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             models_to_try = [
                 PRIMARY_MODEL,
                 "gemini-2.0-flash", 
-                "gemini-2.0-flash-exp", 
-                "gemini-1.5-flash", 
-                "gemini-1.5-flash-latest",
-                "gemini-1.5-pro-latest"
+                "gemini-flash-latest",
+                "gemini-pro-latest",
+                "gemini-1.5-flash",
+                "gemini-1.5-pro"
             ]
+            
+            attempt_log = []
             response = None
             last_err = None
 
@@ -1592,15 +1594,18 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
                         logger.info(f"Successfully used model: {model_name}")
                         break
                 except Exception as e:
-                    logger.warning(f"Model {model_name} failed: {e}")
+                    err_hint = str(e)[:100] # Keep it short
+                    logger.warning(f"Model {model_name} failed: {err_hint}")
+                    attempt_log.append(f"{model_name}: {err_hint}")
                     last_err = e
                     continue
             
             if not response:
-                if last_err: raise last_err
-                return BOT_ERROR_MSG
+                # Construct a detailed error message showing why everything failed
+                debug_info = " | ".join(attempt_log)
+                return f"{BOT_ERROR_MSG} [DEBUG: {debug_info}]"
             
-            if not response or not response.text:
+            if not response.text:
                 return "I'm having trouble thinking right now. Give me a minute?"
             
             result_text = response.text
