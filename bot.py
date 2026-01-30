@@ -4093,15 +4093,47 @@ async def on_message(message):
             # If no code blocks, clean_response is just response
             final_text = clean_response if code_blocks else response
             
-            # Split and send text
-            if len(final_text) > 1900:
-                chunks = [final_text[i:i+1900] for i in range(0, len(final_text), 1900)]
-                for chunk in chunks:
-                    if is_dm: await message.channel.send(chunk)
-                    else: await message.reply(chunk)
-            else:
-                if is_dm: await message.channel.send(final_text)
-                else: await message.reply(final_text)
+            # --- TOOL EXECUTION ---
+            # Automatically parse and execute tool calls (JSON blocks) in the response
+            tool_executed = False
+            tool_match = re.search(r'\{[^{]*"action":\s*"generate_image"[^}]*\}', response)
+            if tool_match:
+                try:
+                    tool_json = tool_match.group(0).replace("'", '"')
+                    tool_data = json.loads(tool_json)
+                    action_input = tool_data.get("action_input")
+                    if isinstance(action_input, str):
+                        try:
+                            # Sometimes the model nests JSON in a string
+                            action_input = json.loads(action_input.replace("'", '"'))
+                        except: pass
+                    
+                    prompt_val = action_input.get("prompt") if isinstance(action_input, dict) else action_input
+                    if prompt_val:
+                        async with message.channel.typing():
+                            img_path = await generate_image(prompt_val)
+                            if img_path and os.path.exists(img_path):
+                                await message.reply(content=f"fulfilled your request. found/created this **{prompt_val}** for you.", file=discord.File(img_path))
+                                try: os.remove(img_path)
+                                except: pass
+                                tool_executed = True
+                except Exception as tool_e:
+                    logger.error(f"Failed to execute auto-tool: {tool_e}")
+
+            # Clean the final text of JSON tool blocks if they were executed
+            if tool_executed:
+                final_text = re.sub(r'\{[^{]*"action":\s*"generate_image"[^}]*\}', '', final_text).strip()
+
+            # Split and send text (if any text remains besides the tool result)
+            if final_text and len(final_text.strip()) > 0:
+                if len(final_text) > 1900:
+                    chunks = [final_text[i:i+1900] for i in range(0, len(final_text), 1900)]
+                    for chunk in chunks:
+                        if is_dm: await message.channel.send(chunk)
+                        else: await message.reply(chunk)
+                else:
+                    if is_dm: await message.channel.send(final_text)
+                    else: await message.reply(final_text)
 
             # Send code blocks as files
             if code_blocks:
