@@ -88,33 +88,44 @@ def rotate_gemini_key():
     logger.info(f"🔄 Switched to API Key Position: {current_key_index + 1}")
     return True
 
+# Fallback configuration
+FALLBACK_MODEL = "gemini-1.5-flash"
+
 def safe_generate_content(model, contents, config=None):
-    """Wrapper to handle API key rotation on rate limits."""
+    """Wrapper to handle API key rotation on rate limits and automatic model fallback."""
     if not GEMINI_KEYS:
         logger.error("❌ No API keys available in GEMINI_KEYS pool.")
         return None
         
     last_err = None
-    for _ in range(max(1, len(GEMINI_KEYS))):
-        try:
-            if not gemini_client:
-                if not rotate_gemini_key(): return None
+    # Try all keys for the requested model first
+    for model_to_try in [model, FALLBACK_MODEL] if model != FALLBACK_MODEL else [model]:
+        for _ in range(len(GEMINI_KEYS)):
+            try:
+                if not gemini_client:
+                    if not rotate_gemini_key(): break
+                
+                logger.info(f"🚀 Attempting {model_to_try} with key {current_key_index + 1}...")
+                return gemini_client.models.generate_content(
+                    model=model_to_try,
+                    contents=contents,
+                    config=config
+                )
+            except Exception as e:
+                last_err = e
+                err_str = str(e).lower()
+                
+                if ("429" in err_str or "exhausted" in err_str or "limit" in err_str or "401" in err_str):
+                    logger.warning(f"⚠️ Rate limit/Auth error on key {current_key_index + 1} for {model_to_try}. Rotating...")
+                    if rotate_gemini_key():
+                        continue
+                
+                # If it's a model-specific error or something else, log it
+                logger.error(f"❌ API Error with key {current_key_index + 1} and model {model_to_try}: {err_str}")
+                
+        if model_to_try == model and model != FALLBACK_MODEL:
+            logger.warning(f"🛑 All keys exhausted for {model}. Switching to fallback: {FALLBACK_MODEL}")
             
-            return gemini_client.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config
-            )
-        except Exception as e:
-            last_err = e
-            err_str = str(e).lower()
-            logger.error(f"❌ API Error with key {current_key_index + 1} and model {model}: {err_str}")
-            
-            if ("429" in err_str or "exhausted" in err_str or "limit" in err_str or "401" in err_str):
-                if rotate_gemini_key():
-                    continue
-            # If it's a 404 or something else, we might want to know
-            raise e
     if last_err: raise last_err
     return None
 
