@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIME • AI ENTITY</title>
+    <title>PRIME • REDEFINING CREATIVE INTELLIGENCE</title>
 
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Space+Grotesk:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Outfit:wght@100;300;400;600;900&display=swap"
         rel="stylesheet">
 
     <!-- ICONS -->
@@ -19,14 +19,16 @@
     <style>
         :root {
             --p: #00ffaa;
-            --p-deep: #00cc88;
-            --bg: #050505;
-            --card: #0d0d0f;
-            --border: rgba(255, 255, 255, 0.07);
+            --p-rgb: 0, 255, 170;
+            --s: #bc00ff;
+            --bg: #030303;
+            --card: rgba(15, 15, 17, 0.6);
+            --border: rgba(255, 255, 255, 0.05);
             --text-main: #ffffff;
-            --text-dim: #99999a;
+            --text-dim: #88888a;
             --font-main: 'Outfit', sans-serif;
-            --font-display: 'Space Grotesk', sans-serif;
+            --font-display: 'Fraunces', serif;
+            --ease-elegant: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         * {
@@ -38,6 +40,7 @@
 
         html {
             scroll-behavior: smooth;
+            background: var(--bg);
         }
 
         body {
@@ -46,28 +49,66 @@
             font-family: var(--font-main);
             line-height: 1.6;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- BACKGROUND GRADIENTS --- */
-        .spotlight {
+        /* --- NOISE OVERLAY --- */
+        .noise {
             position: fixed;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(0, 255, 170, 0.07) 0%, transparent 70%);
-            filter: blur(80px);
-            z-index: -1;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
             pointer-events: none;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- LIQUID SPOTLIGHTS --- */
+        .spotlight-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: url(#goo);
+            overflow: hidden;
+        }
+
+        .spotlight {
+            position: absolute;
+            width: 50vw;
+            height: 50vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(var(--p-rgb), 0.1) 0%, transparent 70%);
+            mix-blend-mode: screen;
+            filter: blur(80px);
+            animation: move 20s infinite alternate;
         }
 
         .s1 {
             top: -10%;
-            right: -5%;
+            right: -10%;
+            background: radial-gradient(circle, rgba(var(--p-rgb), 0.08) 0%, transparent 70%);
         }
 
         .s2 {
-            bottom: -10%;
-            left: -5%;
-            background: radial-gradient(circle, rgba(0, 150, 255, 0.05) 0%, transparent 70%);
+            bottom: -15%;
+            left: -10%;
+            background: radial-gradient(circle, rgba(188, 0, 255, 0.05) 0%, transparent 70%);
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(100px, 50px) scale(1.2);
+            }
         }
 
         /* --- NAVIGATION --- */
@@ -75,115 +116,188 @@
             position: fixed;
             top: 0;
             width: 100%;
-            padding: 1.5rem 8%;
+            padding: 2rem 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            background: rgba(5, 5, 5, 0.7);
-            backdrop-filter: blur(15px);
+            background: rgba(3, 3, 3, 0.01);
+            backdrop-filter: blur(10px);
+            transition: 0.5s var(--ease-elegant);
+        }
+
+        nav.scrolled {
+            padding: 1.2rem 8%;
+            background: rgba(3, 3, 3, 0.7);
             border-bottom: 1px solid var(--border);
         }
 
         .logo {
             font-family: var(--font-display);
-            font-size: 1.7rem;
+            font-size: 1.8rem;
+            font-weight: 500;
             color: #fff;
             text-decoration: none;
-            letter-spacing: -1px;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .logo span {
             color: var(--p);
+            font-style: normal;
         }
 
         .nav-links {
             display: flex;
-            gap: 3rem;
+            gap: 4rem;
             align-items: center;
         }
 
         .nav-links a {
             text-decoration: none;
             color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .nav-links a:hover {
-            color: var(--p);
+            color: #fff;
         }
 
         .btn-nav {
             background: #fff;
             color: #000;
-            padding: 0.7rem 1.6rem;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.85rem;
+            padding: 0.8rem 2.22rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.8rem;
             text-decoration: none;
-            transition: 0.3s;
+            transition: 0.4s var(--ease-elegant);
+            border: 1px solid #fff;
         }
 
         .btn-nav:hover {
-            background: var(--p);
-            transform: translateY(-2px);
+            background: transparent;
+            color: #fff;
         }
 
         /* --- HERO --- */
         .hero {
-            height: 100vh;
+            height: 110vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 0 8%;
+            position: relative;
         }
 
-        .ai-badge {
-            background: rgba(0, 255, 170, 0.1);
-            color: var(--p);
-            border: 1px solid rgba(0, 255, 170, 0.2);
-            padding: 0.5rem 1.2rem;
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
             border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 700;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: reveal 1s var(--ease-elegant) forwards;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--p);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--p-rgb), 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--p-rgb), 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--p-rgb), 0);
+            }
+        }
+
+        .status-badge span {
+            font-size: 0.7rem;
+            font-weight: 600;
             letter-spacing: 2px;
-            margin-bottom: 2rem;
             text-transform: uppercase;
+            color: var(--text-dim);
         }
 
         .hero h1 {
             font-family: var(--font-display);
-            font-size: clamp(3.5rem, 10vw, 7.5rem);
-            font-weight: 700;
-            line-height: 1;
+            font-size: clamp(4rem, 12vw, 9rem);
+            font-weight: 400;
+            line-height: 0.9;
             margin-bottom: 2.5rem;
             letter-spacing: -4px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: reveal 1s var(--ease-elegant) 0.2s forwards;
+        }
+
+        .hero h1 span {
+            display: block;
+            font-style: italic;
+            font-weight: 300;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
         }
 
         .hero p {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             color: var(--text-dim);
-            max-width: 750px;
-            margin-bottom: 4.5rem;
+            max-width: 800px;
+            margin-bottom: 5rem;
             font-weight: 300;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: reveal 1s var(--ease-elegant) 0.4s forwards;
+        }
+
+        @keyframes reveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-btns {
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
+            opacity: 0;
+            animation: reveal 1s var(--ease-elegant) 0.6s forwards;
         }
 
         .btn-hero {
-            padding: 1.3rem 3.5rem;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1.05rem;
+            padding: 1.4rem 4rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 1rem;
             text-decoration: none;
-            transition: 0.4s;
+            transition: 0.5s var(--ease-elegant);
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .btn-p {
@@ -192,218 +306,326 @@
         }
 
         .btn-p:hover {
-            background: var(--p);
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 255, 170, 0.2);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
         }
 
         .btn-s {
-            background: rgba(255, 255, 255, 0.03);
+            background: transparent;
             color: #fff;
             border: 1px solid var(--border);
         }
 
         .btn-s:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #fff;
         }
 
-        /* --- FEATURES --- */
+        /* --- SECTION GENERIC --- */
         .section {
             padding: 12rem 8%;
+            position: relative;
         }
 
         .section-header {
-            text-align: left;
-            margin-bottom: 8rem;
+            margin-bottom: 10rem;
             max-width: 800px;
+        }
+
+        .section-header .pre {
+            color: var(--p);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 2rem;
+            display: block;
         }
 
         .section-header h2 {
             font-family: var(--font-display);
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 400;
+            line-height: 1.1;
             letter-spacing: -2px;
         }
 
-        .section-header p {
-            color: var(--text-dim);
-            font-size: 1.2rem;
-        }
-
-        .features-grid {
+        /* --- VALUES GRID --- */
+        .values-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2.5rem;
+            gap: 2rem;
         }
 
-        .f-card {
+        .v-card {
             background: var(--card);
             border: 1px solid var(--border);
             padding: 5rem 3.5rem;
-            border-radius: 12px;
-            transition: 0.4s;
+            border-radius: 40px;
+            backdrop-filter: blur(20px);
+            transition: 0.6s var(--ease-elegant);
+            position: relative;
+            overflow: hidden;
         }
 
-        .f-card:hover {
+        .v-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(var(--p-rgb), 0.1), transparent);
+            opacity: 0;
+            transition: 0.6s var(--ease-elegant);
+        }
+
+        .v-card:hover {
+            transform: translateY(-15px);
+            border-color: rgba(var(--p-rgb), 0.3);
+            background: rgba(20, 20, 22, 0.8);
+        }
+
+        .v-card:hover::before {
+            opacity: 1;
+        }
+
+        .v-card .icon-box {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3rem;
+            color: #fff;
+            font-size: 1.8rem;
+            transition: 0.6s var(--ease-elegant);
+        }
+
+        .v-card:hover .icon-box {
+            background: var(--p);
+            color: #000;
+            transform: rotate(-10deg) scale(1.1);
             border-color: var(--p);
-            transform: translateY(-10px);
-            background: #111114;
         }
 
-        .f-card i {
-            font-size: 3rem;
-            color: var(--p);
+        .v-card h3 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .v-card p {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            line-height: 1.8;
+            font-weight: 300;
+            position: relative;
+        }
+
+        /* --- INTERACTION / NEURAL COMMANDS --- */
+        .interaction {
+            background: #080808;
+            border-radius: 60px;
+            margin: 0 4%;
+            padding: 10rem 10%;
+            display: flex;
+            align-items: center;
+            gap: 10rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inter-text {
+            flex: 1;
+        }
+
+        .inter-text h2 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            font-weight: 400;
             margin-bottom: 3rem;
         }
 
-        .f-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .f-card p {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-
-        /* --- COMMANDS --- */
-        .cmds {
-            background: #030303;
-        }
-
-        .cmd-list {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .cmd-card {
-            background: rgba(255, 255, 255, 0.02);
+        .inter-example {
+            flex: 1.2;
+            background: #000;
+            padding: 4rem;
+            border-radius: 32px;
             border: 1px solid var(--border);
-            padding: 2.5rem;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
         }
 
-        .cmd-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(0, 255, 170, 0.3);
+        .inter-example::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, var(--p), transparent, var(--s));
+            z-index: -1;
+            border-radius: 32px;
+            opacity: 0.2;
         }
 
-        .cmd-name {
-            font-weight: 700;
+        .chat-row {
+            margin-bottom: 3rem;
+        }
+
+        .chat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .c-user {
             color: var(--p);
-            font-size: 1.2rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: block;
         }
 
-        .cmd-info {
-            color: var(--text-dim);
-            font-size: 1rem;
+        .c-msg {
+            color: #fff;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .c-bot {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .c-bot::after {
+            content: 'AUTHENTIC INSIGHT';
+            font-size: 0.6rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 100px;
+            color: #fff;
         }
 
         /* --- FOOTER --- */
         footer {
-            padding: 8rem 8% 5rem;
-            border-top: 1px solid var(--border);
+            padding: 12rem 8% 6rem;
         }
 
         .f-top {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 6rem;
+            margin-bottom: 10rem;
         }
 
         .f-brand h2 {
             font-family: var(--font-display);
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
+            font-size: 3.5rem;
+            font-style: italic;
+            margin-bottom: 2rem;
         }
 
         .f-brand p {
             color: var(--text-dim);
-            max-width: 350px;
+            max-width: 400px;
+            font-size: 1.2rem;
+            font-weight: 300;
         }
 
         .f-links {
             display: flex;
-            gap: 5rem;
+            gap: 8rem;
         }
 
         .f-group h5 {
             color: #fff;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .f-group ul {
-            list-style: none;
-        }
-
-        .f-group li {
-            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 3rem;
+            opacity: 0.5;
         }
 
         .f-group a {
+            display: block;
             text-decoration: none;
-            color: var(--text-dim);
+            color: #888;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
             transition: 0.3s;
+            font-weight: 300;
         }
 
         .f-group a:hover {
-            color: var(--p);
+            color: #fff;
+            transform: translateX(5px);
         }
 
         .f-bottom {
+            padding-top: 5rem;
             border-top: 1px solid var(--border);
-            padding-top: 4rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .f-bottom p {
-            color: var(--text-dim);
+            color: #555;
             font-size: 0.9rem;
+            letter-spacing: 1px;
         }
 
-        .f-bottom span {
-            color: var(--p);
-            font-weight: 700;
+        .f-credits {
+            text-align: right;
+        }
+
+        .f-credits span {
+            display: block;
+            text-align: right;
             font-size: 0.75rem;
+            font-weight: 900;
             letter-spacing: 5px;
+            color: #333;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
 
-        @media (max-width: 1024px) {
+        /* --- SVG FILTERS --- */
+        .svg-filters {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
 
-            .features-grid,
-            .cmd-list,
-            .f-top,
-            .f-links {
+        @media (max-width: 1200px) {
+            .values-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .interaction {
                 flex-direction: column;
-                gap: 3rem;
+                gap: 5rem;
             }
 
             .hero h1 {
-                font-size: 4rem;
+                font-size: 6rem;
             }
 
-            .f-links {
-                gap: 3rem;
-            }
-
-            .f-bottom {
+            .f-top {
                 flex-direction: column;
-                gap: 2rem;
-                text-align: center;
+                gap: 6rem;
             }
         }
     </style>
@@ -411,108 +633,99 @@
 
 <body>
 
-    <div class="spotlight s1"></div>
-    <div class="spotlight s2"></div>
+    <div class="noise"></div>
+    <div class="spotlight-container">
+        <div class="spotlight s1"></div>
+        <div class="spotlight s2"></div>
+    </div>
 
-    <nav>
-        <a href="#" class="logo">PRIME<span>.</span></a>
+    <!-- Liquid Filter -->
+    <svg class="svg-filters" viewBox="0 0 0 0">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="30" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10"
+                    result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+        </defs>
+    </svg>
+
+    <nav id="navbar">
+        <a href="#" class="logo">Prime<span>.</span></a>
         <div class="nav-links">
-            <a href="#features">Protocols</a>
-            <a href="#commands">Commands</a>
+            <a href="#features">Philosophy</a>
+            <a href="#interaction">Intelligence</a>
             <a href="#">Support</a>
-            <a href="#" class="btn-nav">Add to Discord</a>
+            <a href="#" class="btn-nav">Connect</a>
         </div>
     </nav>
 
     <main>
         <!-- HERO -->
         <section class="hero">
-            <div class="ai-badge">Advanced Neural Entity</div>
-            <h1>Supreme Artificial<br>Intelligence.</h1>
-            <p>Prime is a highly advanced AI entity designed to revolutionize your Discord community. Powered by neural
-                logic for unmatched moderation, creativity, and performance.</p>
+            <div class="status-badge">
+                <div class="pulse"></div>
+                <span>Syncing with the Vibe</span>
+            </div>
+            <h1>Bespoke Logic.<br><span>Human Spirit.</span></h1>
+            <p>Prime isn't just an assistant. It's a partner designed to integrate seamlessly into your creative
+                workflow, offering clarity, protection, and authentic connection.</p>
             <div class="hero-btns">
-                <a href="#" class="btn-hero btn-p">Invite Prime</a>
-                <a href="#features" class="btn-hero btn-s">System Features</a>
+                <a href="#" class="btn-hero btn-p">
+                    Elevate Server
+                    <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                </a>
+                <a href="#features" class="btn-hero btn-s">Explore the Ethos</a>
             </div>
         </section>
 
-        <!-- FEATURES -->
+        <!-- VALUES -->
         <section id="features" class="section">
             <div class="section-header">
-                <h2>Intelligence Layers.</h2>
-                <p>Advanced protocols engineered for elite server performance.</p>
+                <span class="pre">// THE ETHOS</span>
+                <h2>Unseen Excellence,<br>Felt Intelligence.</h2>
             </div>
-            <div class="features-grid">
-                <div class="f-card">
-                    <i class="fas fa-brain"></i>
-                    <h3>Neural Learning</h3>
-                    <p>Advanced AI-driven responses and user reflection. Prime learns your server's vibe to provide
-                        smarter interactions.</p>
+            <div class="values-grid">
+                <div class="v-card">
+                    <div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>Organic Intuition</h3>
+                    <p>Moving beyond keywords. Prime tracks the emotional pulse of your community, providing resources
+                        and assets with uncanny timing.</p>
                 </div>
-                <div class="f-card">
-                    <i class="fas fa-shield-halved"></i>
-                    <h3>Aegis Shield</h3>
-                    <p>Industrial-grade AI moderation. Automated raid protection, spam filtering, and severe slur
-                        detection.</p>
+                <div class="v-card">
+                    <div class="icon-box"><i class="fa-solid fa-shield-heart"></i></div>
+                    <h3>Discreet Aegis</h3>
+                    <p>Zero-clutter moderation. Prime guards your space with a firm but silent hand, ensuring the
+                        highest standards without the noise.</p>
                 </div>
-                <div class="f-card">
-                    <i class="fas fa-sparkles"></i>
-                    <h3>Creative scout</h3>
-                    <p>Intelligent asset sourcing. Find SFX, overlays, and stock footage instantly using our
-                        neural-search command.</p>
-                </div>
-                <div class="f-card">
-                    <i class="fas fa-microchip"></i>
-                    <h3>Surgical Logic</h3>
-                    <p>Direct technical resource allocation. Instant access to professional software tools and
-                        documentation.</p>
-                </div>
-                <div class="f-card">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Growth Matrix</h3>
-                    <p>Intelligent leveling and engagement tracking. Watch your community evolve through automated XP
-                        logic.</p>
-                </div>
-                <div class="f-card">
-                    <i class="fas fa-id-card"></i>
-                    <h3>Visual Identity</h3>
-                    <p>Custom-rendered portfolio cards and prestige tracking. Show off your status with AI-generated
-                        visual IDs.</p>
+                <div class="v-card">
+                    <div class="icon-box"><i class="fa-solid fa-mountain-sun"></i></div>
+                    <h3>Creative Archive</h3>
+                    <p>Total indexing of your creative journey. Every asset, every win, and every connection is logged
+                        in a beautiful, private journal.</p>
                 </div>
             </div>
         </section>
 
-        <!-- COMMANDS -->
-        <section id="commands" class="section cmds">
-            <div class="section-header" style="text-align: center; margin: 0 auto 8rem;">
-                <h2>Neural Commands</h2>
-                <p>Simple prefixes, powerful AI results.</p>
+        <!-- NEURAL COMMANDS -->
+        <section id="interaction" class="interaction">
+            <div class="inter-text">
+                <h2 style="font-style: italic;">Seamless Conversations.</h2>
+                <p style="font-size: 1.4rem; color: var(--text-dim); font-weight: 300;">Talk to Prime like you'd talk to
+                    a colleague. No rigid syntax—just pure, nuanced creative assistance.</p>
             </div>
-            <div class="cmd-list">
-                <div class="cmd-card">
-                    <div class="cmd-name">!ask [query]</div>
-                    <div class="cmd-info">Direct AI interaction.</div>
+            <div class="inter-example">
+                <div class="chat-row">
+                    <span class="c-user">BMR</span>
+                    <p class="c-msg">bro, I need the vibe check for #general. It feels a bit tense today.</p>
                 </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">!get [item]</div>
-                    <div class="cmd-info">Intelligent asset scouting.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">!profile</div>
-                    <div class="cmd-info">Render your neural ID.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">!level</div>
-                    <div class="cmd-info">Check XP matrix status.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">!aecrack</div>
-                    <div class="cmd-info">Receive technical cracks.</div>
-                </div>
-                <div class="cmd-card">
-                    <div class="cmd-name">!help</div>
-                    <div class="cmd-info">Open protocol database.</div>
+                <div class="chat-row" style="margin-bottom: 0;">
+                    <span class="c-bot">PRIME</span>
+                    <p class="c-msg">Detected a slight friction in the recent sequence feedback. I've initiated a subtle
+                        vibe-shift protocol and provided a curated list of lo-fi assets to soften the mood. We're back
+                        in
+                        flow.</p>
                 </div>
             </div>
         </section>
@@ -521,34 +734,57 @@
     <footer>
         <div class="f-top">
             <div class="f-brand">
-                <h2>PRIME<span>.</span></h2>
-                <p>The definitive AI entity for elite Discord communities. Engineered by BMR.</p>
+                <h2>Prime<span>.</span></h2>
+                <p>Architecting the future of human-AI synergy in creative spaces. Crafted with soul by BMR.</p>
             </div>
             <div class="f-links">
                 <div class="f-group">
-                    <h5>ENTITY</h5>
+                    <h5>SYSTEM</h5>
                     <ul>
-                        <li><a href="#">Invite Bot</a></li>
-                        <li><a href="#">Support Server</a></li>
-                        <li><a href="#">Dashboard</a></li>
+                        <li><a href="#">Invite</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="dashboard/index.html">Dashboard</a></li>
                     </ul>
                 </div>
                 <div class="f-group">
-                    <h5>PROTOCOLS</h5>
+                    <h5>LEGAL</h5>
                     <ul>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Security Core</a></li>
+                        <li><a href="#">Ethics</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Rights</a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="f-bottom">
-            <p>© 2026 PRIME AI. ALL RIGHTS RESERVED.</p>
-            <span>BMR PROJECTS // RAXSTDIOZ</span>
+            <p>2026 // RAXS PRIVATE ARCHIVE</p>
+            <div class="f-credits">
+                <span>REFINEMENT BY BMR</span>
+                <span style="color: #111;">ID: PRP-00-AI</span>
+            </div>
         </div>
     </footer>
 
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Simple parallax for hero elements
+        window.addEventListener('scroll', () => {
+            const scroll = window.pageYOffset;
+            const h1 = document.querySelector('.hero h1');
+            const p = document.querySelector('.hero p');
+            if (h1) h1.style.transform = `translateY(${scroll * 0.1}px)`;
+            if (p) p.style.transform = `translateY(${scroll * 0.05}px)`;
+        });
+    </script>
 </body>
 
 </html>

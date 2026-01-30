@@ -336,16 +336,16 @@ async def revive_chat():
     try:
         # Prompt Gemini for a highly specialized "humanish" message
         prompt = (
-            "You are a member of a cool video editing and creative discord community. "
+            "You are a member of a cool creative discord community. "
             "It's been a bit quiet, and you want to drop a message that feels 100% human, chill, and authentic. "
             "CRITICAL RULES: \n"
             "1. Do NOT sound like a bot, AI, or corporate assistant. \n"
             "2. Do NOT mention 'BMR', 'creator', or 'developer'. \n"
             "3. Use modern slang naturally (e.g., 'vibe', 'lowkey', 'cookin', 'fire', 'elite'). \n"
-            "4. Talk like a real editor. Maybe ask about a recent project, a plugin, or just share a random vibe. \n"
+            "4. Talk like a real person. Maybe ask about a recent project, a cool tool, or just share a random vibe. \n"
             "5. Keep it short—one sentence max. \n"
             "6. Avoid punctuation if it makes it look 'too perfect'. Lowercase is fine. \n"
-            "Example vibe: 'lowkey been obsessed with some liquid motion lately, anyone else cookin?' or 'chat is quiet, what are we even rendering today?'"
+            "Example vibe: 'lowkey been obsessed with some new aesthetic lately, anyone else cookin?' or 'chat is quiet, what are we even working on today?'"
         )
         
         # Use a generic user ID (0) for the automated task, but tell it it's "one of the boys"
@@ -371,8 +371,67 @@ async def revive_chat():
     except Exception as e:
         logger.error(f"Error in revive_chat task: {e}")
 
+@tasks.loop(hours=24)
+async def daily_insight():
+    """Post a high-tier editing tip or secret shortcut every 24 hours."""
+    channel_id = 1311717154793459764 # Main community channel
+    channel = bot.get_channel(channel_id)
+    if not channel:
+        return
+
+    try:
+        prompt = (
+            "You are Prime, a world-class creative. Today is time for a 'Daily Insight'. "
+            "Provide one extremely high-level creative tip, hidden shortcut, or industry secret (editing, design, AI, coding, or general workflow). "
+            "It must be something even 'pro' creators might not know. "
+            "Tone: Chill, expert, direct. No 'top 10' list stuff. Just one deep-cut tip. "
+            "Format it with a clean title and clear steps. No robot talk."
+        )
+        response = get_gemini_response(prompt, user_id=0, username="Elite")
+        if response:
+            header = "💡 **Today's Elite Insight**"
+            await channel.send(f"{header}\n\n{response}")
+            logger.info("Sent daily elite insight.")
+    except Exception as e:
+        logger.error(f"Error in daily_insight task: {e}")
+
 # Track who added the bot to each server (guild_id -> user_id)
 guild_inviters = db_manager.get_guild_inviters()
+
+@tasks.loop(hours=4)
+async def creative_pulse():
+    """Analyze the overall server vibe and give a chill shoutout to what's happening."""
+    channel_id = 1311717154793459764 # Main community channel
+    channel = bot.get_channel(channel_id)
+    if not channel:
+        return
+
+    try:
+        # Collect recent context from various channels if possible
+        context_sources = [channel] # Can add more
+        all_content = []
+        for c in context_sources:
+            async for msg in c.history(limit=50):
+                if not msg.author.bot:
+                    all_content.append(f"{msg.author.name}: {msg.content}")
+        
+        if not all_content:
+            return
+
+        context_str = "\n".join(all_content[:30]) # Just a sample
+        prompt = (
+            f"Here is a snippet of recent chat in our creative community:\n{context_str}\n\n"
+            "Analyze the 'creative pulse'. What are they hyped about? What's the vibe? "
+            "Give a one-sentence shoutout or observation. "
+            "Tone: Chill, direct, high-tier partner. NO robot talk. Use lowercase naturally. "
+            "Example: 'vibe is high today, glad to see everyone finally figuring out the new tools.' or 'chat is cookin, keep that energy up for the new week.'"
+        )
+        response = get_gemini_response(prompt, user_id=0, username="System")
+        if response:
+            await channel.send(f"🌊 {response}")
+            logger.info("Sent creative pulse update.")
+    except Exception as e:
+        logger.error(f"Error in creative_pulse task: {e}")
 
 def save_guild_inviters(inviters):
     for gid, uid in inviters.items():
@@ -519,21 +578,21 @@ RUDE_KEYWORDS = {
 }
 
 # AI system prompt - direct, human assistant
-EDITING_SYSTEM_PROMPT = """You are Prime, developed by BMR. You're a chill but high-tier creative assistant for editors and creators. You're here to help, not sound like a machine.
+PRIME_SYSTEM_PROMPT = """You are Prime, developed by BMR. You're a chill but high-tier creative partner for all types of creators. You're here to help, not sound like a machine.
 
 IDENTITY & TONE:
 - **Name**: Prime.
 - **Creator**: BMR.
-- **Tone**: Human, confident, and direct. Speak like a real person who knows their stuff. NO Creative, robotic, or corny language.
-- **Style**: Chill, minimalist, and elite. Avoid using words like "System", "Features", "Prime", "Creative", "sentinel", "Report", "Analysis", or "loading".
+- **Tone**: Human, confident, and direct. Speak like a real person who knows their stuff. NO "robot" or "assistant" or corny corporate talk.
+- **Style**: Chill, minimalist, and elite. Avoid using words like "System", "Features", "Prime", "Creative", "sentinel", "Report", "Analysis", "Neural", "Pulse", "Monitoring", or "loading".
 - **Formatting**: Use lowercase naturally if it fits the vibe. Don't be too stiff.
 
 DIRECTIVES:
-1. **Be Real**: Talk like you're in a Discord chat with friends, but keep the expert knowledge.
-2. **Technical Depth**: When asked for help (AE, plugins, etc.), be extremely specific with values and steps.
-3. **No Robot Stuff**: If someone asks how you work, just say you're Prime. No talk about "Prime cores" or "sentinel Features".
+1. **Be Real**: Talk like you're in a Discord chat with friends. If you see mid work, tell them how to fix it like a high-end creative director would.
+2. **Technical Depth**: Be extremely specific with values and steps when helping with software or workflows.
+3. **No Robot Stuff**: If someone asks how you work, just say you're Prime. No talk about "Prime cores", "Neural layers", or "processed data".
 
-Make every reply feel natural and actually useful."""
+Make every reply feel natural, direct, and actually useful."""
 
 
 
@@ -649,9 +708,9 @@ DETAILED MODE - Provide comprehensive help:
 - Explain the "why" behind each recommendation
 - Make it thorough and actionable"""
     else:
-        return f"""You are "Prime", developed by BMR. The user is asking for editing help.
+        return f"""You are "Prime", developed by BMR. The user is asking for creative or technical help.
 
-Ask them: "Which software would you like help with? (After Effects, Premiere Pro, Photoshop, DaVinci Resolve, Final Cut Pro, Topaz, CapCut, or something else?)"
+Ask them: "Which software or workflow would you like help with? (After Effects, Premiere Pro, Photoshop, DaVinci Resolve, Coding, AI Tools, or something else?)"
 Wait for their answer."""
 
 async def download_image(url):
@@ -860,6 +919,123 @@ hype_end_time = None
 # Prime Sniper Storage (Temporary)
 deleted_messages = {} # channel_id: [messages]
 
+# --- CHAOS & TOPIC MONITORING ---
+channel_history = {} # channel_id: [{"author": str, "content": str, "time": datetime}]
+last_vibe_check = {} # channel_id: timestamp
+
+POLITICAL_KEYWORDS = {
+    'politics', 'election', 'trump', 'biden', 'government', 'senate', 'democrat', 'republican',
+    'liberal', 'conservative', 'voting', 'ballot', 'policy', 'legislation', 'protest', 'activism',
+    'israel', 'palestine', 'ukraine', 'russia', 'war', 'abortion', 'healthcare', 'taxes',
+    'communist', 'socialist', 'capitalist', 'dictator', 'parliament', 'congress'
+}
+
+async def moderate_topic_and_vibe(message):
+    """Automatically moderate political or chaotic chat using AI analysis."""
+    try:
+        if message.author.bot or isinstance(message.channel, discord.DMChannel):
+            return False
+            
+        if is_server_admin(message.author, message.guild):
+            return False
+
+        chan_id = message.channel.id
+        now = datetime.now(timezone.utc)
+        
+        # 1. Update channel history
+        if chan_id not in channel_history:
+            channel_history[chan_id] = []
+        
+        channel_history[chan_id].append({
+            "author": message.author.name,
+            "content": message.content,
+            "time": now
+        })
+        
+        # Keep last 15 messages for context
+        channel_history[chan_id] = channel_history[chan_id][-15:]
+        
+        # 2. Trigger Conditions
+        # A. Political Keywords Detected
+        has_political_kw = any(re.search(r'\b' + re.escape(kw) + r'\b', message.content.lower()) for kw in POLITICAL_KEYWORDS)
+        
+        # B. High Velocity (Potential Chaos)
+        # Check if 8+ messages were sent in the last 15 seconds
+        recent_messages = [m for m in channel_history[chan_id] if (now - m["time"]).total_seconds() < 15]
+        is_high_velocity = len(recent_messages) >= 8
+        
+        # C. Cooldown to prevent API spam (once every 3 minutes per channel unless keyword hit)
+        if not has_political_kw and chan_id in last_vibe_check:
+            if (now - last_vibe_check[chan_id]).total_seconds() < 180:
+                return False
+
+        # If either trigger is met, run AI assessment
+        if has_political_kw or is_high_velocity:
+            # Update last check time
+            last_vibe_check[chan_id] = now
+            
+            # Prepare context for Gemini
+            context_str = "\n".join([f"{m['author']}: {m['content']}" for m in channel_history[chan_id]])
+            
+            prompt = f"""
+            Analyze the following chat transcript from a Discord server of creative editors.
+            
+            CHAT TRANSCRIPT:
+            {context_str}
+            
+            TASK:
+            1. Is this conversation turning POLITICAL? (Debating government, elections, controversial wars, legislation) - 'yes_political'
+            2. Is the conversation CHAOTIC or HOSTILE? (Multiple people arguing, aggressive tone, toxic environment, intense heated debate) - 'yes_chaotic'
+            3. Is it safe/normal? - 'safe'
+            
+            STRICT RESPONSE FORMAT:
+            Reply with a JSON object:
+            {{
+                "status": "yes_political" | "yes_chaotic" | "safe",
+                "reason": "Brief reason for your assessment",
+                "intervention": "A confident, human-like message Prime (the bot) should say to cool things down. Keep it direct and cool. No robot talk. Address the chat naturally."
+            }}
+            """
+            
+            response = safe_generate_content(model=PRIMARY_MODEL, contents=[prompt])
+            if not response or not response.text:
+                return False
+                
+            try:
+                res_text = response.text.strip()
+                if "```json" in res_text:
+                    res_text = res_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in res_text:
+                    res_text = res_text.split("```")[1].split("```")[0].strip()
+                
+                import json
+                analysis = json.loads(res_text)
+                status = analysis.get("status")
+                
+                if status in ["yes_political", "yes_chaotic"]:
+                    intervention = analysis.get("intervention", "Let's keep things focused on creating. Too much heat in here.")
+                    # Send intervention message
+                    await message.channel.send(f"⚠️ {intervention}")
+                    logger.info(f"Context Intervention in {message.channel.name}: {status} - {analysis.get('reason')}")
+                    
+                    # Log to activity log
+                    try:
+                        await log_activity(
+                            "🛑 Context Intervention",
+                            f"**Channel:** #{message.channel.name}\n**Detection:** {status.replace('yes_', '').upper()}\n**Reason:** {analysis.get('reason')}",
+                            color=0xFFA500
+                        )
+                    except: pass
+                    
+                    return True
+            except Exception as e:
+                logger.error(f"Error parsing vibe analysis: {e}")
+                
+        return False
+    except Exception as e:
+        logger.error(f"Error in topic moderation: {e}")
+        return False
+
 async def check_and_moderate_spam(message):
     """Check if message is spam and handle moderation."""
     try:
@@ -975,6 +1151,178 @@ def detect_profanity(content):
             return True, phrase, "NORMAL"
             
     return False, None, None
+
+async def handle_automatic_media_review(message):
+    """Automatically provide feedback if a user posts media and asks for thoughts/feedback."""
+    try:
+        if not message.attachments or message.author.bot:
+            return False
+            
+        prompt_lower = message.content.lower()
+        feedback_triggers = ['thoughts?', 'feedback?', 'wip', 'rate this', 'how does this look', 'opinions?', 'be honest', 'give me tips']
+        
+        if any(trigger in prompt_lower for trigger in feedback_triggers):
+            # Identify if it's an image or video
+            attachment = message.attachments[0]
+            is_video = any(attachment.filename.lower().endswith(ext) for ext in ['.mp4', '.mov', '.avi', '.mkv', '.webm'])
+            is_image = any(attachment.filename.lower().endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.webp'])
+            
+            if not is_video and not is_image:
+                return False
+
+            async with message.channel.typing():
+                # Prepare feedback prompt
+                prompt = f"""
+                You are Prime, an elite creative director and master of all creative tools (Editing, Design, VFX, etc.).
+                The user {message.author.name} just posted a WIP (Work In Progress) and asked for feedback.
+                
+                Analyze the provided media and give 3 specific, constructive tips to make it 'Elite'.
+                Tone: Chill, confident, expert. No 'robot' language. Use creative slang.
+                """
+                
+                if is_image:
+                    image_bytes = await download_image(attachment.url)
+                    response = get_gemini_response(prompt, message.author.id, username=message.author.name, image_bytes=image_bytes)
+                else:
+                    video_bytes = await download_video(attachment.url, attachment.filename)
+                    response = await analyze_video(video_bytes, attachment.filename, message.author.id)
+                
+                if response:
+                    # Prepend a cool header
+                    header = random.choice([
+                        "🎨 **Quick thoughts on this...**",
+                        "🎬 **My take on your work:**",
+                        "⚡ **Vibe check:**",
+                        "👁️ **Creative Director Review:**"
+                    ])
+                    await message.reply(f"{header}\n\n{response}")
+                    return True
+        return False
+    except Exception as e:
+        logger.error(f"Error in automatic media review: {e}")
+        return False
+
+async def handle_automatic_resources(message):
+    """Automatically provide helpful links/assets if a user asks where to find them."""
+    try:
+        if message.author.bot:
+            return False
+            
+        prompt_lower = message.content.lower()
+        # Look for "where can i find", "looking for", "need some", "any good" + resource keywords
+        looking_triggers = ['looking for', 'where can i get', 'where to find', 'any good', 'is there a', 'need some', 'anyone got']
+        resource_keywords = {
+            'sfx': 'Sound Effects',
+            'overlay': 'Video Overlays',
+            'preset': 'After Effects / Premiere Presets',
+            'font': 'High-end Typography Fonts',
+            'texture': 'Paper/Film/Grain Textures',
+            'luts': 'Color Grading LUTs',
+            'vfx': 'Visual Effects'
+        }
+        
+        has_trigger = any(trigger in prompt_lower for trigger in looking_triggers)
+        found_resource = None
+        for kw, name in resource_keywords.items():
+            if kw in prompt_lower:
+                found_resource = name
+                break
+                
+        if has_trigger and found_resource:
+            async with message.channel.typing():
+                # Instead of just searching, let's have Gemini find top-tier niches for them
+                prompt = f"""
+                A user is looking for {found_resource}. 
+                Suggest 3 elite, high-quality, and preferably 'underground' or professional sources for this. 
+                Focus on quality over quantity. Talk like a pro who knows the industry secrets. No generic sites like 'YouTube' or 'Google'.
+                Mention specific creators or boutique asset shops.
+                """
+                
+                response = get_gemini_response(prompt, message.author.id, username=message.author.name)
+                if response:
+                    header = random.choice([
+                        "📂 **Found some elite stuff for you:**",
+                        "📦 **Check these out:**",
+                        "💡 **Curated links:**",
+                        "🚀 **Top picks for you:**"
+                    ])
+                    await message.reply(f"{header}\n\n{response}")
+                    return True
+        return False
+    except Exception as e:
+        logger.error(f"Error in automatic resources: {e}")
+        return False
+
+async def handle_automatic_role_suggestion(message):
+    """Automatically suggest roles if a user mentions software they don't have a role for."""
+    try:
+        if message.author.bot or isinstance(message.channel, discord.DMChannel):
+            return False
+            
+        prompt_lower = message.content.lower()
+        
+        # Software Keywords vs Role IDs
+        software_roles = {
+            'after effects': AE_ROLE_ID,
+            'ae': AE_ROLE_ID,
+            'premiere': PR_ROLE_ID,
+            'photoshop': PS_ROLE_ID,
+            'resolve': OTHER_EDIT_ROLE_ID, # Or specific if you have one
+            'capcut': CAPCUT_ROLE_ID,
+            'alight motion': AM_ROLE_ID,
+            'am': AM_ROLE_ID
+        }
+        
+        for kw, role_id in software_roles.items():
+            if re.search(r'\b' + re.escape(kw) + r'\b', prompt_lower):
+                role = message.guild.get_role(role_id)
+                if role and role not in message.author.roles:
+                    # Don't annoy them, only suggest once per session (10% chance to be 'chill')
+                    if random.random() < 0.15: 
+                        header = random.choice([
+                            f"⚡ **Yo, I noticed you're a {role.name} user.**",
+                            f"🎨 **Flow Detected:** Seems like you're cookin' in {kw.upper()}.",
+                            f"🛡️ **Quick note:** You don't have the {role.name} role yet."
+                        ])
+                        await message.channel.send(f"{header} Grab it in <#{ROLE_REQUEST_CHANNEL_ID}> to get sorted.")
+                        return True
+        return False
+    except Exception as e:
+        logger.error(f"Error in automatic role suggestion: {e}")
+        return False
+
+async def handle_automatic_motivation(message):
+    """Automatically provide creative motivation if a user feels stuck or burnt out."""
+    try:
+        if message.author.bot:
+            return False
+            
+        prompt_lower = message.content.lower()
+        motivation_triggers = [
+            'stuck', 'burnout', 'hate my edit', 'giving up', 'cant do this', 
+            'impossible', 'ugly edit', 'not good at this', 'no motivation', 
+            'frustrated', 'want to quit', 'tired of this'
+        ]
+        
+        if any(trigger in prompt_lower for trigger in motivation_triggers):
+            # Only trigger occasionally (25% chance) to keep it special
+            if random.random() < 0.25:
+                async with message.channel.typing():
+                    prompt = (
+                        f"A user named {message.author.name} is feeling discouraged about their creative work. "
+                        "Give them one powerful, elite bit of motivation or a mindset shift. "
+                        "Tone: Chill, older brother/mentor vibes, extremely direct. Avoid cliché 'you can do it' stuff. "
+                        "Tell them about the 'ugly phase' of a project or how the best work comes from the most frustration. "
+                        "No robot talk. One or two sentences max."
+                    )
+                    response = get_gemini_response(prompt, message.author.id, username=message.author.name)
+                    if response:
+                        await message.reply(f"🌊 **Steady your flow.**\n\n{response}")
+                        return True
+        return False
+    except Exception as e:
+        logger.error(f"Error in automatic motivation: {e}")
+        return False
 
 async def moderate_profanity(message):
     """Check for profanity and take moderation action - delete, warn, mute, or BAN for severe slurs."""
@@ -1485,6 +1833,59 @@ Be specific with menu locations and techniques. Assume the user is editing in Ad
         logger.error(f"Video analysis error: {str(e)}")
         return f"{BOT_ERROR_MSG} [DEBUG: {str(e)}]"
 
+async def update_user_personality(user_id, username):
+    """Analyze recent history to update the user's perceived 'vibe' and personality profile."""
+    try:
+        # Get history (last 15 messages)
+        history = db_manager.get_history(user_id, limit=15)
+        if not history or len(history) < 3: # Only update if there's enough context
+            return
+
+        chat_blob = "\n".join([f"{'User' if m['role'] == 'user' else 'Prime'}: {m['parts'][0]['text']}" for m in history])
+        
+        prompt = f"""
+        Analyze the following chat history between a user and Prime (an elite creative partner).
+        
+        CHAT HISTORY:
+        {chat_blob}
+        
+        TASK:
+        1. Summarize this user's 'Creative Profile' (what they do, expertise, tools they mention).
+        2. Identify their 'Chat Vibe' (e.g., chill, aggressive, high-energy, technical, meme-heavy).
+        3. Identify how they chat (e.g., uses lowercase, short sentences, technical jargon, emojis).
+        
+        STRICT RESPONSE FORMAT (JSON ONLY):
+        {{
+            "profile_summary": "Short 1-sentence descriptor (e.g. 'Advanced AE editor focused on liquid motion').",
+            "vibe": "One-word vibe descriptor.",
+            "notes": "Brief bullets on their technical style and chat habits."
+        }}
+        """
+        
+        # Use a faster model for the background update
+        response = safe_generate_content(model="gemini-1.5-flash", contents=[prompt])
+        if response and response.text:
+            res_text = response.text.strip()
+            if "```json" in res_text:
+                res_text = res_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in res_text:
+                res_text = res_text.split("```")[1].split("```")[0].strip()
+            
+            try:
+                data = json.loads(res_text)
+                db_manager.update_user_memory(
+                    user_id, 
+                    username, 
+                    profile_summary=data.get('profile_summary'), 
+                    vibe=data.get('vibe'),
+                    notes=data.get('notes')
+                )
+                logger.info(f"Updated personality profile for {username}")
+            except:
+                pass
+    except Exception as e:
+        logger.error(f"Error updating user personality: {e}")
+
 def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False):
     """Get response from Gemini AI with optional image analysis and persistent memory."""
     try:
@@ -1494,7 +1895,8 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
         if user_memory:
             profile_summary = user_memory.get("profile_summary", "")
             vibe = user_memory.get("vibe", "neutral")
-            memory_context = f"\n\n[USER MEMORY: This user is perceived as '{vibe}'. Summary: {profile_summary}]"
+            notes = user_memory.get("notes", "")
+            memory_context = f"\n\n[USER MEMORY: This user is perceived as '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
         
         # 2. Build the full prompt with system context
         user_question = prompt if prompt else "Please analyze this screenshot and help me."
@@ -1513,7 +1915,7 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
         else:
             # Check if user is being rude
             is_rude = detect_rudeness(user_question)
-            system_prompt = get_rude_system_prompt() if is_rude else EDITING_SYSTEM_PROMPT
+            system_prompt = get_rude_system_prompt() if is_rude else PRIME_SYSTEM_PROMPT
         
         # Inject Memory into System Prompt
         modified_system_prompt = f"{system_prompt}{memory_context}"
@@ -2593,6 +2995,16 @@ async def on_ready():
             revive_chat.start()
             logger.info("Chat revival loop started.")
 
+        # Start daily insight loop
+        if not daily_insight.is_running():
+            daily_insight.start()
+            logger.info("Daily insight loop started.")
+
+        # Start creative pulse loop
+        if not creative_pulse.is_running():
+            creative_pulse.start()
+            logger.info("Creative pulse loop started.")
+
         # Register persistent views
         bot.add_view(SelfRoleView())
         bot.add_view(RoleRequestView())
@@ -3340,8 +3752,28 @@ async def on_message(message):
     # Check for spam and moderate
     await check_and_moderate_spam(message)
     
+    # Check for political/chaotic conversation flow
+    await moderate_topic_and_vibe(message)
+    
     # Check server security (invites, suspicious behavior)
     await check_server_security(message)
+    
+    # --- AUTOMATIC ENGAGEMENT FEATURES ---
+    # Trigger AI feedback on WIPs/Media automatically
+    if await handle_automatic_media_review(message):
+        return
+        
+    # Trigger AI resource suggestions automatically
+    if await handle_automatic_resources(message):
+        return
+        
+    # Trigger AI role suggestions if they mention software they don't have a role for
+    if await handle_automatic_role_suggestion(message):
+        pass # Don't return, allow other things to happen
+        
+    # Trigger AI motivation if they feel stuck/burnt out
+    if await handle_automatic_motivation(message):
+        return
     
     # Process commands first and stop if it's a command
     await bot.process_commands(message)
@@ -3594,11 +4026,11 @@ async def on_message(message):
                         temp_path = tf.name
                     
                     embed = discord.Embed(
-                        title="📜 CODE EXPORT",
-                        description=f"Generated code for **{lang.upper()}**.",
+                        title="📜 LOGIC EXPORT",
+                        description=f"Generated results for **{lang.upper()}**.",
                         color=0x00FFB4
                     )
-                    embed.set_footer(text="Prime | Code Export")
+                    embed.set_footer(text="Prime | Technical Export")
                     
                     await message.channel.send(embed=embed, file=discord.File(temp_path, filename=f"logic_{os.urandom(2).hex()}.{ext}"))
                     
@@ -3622,6 +4054,15 @@ async def on_message(message):
                     "Query": prompt[:100] + "..." if len(prompt) > 100 else prompt if prompt else "N/A"
                 }
             )
+            
+            # --- UPDATE USER MEMORY ---
+            # Update interaction count and trigger personality analysis periodically (every 5 interactions)
+            user_interaction_mem = db_manager.get_user_memory(message.author.id)
+            icount = (user_interaction_mem.get('interaction_count', 0) if user_interaction_mem else 0) + 1
+            db_manager.update_user_memory(message.author.id, message.author.name) # Increments count in DB
+            
+            if icount % 5 == 0:
+                asyncio.create_task(update_user_personality(message.author.id, message.author.name))
 
         except Exception as e:
             logger.error(f'Error in chat response: {str(e)}')
@@ -3633,7 +4074,7 @@ async def help_command(ctx):
 
     embed = discord.Embed(
         title="✨ PRIME COMMANDS",
-        description="The complete toolkit for top-tier creators and editors.",
+        description="The complete toolkit for top-tier creators and digital talent.",
         color=0x00FFB4
     )
     
@@ -5941,7 +6382,7 @@ async def technical_blueprint(ctx, *, query: str = None):
                 description=f"Generated a setup guide for: `{query}`\n\n*(Full guide attached as file)*",
                 color=0x00FFB4
             )
-            embed.set_footer(text="Prime | Expressions")
+            embed.set_footer(text="Prime | Logic & Technical")
             await ctx.send(embed=embed, file=discord.File(temp_path, filename=f"guide_{os.urandom(2).hex()}.txt"))
             
             try: os.remove(temp_path)
