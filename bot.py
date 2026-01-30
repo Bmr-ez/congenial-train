@@ -2483,9 +2483,6 @@ async def setup_verification(ctx):
             "1️⃣ Click the **'Verify Myself'** button below.\n"
             "2️⃣ A captcha image will appear (give it a second to load).\n"
             "3️⃣ Click **'Enter Code'** and type exactly what you see in the image.\n\n"
-            "**Account Security:**\n"
-            "• If your account is **older than 30 days**, you will get full access immediately.\n"
-            "• If your account is **newer than 30 days**, you will be verified but remain **muted** until your account reaches the required age. This helps us prevent raids and spam.\n\n"
             "*Need help? Contact a moderator if the captcha doesn't load.*"
         ),
         color=0x00FF00
@@ -2861,7 +2858,7 @@ async def on_member_join(member):
                 "**Step 1:** Click the button below.\n"
                 "**Step 2:** Solve the captcha challenge.\n"
                 "**Step 3:** Click **'Enter Code'** and type exactly what you see in the image.\n\n"
-                "*Note: If your account is newer than 30 days, you will be muted automatically until it reaches the required age.*"
+                "*Tip: If you cannot see the image, make sure your external media settings are enabled.*"
             ),
             color=0x00FF00
         )
