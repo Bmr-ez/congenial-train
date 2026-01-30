@@ -89,7 +89,7 @@ def rotate_gemini_key():
     return True
 
 # Fallback configuration
-FALLBACK_MODEL = "gemini-1.5-flash"
+FALLBACK_MODEL = "gemini-1.5-flash-latest"
 
 def safe_generate_content(model, contents, config=None):
     """Wrapper to handle API key rotation on rate limits and automatic model fallback."""
@@ -362,7 +362,7 @@ async def revive_chat():
         )
         
         # Use a generic user ID (0) for the automated task, but tell it it's "one of the boys"
-        response = get_gemini_response(prompt, user_id=0, username="Vibes", model="gemini-1.5-flash")
+        response = get_gemini_response(prompt, user_id=0, username="Vibes", model=FALLBACK_MODEL)
         
         if response and "BMR" not in response:
             # Clean response of backticks or extra formatting if Gemini adds them
@@ -400,7 +400,7 @@ async def daily_insight():
             "Tone: Chill, expert, direct. No 'top 10' list stuff. Just one deep-cut tip. "
             "Format it with a clean title and clear steps. No robot talk."
         )
-        response = get_gemini_response(prompt, user_id=0, username="Elite", model="gemini-1.5-flash")
+        response = get_gemini_response(prompt, user_id=0, username="Elite", model=FALLBACK_MODEL)
         if response:
             header = "💡 **Today's Elite Insight**"
             await channel.send(f"{header}\n\n{response}")
@@ -439,7 +439,7 @@ async def creative_pulse():
             "Tone: Chill, direct, high-tier partner. NO robot talk. Use lowercase naturally. "
             "Example: 'vibe is high today, glad to see everyone finally figuring out the new tools.' or 'chat is cookin, keep that energy up for the new week.'"
         )
-        response = get_gemini_response(prompt, user_id=0, username="System", model="gemini-1.5-flash")
+        response = get_gemini_response(prompt, user_id=0, username="System", model=FALLBACK_MODEL)
         if response:
             await channel.send(f"🌊 {response}")
             logger.info("Sent creative pulse update.")
@@ -1200,7 +1200,7 @@ async def handle_automatic_media_review(message):
                 
                 if is_image:
                     image_bytes = await download_image(attachment.url)
-                    response = get_gemini_response(prompt, message.author.id, username=message.author.name, image_bytes=image_bytes, model="gemini-1.5-flash")
+                    response = get_gemini_response(prompt, message.author.id, username=message.author.name, image_bytes=image_bytes, model=FALLBACK_MODEL)
                 else:
                     video_bytes = await download_video(attachment.url, attachment.filename)
                     response = await analyze_video(video_bytes, attachment.filename, message.author.id)
@@ -1241,7 +1241,7 @@ async def handle_automatic_resources(message):
             async with message.channel.typing():
                 # Use Gemini to extract a clean search query for more accuracy
                 extraction_prompt = f"Extract only the asset/resource name from this request: '{message.content}'. Remove words like 'a', 'an', 'the', 'some', 'any', 'i need', 'find me', etc. Just return the clean noun, e.g., 'cloud png' or 'vibe sfx'."
-                query_res = safe_generate_content(model="gemini-1.5-flash", contents=[extraction_prompt])
+                query_res = safe_generate_content(model=FALLBACK_MODEL, contents=[extraction_prompt])
                 search_query = query_res.text.strip() if query_res and query_res.text else message.content
                 search_query = search_query.replace('"', '').replace("'", "") # Clean quotes
                 
@@ -1290,7 +1290,7 @@ async def handle_automatic_resources(message):
                 # Use a cleaner prompt system to bypass the 'creative partner' lecturing
                 # We prepend a instruction to stop the chat vibing
                 clean_prompt = f"[SYSTEM: RESPOND BRIEFLY WITH LINKS ONLY. NO DESIGN LECTURES.] {prompt}"
-                response = get_gemini_response(clean_prompt, message.author.id, username=message.author.name, model="gemini-1.5-flash")
+                response = get_gemini_response(clean_prompt, message.author.id, username=message.author.name, model=FALLBACK_MODEL)
                 
                 if response:
                     header = random.choice([
@@ -1373,7 +1373,7 @@ async def handle_automatic_motivation(message):
                         "Tell them about the 'ugly phase' of a project or how the best work comes from the most frustration. "
                         "No robot talk. One or two sentences max."
                     )
-                    response = get_gemini_response(prompt, message.author.id, username=message.author.name, model="gemini-1.5-flash")
+                    response = get_gemini_response(prompt, message.author.id, username=message.author.name, model=FALLBACK_MODEL)
                     if response:
                         await message.reply(f"🌊 **Steady your flow.**\n\n{response}")
                         return True
@@ -1921,7 +1921,7 @@ async def update_user_personality(user_id, username):
         """
         
         # Use a faster model for the background update
-        response = safe_generate_content(model="gemini-1.5-flash", contents=[prompt])
+        response = safe_generate_content(model=FALLBACK_MODEL, contents=[prompt])
         if response and response.text:
             res_text = response.text.strip()
             if "```json" in res_text:
@@ -2027,11 +2027,10 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             # Fallback model list - prioritize user's choice and use standard names
             models_to_try = [model] if model else [
                 PRIMARY_MODEL,
-                "gemini-2.0-flash", 
-                "gemini-flash-latest",
-                "gemini-pro-latest",
-                "gemini-1.5-flash",
-                "gemini-1.5-pro"
+                "gemini-2.0-flash-exp", 
+                "gemini-1.5-pro-latest",
+                "gemini-1.5-flash-latest",
+                "gemini-1.5-flash-8b"
             ]
             
             attempt_log = []
