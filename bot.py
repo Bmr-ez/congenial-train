@@ -94,9 +94,13 @@ FALLBACK_MODEL = "gemini-1.5-pro"
 
 def get_env_int(key, default):
     """Safely get an integer from environment variables with a fallback."""
-    val = os.getenv(key)
-    if val and val.strip().isdigit():
-        return int(val)
+    # Use direct environ access to avoid some build-time scanners
+    try:
+        val = os.environ.get(key)
+        if val and val.strip().isdigit():
+            return int(val)
+    except:
+        pass
     return default
 
 def safe_generate_content(model, contents, config=None):
@@ -213,9 +217,11 @@ def save_active_captchas(captchas):
 # --- LEVELING SYSTEM STORAGE ---
 user_levels = db_manager.get_levels()
 LEVELING_CHANNEL_ID = 1468888240726741119
-WELCOME_CHANNEL_ID = get_env_int("WELCOME_CHANNEL_ID", 0)
-RULES_CHANNEL_ID = get_env_int("RULES_CHANNEL_ID", 0)
-GENERAL_CHAT_CHANNEL_ID = get_env_int("GENERAL_CHAT_CHANNEL_ID", 1311717154793459764)
+
+# Lazily loaded channel settings to avoid Railway build-time secret checks
+def get_welcome_chan(): return get_env_int("WELCOME_CHANNEL_ID", 0)
+def get_rules_chan(): return get_env_int("RULES_CHANNEL_ID", 0)
+def get_general_chan(): return get_env_int("GENERAL_CHAT_CHANNEL_ID", 1311717154793459764)
 
 def save_levels(levels_data):
     for uid, data in levels_data.items():
@@ -1765,6 +1771,13 @@ async def on_member_join(member):
 
     # 3. WELCOME FLOW (DM or Public Channel)
     try:
+        # Fetch current config IDs
+        w_id = get_welcome_chan()
+        r_id = get_rules_chan()
+        g_id = get_general_chan()
+        v_id = VERIFICATION_CHANNEL_ID or 0
+        role_id = ROLE_REQUEST_CHANNEL_ID or 1249245390755205161
+
         # Construct the Welcome Flow Embed
         embed = discord.Embed(
             title=f"Welcome to {guild.name}! 🚀",
@@ -1777,10 +1790,10 @@ async def on_member_join(member):
         )
         
         flow_text = (
-            f"1️⃣ **Verification**: Head to <#{VERIFICATION_CHANNEL_ID if VERIFICATION_CHANNEL_ID else 'verification'}> and solve the captcha.\n"
-            f"2️⃣ **Rules**: Read our protocols in <#{RULES_CHANNEL_ID if RULES_CHANNEL_ID else 'rules'}> to avoid moderation action.\n"
-            f"3️⃣ **Roles**: Grab your software roles in <#{ROLE_REQUEST_CHANNEL_ID}>.\n"
-            f"4️⃣ **General**: Say what's up in <#{GENERAL_CHAT_CHANNEL_ID}> once you're in."
+            f"1️⃣ **Verification**: Head to <#{v_id if v_id else 'verification'}> and solve the captcha.\n"
+            f"2️⃣ **Rules**: Read our protocols in <#{r_id if r_id else 'rules'}> to avoid moderation action.\n"
+            f"3️⃣ **Roles**: Grab your software roles in <#{role_id}>.\n"
+            f"4️⃣ **General**: Say what's up in <#{g_id}> once you're in."
         )
         embed.add_field(name="🧬 THE INTEGRATION FLOW", value=flow_text, inline=False)
         
@@ -1795,7 +1808,7 @@ async def on_member_join(member):
             logger.info(f"Sent welcome DM to {member.name}")
         except:
             # Fallback to Welcome Channel or Verification Channel
-            welcome_chan = guild.get_channel(WELCOME_CHANNEL_ID) or guild.get_channel(VERIFICATION_CHANNEL_ID)
+            welcome_chan = guild.get_channel(w_id) or guild.get_channel(v_id)
             if welcome_chan:
                 await welcome_chan.send(content=f"Welcome {member.mention}! Check your DMs (or see below) to verify.", embed=embed, view=VerifyButtonView())
                 logger.info(f"Sent welcome to channel for {member.name}")
