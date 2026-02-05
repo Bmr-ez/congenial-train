@@ -2446,16 +2446,23 @@ class RoleRequestView(discord.ui.View):
             'role_name': role_name,
             'min_subs': min_subs,
             'role_id': role_id,
+            'guild_id': interaction.guild.id
         }
-        await interaction.response.send_message(
-            f"**<@&{role_id}> Verification**\n\n"
-            f"To verify, please send a **single message** (click 'cancel' to stop) containing:\n"
-            f"1. A screenshot of your **YouTube Studio** (logged in) clearly showing your subscriber count.\n"
-            f"2. The **link** to your YouTube channel.\n\n"
-            f"I will analyze the screenshot to verify your eligibility for **{min_subs:,}**+ subscribers.\n"
-            f"*Type 'cancel' to cancel this request.*",
-            ephemeral=True
-        )
+        
+        try:
+            prompt_msg = (
+                f"**<@&{role_id}> Verification**\n\n"
+                f"To verify, please send a **single message** (click 'cancel' to stop) containing:\n"
+                f"1. A screenshot of your **YouTube Studio** (logged in) clearly showing your subscriber count.\n"
+                f"2. The **link** to your YouTube channel.\n\n"
+                f"I will analyze the screenshot to verify your eligibility for **{min_subs:,}**+ subscribers.\n"
+                f"*Type 'cancel' to cancel this request.*"
+            )
+            await interaction.user.send(prompt_msg)
+            await interaction.response.send_message("📬 I've sent you the verification instructions in your DMs!", ephemeral=True)
+        except discord.Forbidden:
+            await interaction.response.send_message("❌ **Error**: I couldn't send you a DM. Please enable DMs from server members and try again.", ephemeral=True)
+            del user_states[user_id]
 
 class AppealButtonView(discord.ui.View):
     def __init__(self, guild_id: int, appeal_type: str = "BAN"):
@@ -2878,7 +2885,7 @@ async def verify_youtube_proof(message, min_subs):
                     api_url += f"&key={api_key}"
                     
                     async with aiohttp.ClientSession() as session:
-                        async with session.get(api_url) as resp:
+                        async with session.get(api_url, timeout=aiohttp.ClientTimeout(total=5)) as resp:
                             if resp.status == 200:
                                 data = await resp.json()
                                 if "items" in data and len(data["items"]) > 0:
@@ -2902,14 +2909,14 @@ async def verify_youtube_proof(message, min_subs):
                                     # Strategy 0.1: Search Fallback (if direct lookup failed)
                                     search_query = handle if handle else channel_id
                                     search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={search_query}&type=channel&maxResults=1&key={api_key}"
-                                    async with session.get(search_url) as search_resp:
+                                    async with session.get(search_url, timeout=aiohttp.ClientTimeout(total=5)) as search_resp:
                                         if search_resp.status == 200:
                                             search_data = await search_resp.json()
                                             if "items" in search_data and len(search_data["items"]) > 0:
                                                 found_id = search_data["items"][0]["snippet"]["channelId"]
                                                 # Now get stats for THIS ID
                                                 stats_url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id={found_id}&key={api_key}"
-                                                async with session.get(stats_url) as stats_resp:
+                                                async with session.get(stats_url, timeout=aiohttp.ClientTimeout(total=5)) as stats_resp:
                                                     if stats_resp.status == 200:
                                                         stats_data = await stats_resp.json()
                                                         if "items" in stats_data and len(stats_data["items"]) > 0:
@@ -2958,13 +2965,19 @@ async def verify_youtube_proof(message, min_subs):
 
                                 # 2. JSON Data (ytInitialData)
                                 sub_match = re.search(r'\"subscriberCountText\":.*?\"simpleText\":\"([^\"]+)\"', channel_html_snippet)
+                                if not sub_match:
+                                    sub_match = re.search(r'\"subs\":\s*\"([^\"]+)\"', channel_html_snippet)
+                                
                                 if sub_match:
                                     live_subs_text = sub_match.group(1)
                                 
                                 # 3. Video Count
                                 vid_match = re.search(r'\"videoCountText\":.*?\"simpleText\":\"([^\"]+)\"', channel_html_snippet)
+                                if not vid_match:
+                                    vid_match = re.search(r'\"videos\":\s*\"([^\"]+)\"', channel_html_snippet)
+                                
                                 if vid_match:
-                                    video_count_text = vid_match.group(1)
+                                    video_count_text = vid_match.group(1) if isinstance(vid_match.group(1), str) else "Unknown"
                             except:
                                 pass
             except Exception as e:
@@ -3625,8 +3638,9 @@ async def on_message(message):
     # Check if user has a pending state (waiting for response to a question)
     user_id = message.author.id
     if user_id in user_states:
-        state = user_states[user_id]
-        logger.info(f"User {message.author.name} has pending state: {state['type']}")
+        try:
+            state = user_states[user_id]
+            logger.info(f"User {message.author.name} has pending state: {state['type']}")
         
         if state['type'] == 'waiting_for_software':
             # User answered which software they want help with
@@ -3701,7 +3715,11 @@ async def on_message(message):
                 reason = result_data.get("reason", "Verification failed.")
 
                 if manual_review:
-                     admin_role = discord.utils.find(lambda r: "admin" in r.name.lower(), message.guild.roles)
+                     guild = bot.get_guild(state.get('guild_id'))
+                     admin_role = None
+                     if guild:
+                         admin_role = discord.utils.find(lambda r: "admin" in r.name.lower(), guild.roles)
+                     
                      admin_ping = admin_role.mention if admin_role else "@Admin"
                      
                      # Get clearer reason
@@ -3721,10 +3739,16 @@ async def on_message(message):
                 
                 if is_verified:
                     role_id = state['role_id']
-                    role = message.guild.get_role(role_id)
+                    guild = bot.get_guild(state.get('guild_id'))
+                    role = guild.get_role(role_id) if guild else None
+                    
                     if role:
                         try:
-                            await message.author.add_roles(role, reason="YouTube Verification Successful")
+                            # Use member from guild since message.author might be a User in DMs
+                            member = guild.get_member(user_id)
+                            if not member: member = await guild.fetch_member(user_id)
+                            
+                            await member.add_roles(role, reason="YouTube Verification Successful")
                             
                             # Get stats from result
                             channel_name = result_data.get("channel_name", "Unknown")
@@ -3771,13 +3795,21 @@ async def on_message(message):
 
                     if is_edited: # Fake or suspicious
                         rejection_text = f"❌ **Verification Rejected**\n**Reason:** {reason}\n*Note: Attempting to deceive the verification system is not allowed. A warning has been issued.*"
-                        await warn_user(message.author, message.guild, f"YouTube Verification Fraud: {reason}")
+                        guild = bot.get_guild(state.get('guild_id'))
+                        if guild:
+                            member = guild.get_member(user_id)
+                            if not member: member = await guild.fetch_member(user_id)
+                            await warn_user(member, guild, f"YouTube Verification Fraud: {reason}")
                     elif low_subs: # Just not enough subs
                         rejection_text = f"Thank you for your interest! Unfortunately, your channel does not currently meet the required subscriber count for the **{state['role_name']}** role. Keep growing and try again later! 😊\n\n**Note:** {reason}\n*You can try again in 12 hours.*"
                     else: # Other logic fail (wrong link, etc)
                         if "wrong channel" in reason.lower() or "suspicious" in reason.lower():
                              rejection_text = f"❌ **Verification Rejected**\n**Reason:** {reason}\n*A warning has been issued for providing suspicious/incorrect information.*"
-                             await warn_user(message.author, message.guild, f"Suspicious YouTuber Verification: {reason}")
+                             guild = bot.get_guild(state.get('guild_id'))
+                             if guild:
+                                 member = guild.get_member(user_id)
+                                 if not member: member = await guild.fetch_member(user_id)
+                                 await warn_user(member, guild, f"Suspicious YouTuber Verification: {reason}")
                         else:
                              rejection_text = f"❌ **Verification Failed**\n**Reason:** {reason}\n*You can try again in 12 hours.*"
                     
@@ -3867,6 +3899,13 @@ async def on_message(message):
             # Clean up state after response
             del user_states[user_id]
             logger.info(f"Cleaned up state for {message.author.name}")
+            return
+
+        except Exception as state_err:
+            logger.error(f"Error processing user state for {message.author.name}: {state_err}")
+            await message.reply("❌ An error occurred while processing your request. Please try again or contact an admin.")
+            if user_id in user_states:
+                del user_states[user_id]
             return
     
     # Ignore messages that are replies to other users (not the bot)
