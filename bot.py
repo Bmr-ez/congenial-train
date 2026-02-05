@@ -206,6 +206,9 @@ def save_active_captchas(captchas):
 # --- LEVELING SYSTEM STORAGE ---
 user_levels = db_manager.get_levels()
 LEVELING_CHANNEL_ID = 1468888240726741119
+WELCOME_CHANNEL_ID = int(os.getenv("WELCOME_CHANNEL_ID", "0"))
+RULES_CHANNEL_ID = int(os.getenv("RULES_CHANNEL_ID", "0"))
+GENERAL_CHAT_CHANNEL_ID = int(os.getenv("GENERAL_CHAT_CHANNEL_ID", "1311717154793459764"))
 
 def save_levels(levels_data):
     for uid, data in levels_data.items():
@@ -909,7 +912,10 @@ async def warn_user(user, guild, reason):
     # DM User
     try:
         view = None
-        if count >= 2: # Muted or Banned
+        if count == 1:
+            appeal_type = "WARN"
+            view = AppealButtonView(guild.id, appeal_type=appeal_type)
+        elif count >= 2: # Muted or Banned
             appeal_type = "BAN" if count >= 5 else "MUTE"
             view = AppealButtonView(guild.id, appeal_type=appeal_type)
             
@@ -1693,71 +1699,102 @@ async def check_server_security(message):
 
 @bot.event
 async def on_member_join(member):
-    """Handle member join - check for raids and account age."""
+    """Handle new member arrival - Anti-raid, verification, and welcome flow."""
+    if member.bot:
+        return
+
+    guild = member.guild
+    guild_id = guild.id
+    current_time = datetime.now(timezone.utc)
+    
+    logger.info(f"New member joined: {member.name} ({member.id}) in {guild.name}")
+
+    # 1. ANTI-RAID & SECURITY CHECKS
     try:
-        guild = member.guild
-        guild_id = guild.id
-        
         # Initialize guild tracking if needed
         if guild_id not in guild_join_history:
             guild_join_history[guild_id] = []
         
         # Add join to history
-        current_time = datetime.now(timezone.utc)
         guild_join_history[guild_id].append({"user_id": member.id, "timestamp": current_time})
         
         # Clean old entries (older than 2 minutes)
         two_min_ago = current_time - timedelta(minutes=2)
         guild_join_history[guild_id] = [j for j in guild_join_history[guild_id] if j["timestamp"] > two_min_ago]
         
-        # ANTI-RAID: Check for simultaneous joins (5+ users joining at same time)
-        # Check joins within last 1 minute for simultaneous activity
+        # Check for simultaneous joins (5+ users joining in 1 minute)
         one_min_ago = current_time - timedelta(minutes=1)
         simultaneous_joins = [j for j in guild_join_history[guild_id] if j["timestamp"] > one_min_ago]
         
-        if len(simultaneous_joins) >= 5:  # 5+ joins within 1 minute = suspicious simultaneous activity
+        if len(simultaneous_joins) >= 5:
             embed = discord.Embed(
                 title="🚨 POTENTIAL RAID DETECTED",
                 description=f"**{len(simultaneous_joins)} users joined simultaneously in the last minute**\n\nLatest: {member.mention}",
                 color=discord.Color.red()
             )
-            # Send to mod-log or first available channel
+            # Log to activity and try to find a security channel
+            await log_activity("🚨 Raid Alert", f"Potential raid in {guild.name}: {len(simultaneous_joins)} joins in 1min.", color=0xFF0000)
             for channel in guild.text_channels:
-                if 'mod' in channel.name or 'log' in channel.name:
-                    try:
-                        await channel.send(embed=embed)
-                    except:
-                        pass
-            logger.warning(f"Potential raid detected in {guild.name}: {len(simultaneous_joins)} simultaneous joins in 1 minute")
+                if 'security' in channel.name or 'mod-log' in channel.name:
+                    try: await channel.send(embed=embed)
+                    except: pass
         
-        # 2. Assign Unverified Role
-        try:
-            unverified_role = get_guild_role(guild, UNVERIFIED_ROLE_ID, "Unverified")
-            if unverified_role:
-                await member.add_roles(unverified_role, reason="New member join - waiting for verification")
-                logger.info(f"Assigned Unverified role to {member.name} in {guild.name}")
-        except Exception as e:
-            logger.error(f"Failed to assign unverified role to {member.name}: {e}")
-
-        # ACCOUNT AGE CHECK: Warn if new account
+        # Account Age Check
         account_age = current_time - member.created_at
-        if account_age.days < 7:  # Account less than 7 days old
-            embed = discord.Embed(
-                title="⚠️ New Account Join",
-                description=f"{member.mention} joined with a **{account_age.days}-day-old** account",
-                color=discord.Color.yellow()
-            )
-            # Send warning
-            for channel in guild.text_channels:
-                if 'welcome' in channel.name or 'mod' in channel.name:
-                    try:
-                        await channel.send(embed=embed)
-                    except:
-                        pass
-            logger.info(f"New account joined {guild.name}: {member.name} ({account_age.days} days old)")
-    
+        if account_age.days < 7:
+            logger.info(f"New account ({account_age.days}d) joined: {member.name}")
     except Exception as e:
-        logger.error(f"Error in member join handler: {str(e)}")
+        logger.error(f"Error in security check: {e}")
+
+    # 2. ASSIGN UNVERIFIED ROLE
+    if UNVERIFIED_ROLE_ID:
+        try:
+            unverified_role = guild.get_role(UNVERIFIED_ROLE_ID)
+            if unverified_role:
+                await member.add_roles(unverified_role, reason="Newly joined - pending verification")
+                logger.info(f"Assigned Unverified role to {member.name}")
+        except Exception as e:
+            logger.error(f"Failed to assign Unverified role: {e}")
+
+    # 3. WELCOME FLOW (DM or Public Channel)
+    try:
+        # Construct the Welcome Flow Embed
+        embed = discord.Embed(
+            title=f"Welcome to {guild.name}! 🚀",
+            description=(
+                f"Yo {member.mention}, welcome to the crew. To get full access and start cookin', "
+                "follow these steps to integrate with the system."
+            ),
+            color=0x00FFB4, # Prime Green
+            timestamp=current_time
+        )
+        
+        flow_text = (
+            f"1️⃣ **Verification**: Head to <#{VERIFICATION_CHANNEL_ID if VERIFICATION_CHANNEL_ID else 'verification'}> and solve the captcha.\n"
+            f"2️⃣ **Rules**: Read our protocols in <#{RULES_CHANNEL_ID if RULES_CHANNEL_ID else 'rules'}> to avoid moderation action.\n"
+            f"3️⃣ **Roles**: Grab your software roles in <#{ROLE_REQUEST_CHANNEL_ID}>.\n"
+            f"4️⃣ **General**: Say what's up in <#{GENERAL_CHAT_CHANNEL_ID}> once you're in."
+        )
+        embed.add_field(name="🧬 THE INTEGRATION FLOW", value=flow_text, inline=False)
+        
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        embed.set_footer(text="PRIME SYSTEM • SECURE ENVIRONMENT")
+
+        # Try DM first
+        try:
+            view = VerifyButtonView()
+            await member.send(embed=embed, view=view)
+            logger.info(f"Sent welcome DM to {member.name}")
+        except:
+            # Fallback to Welcome Channel or Verification Channel
+            welcome_chan = guild.get_channel(WELCOME_CHANNEL_ID) or guild.get_channel(VERIFICATION_CHANNEL_ID)
+            if welcome_chan:
+                await welcome_chan.send(content=f"Welcome {member.mention}! Check your DMs (or see below) to verify.", embed=embed, view=VerifyButtonView())
+                logger.info(f"Sent welcome to channel for {member.name}")
+
+    except Exception as e:
+        logger.error(f"Error in welcome flow: {e}")
 
 @bot.listen('on_message')
 async def leveling_handler(message):
@@ -2398,6 +2435,8 @@ class AppealButtonView(discord.ui.View):
         # Update button label
         if appeal_type == "MUTE":
             self.appeal_button.label = "Appeal Mute"
+        elif appeal_type == "WARN":
+            self.appeal_button.label = "Appeal Warning"
 
     @discord.ui.button(label="Appeal Ban", style=discord.ButtonStyle.secondary, custom_id="appeal_ban_btn", emoji="⚖️")
     async def appeal_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -2408,7 +2447,12 @@ class AppealButtonView(discord.ui.View):
             'appeal_category': self.appeal_type
         }
         
-        target = "unbanned" if self.appeal_type == "BAN" else "unmuted"
+        if self.appeal_type == "BAN":
+            target = "unbanned"
+        elif self.appeal_type == "MUTE":
+            target = "unmuted"
+        else:
+            target = "forgiven (warning removed)"
         await interaction.response.send_message(
             f"Please explain why you should be **{target}**. Send your explanation in a **single message** here.",
             ephemeral=True
@@ -2448,6 +2492,16 @@ class AppealReviewView(discord.ui.View):
                 else:
                     await interaction.response.send_message("Member or Muted Role not found.", ephemeral=True)
                     return
+            elif self.appeal_category == "WARN":
+                # Remove the warning from history
+                uid = str(self.user_id)
+                if uid in user_warnings:
+                    if user_warnings[uid]["count"] > 0:
+                        user_warnings[uid]["count"] -= 1
+                    if user_warnings[uid]["history"]:
+                        user_warnings[uid]["history"].pop()
+                    save_warnings(user_warnings)
+                action_done = "cleared of your warning"
             else:
                 # Default: Unban
                 await guild.unban(user, reason=f"Ban Appeal Accepted by {interaction.user.name}")
@@ -3335,59 +3389,18 @@ async def on_guild_join(guild):
 
 
 @bot.event
-async def on_member_join(member):
-    """Handle new member arrival - start verification process."""
-    if member.bot:
-        return
-        
-    logger.info(f"New member joined: {member.name} ({member.id}) in {member.guild.name}")
-    
-    # 0. Assign Unverified Role (to hide channels)
-    if UNVERIFIED_ROLE_ID:
-        try:
-            unverified_role = member.guild.get_role(UNVERIFIED_ROLE_ID)
-            if unverified_role:
-                await member.add_roles(unverified_role, reason="Newly joined - pending verification")
-                logger.info(f"Assigned Unverified role to {member.name}")
-        except Exception as e:
-            logger.error(f"Failed to assign Unverified role: {e}")
-    
-    # 1. Send DM with Verification Button
+async def on_member_remove(member):
+    """Log when a member leaves the server."""
+    logger.info(f"Member left: {member.name} ({member.id}) from {member.guild.name}")
+    # Optional: Log to activity channel
     try:
-        inviter_info = ""
-        inviter_id = guild_inviters.get(str(member.guild.id))
-        if inviter_id:
-            inviter_user = bot.get_user(inviter_id)
-            if inviter_user:
-                inviter_info = f"This bot was added to the server by **{inviter_user.name}**.\n\n"
-
-        embed = discord.Embed(
-            title=f"Welcome to {member.guild.name}! 👋",
-            description=(
-                f"To gain access to the server, you need to complete a quick verification.\n\n"
-                f"{inviter_info}"
-                "**Step 1:** Click the button below.\n"
-                "**Step 2:** Solve the captcha challenge.\n"
-                "**Step 3:** Click **'Enter Code'** and type exactly what you see in the image.\n\n"
-                "*Tip: If you cannot see the image, make sure your external media settings are enabled.*"
-            ),
-            color=0x00FF00
+        await log_activity(
+            "📤 Member Left",
+            f"**{member.name}** has left the server.",
+            color=0xFF5555,
+            thumbnail=member.display_avatar.url
         )
-        embed.set_thumbnail(url=member.guild.icon.url if member.guild.icon else None)
-        
-        view = VerifyButtonView(member.guild.id)
-        await member.send(embed=embed, view=view)
-        logger.info(f"Sent verification DM to {member.name}")
-    except Exception as e:
-        logger.warning(f"Could not DM new member {member.name}: {e}")
-        # Fallback: Mention in verification channel
-        verif_channel = bot.get_channel(VERIFICATION_CHANNEL_ID)
-        if verif_channel:
-            await verif_channel.send(
-                f"Welcome {member.mention}! I couldn't send you a DM (please check your privacy settings).\n"
-                "Click the button below to solve the captcha and verify!",
-                view=VerifyButtonView(member.guild.id)
-            )
+    except: pass
 
 @bot.event
 async def on_guild_join(guild):
