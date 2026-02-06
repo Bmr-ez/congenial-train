@@ -130,6 +130,65 @@
             border-radius: 100px;
         }
 
+        /* --- LANG SWITCHER --- */
+        .lang-switcher {
+            position: relative;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+            user-select: none;
+        }
+
+        .lang-switcher:hover,
+        .lang-switcher.open {
+            border-color: var(--p);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+            z-index: 3000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+        }
+
+        .lang-dropdown div {
+            padding: 14px 24px;
+            transition: 0.3s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .lang-dropdown div:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 28px;
+        }
+
+        .lang-switcher.open .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
         /* --- CYBER LOADER --- */
         #preloader {
             position: fixed;
@@ -425,58 +484,167 @@
 
     <nav>
         <a href="index.html" class="logo">prime<span>bot</span></a>
-        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> back</a>
+        <div style="display:flex; align-items:center; gap:1.5rem;">
+            <div class="lang-switcher" id="langSwitcher" onclick="toggleLang()">
+                <span id="current-lang">ENG</span>
+                <div class="lang-dropdown" id="lang-dropdown">
+                    <div onclick="setLang('en')">English</div>
+                    <div onclick="setLang('tr')">Türkçe</div>
+                    <div onclick="setLang('ar')">العربية</div>
+                    <div onclick="setLang('hi')">हिन्दी</div>
+                    <div onclick="setLang('de')">Deutsch</div>
+                    <div onclick="setLang('es')">Español</div>
+                    <div onclick="setLang('ru')">Русский</div>
+                </div>
+            </div>
+            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> back</a>
+        </div>
     </nav>
 
     <main>
         <header class="legal-header">
-            <span class="section-tag">legal stuff</span>
-            <h1>Terms of<br>Service.</h1>
-            <p class="last-updated">Last Updated: February 6, 2026</p>
+            <span class="section-tag" data-i18n="legal-tag">legal stuff</span>
+            <h1 data-i18n="terms-h1">Terms of<br>Service.</h1>
+            <p class="last-updated" data-i18n="last-updated">Last Updated: February 6, 2026</p>
         </header>
 
         <section class="legal-content">
-            <h2>1. Acceptance of Terms</h2>
-            <p>By adding Prime Bot to your Discord server or using any of its features, you agree to be bound by these
+            <h2 data-i18n="terms-s1-h">1. Acceptance of Terms</h2>
+            <p data-i18n="terms-s1-p">By adding Prime Bot to your Discord server or using any of its features, you agree
+                to be bound by these
                 Terms of Service. If you do not agree to these terms, please remove the bot from your server
                 immediately.</p>
 
-            <h2>2. Usage License</h2>
-            <p>We grant you a non-exclusive, non-transferable, limited license to use Prime Bot for personal or
+            <h2 data-i18n="terms-s2-h">2. Usage License</h2>
+            <p data-i18n="terms-s2-p">We grant you a non-exclusive, non-transferable, limited license to use Prime Bot
+                for personal or
                 community management purposes within Discord.</p>
             <ul>
-                <li>You may not attempt to reverse engineer or scrape the bot's code.</li>
-                <li>You may not use the bot for any illegal activities or to violate Discord's Terms of Service.</li>
-                <li>You may not exploit the bot's features (AI, asset search, etc.) for commercial resale.</li>
+                <li data-i18n="terms-s2-l1">You may not attempt to reverse engineer or scrape the bot's code.</li>
+                <li data-i18n="terms-s2-l2">You may not use the bot for any illegal activities or to violate Discord's
+                    Terms of Service.</li>
+                <li data-i18n="terms-s2-l3">You may not exploit the bot's features (AI, asset search, etc.) for
+                    commercial resale.</li>
             </ul>
 
-            <h2>3. Service Availability</h2>
-            <p>Prime Bot is currently in <strong>EARLY ACCESS</strong>. We reserve the right to modify, suspend, or
+            <h2 data-i18n="terms-s3-h">3. Service Availability</h2>
+            <p data-i18n="terms-s3-p">Prime Bot is currently in <strong>EARLY ACCESS</strong>. We reserve the right to
+                modify, suspend, or
                 discontinue any feature at any time without notice. We are not responsible for any data loss or server
                 disruption.</p>
 
-            <h2>4. AI Disclaimers</h2>
-            <p>The AI chat functionality is powered by external models. While we strive for "chill" and "smart"
+            <h2 data-i18n="terms-s4-h">4. AI Disclaimers</h2>
+            <p data-i18n="terms-s4-p">The AI chat functionality is powered by external models. While we strive for
+                "chill" and "smart"
                 responses, we do not guarantee the accuracy or appropriateness of all AI-generated content. Use at your
                 own risk.</p>
 
-            <h2>5. Limitation of Liability</h2>
-            <p>In no event shall Prime Bot or its creator (BMR) be liable for any damages arising out of the use or
+            <h2 data-i18n="terms-s5-h">5. Limitation of Liability</h2>
+            <p data-i18n="terms-s5-p">In no event shall Prime Bot or its creator (BMR) be liable for any damages arising
+                out of the use or
                 inability to use the bot, even if notified of the possibility of such damage.</p>
 
-            <h2>6. Governing Law</h2>
-            <p>These terms are governed by the laws of the jurisdiction where the developer resides, without regard to
+            <h2 data-i18n="terms-s6-h">6. Governing Law</h2>
+            <p data-i18n="terms-s6-p">These terms are governed by the laws of the jurisdiction where the developer
+                resides, without regard to
                 its conflict of law provisions.</p>
         </section>
     </main>
 
     <footer>
         <div class="f-logo-text">PRIME // TOX</div>
-        <div class="f-bottom">
+        <div class="f-bottom" data-i18n="footer-credits">
             © RAXSTDIOZ 2026 // ALL RIGHTS RESERVED
         </div>
     </footer>
     <script>
+        // i18n Logic
+        const trans = {
+            en: {
+                "legal-tag": "legal stuff",
+                "terms-h1": "Terms of<br>Service.",
+                "last-updated": "Last Updated: February 6, 2026",
+                "terms-s1-h": "1. Acceptance of Terms",
+                "terms-s1-p": "By adding Prime Bot to your Discord server or using any of its features, you agree to be bound by these Terms of Service. If you do not agree to these terms, please remove the bot from your server immediately.",
+                "terms-s2-h": "2. Usage License",
+                "terms-s2-p": "We grant you a non-exclusive, non-transferable, limited license to use Prime Bot for personal or community management purposes within Discord.",
+                "terms-s2-l1": "You may not attempt to reverse engineer or scrape the bot's code.",
+                "terms-s2-l2": "You may not use the bot for any illegal activities or to violate Discord's Terms of Service.",
+                "terms-s2-l3": "You may not exploit the bot's features (AI, asset search, etc.) for commercial resale.",
+                "terms-s3-h": "3. Service Availability",
+                "terms-s3-p": "Prime Bot is currently in EARLY ACCESS. We reserve the right to modify, suspend, or discontinue any feature at any time without notice. We are not responsible for any data loss or server disruption.",
+                "terms-s4-h": "4. AI Disclaimers",
+                "terms-s4-p": "The AI chat functionality is powered by external models. While we strive for 'chill' and 'smart' responses, we do not guarantee the accuracy or appropriateness of all AI-generated content. Use at your own risk.",
+                "terms-s5-h": "5. Limitation of Liability",
+                "terms-s5-p": "In no event shall Prime Bot or its creator (BMR) be liable for any damages arising out of the use or inability to use the bot, even if notified of the possibility of such damage.",
+                "terms-s6-h": "6. Governing Law",
+                "terms-s6-p": "These terms are governed by the laws of the jurisdiction where the developer resides, without regard to its conflict of law provisions.",
+                "footer-credits": "© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED"
+            },
+            tr: {
+                "legal-tag": "yasal bilgiler",
+                "terms-h1": "Kullanım<br>Koşulları.",
+                "last-updated": "Son Güncelleme: 6 Şubat 2026",
+                "terms-s1-h": "1. Şartların Kabulü",
+                "terms-s1-p": "Prime Bot'u sunucunuza ekleyerek veya özelliklerini kullanarak bu Kullanım Koşullarına bağlı kalmayı kabul etmiş olursunuz. Bu şartları kabul etmiyorsanız lütfen botu sunucunuzdan hemen kaldırın.",
+                "terms-s2-h": "2. Kullanım Lisansı",
+                "terms-s2-p": "Prime Bot'u Discord içinde kişisel veya topluluk yönetimi amaçlarıyla kullanmanız için size münhasır olmayan, devredilemez, sınırlı bir lisans veriyoruz.",
+                "terms-s2-l1": "Botun kodunu tersine mühendislik yapmaya veya kazımaya çalışamazsınız.",
+                "terms-s2-l2": "Botu yasa dışı faaliyetler için veya Discord'un Hizmet Koşullarını ihlal etmek için kullanamazsınız.",
+                "terms-s2-l3": "Botun özelliklerini (AI, varlık arama vb.) ticari yeniden satış için kötüye kullanamazsınız.",
+                "terms-s3-h": "3. Hizmet Kullanılabilirliği",
+                "terms-s3-p": "Prime Bot şu anda ERKEN ERİŞİM aşamasındadır. Herhangi bir özelliği önceden haber vermeksizin değiştirme, askıya alma veya durdurma hakkını saklı tutarız. Herhangi bir veri kaybından veya sunucu kesintisinden sorumlu değiliz.",
+                "terms-s4-h": "4. AI Sorumluluk Reddi",
+                "terms-s4-p": "AI sohbet işlevselliği harici modeller tarafından desteklenmektedir. 'Chill' ve 'akıllı' yanıtlar için çabalasak da, yapay zeka tarafından oluşturulan tüm içeriğin doğruluğunu veya uygunluğunu garanti etmiyoruz. Risk size aittir.",
+                "terms-s5-h": "5. Sorumluluğun Sınırlandırılması",
+                "terms-s5-p": "Hiçbir durumda Prime Bot veya yaratıcısı (BMR), botun kullanımından veya kullanılamamasından kaynaklanan herhangi bir zarardan sorumlu tutulamaz.",
+                "terms-s6-h": "6. Uygulanacak Hukuk",
+                "terms-s6-p": "Bu şartlar, geliştiricinin ikamet ettiği yetki alanındaki yasalara tabidir.",
+                "footer-credits": "© RAXSTDIOZ 2026 // TÜM HAKLARI SAKLIDIR"
+            },
+            ar: {
+                "legal-tag": "الشؤون القانونية",
+                "terms-h1": "شروط<br>الخدمة.",
+                "last-updated": "آخر تحديث: 6 فبراير 2026",
+                "terms-s1-h": "1. قبول الشروط",
+                "terms-s1-p": "بإضافة Prime Bot إلى سيرفرك أو استخدام أي من ميزاته، فإنك توافق على الالتزام بشروط الخدمة هذه. إذا كنت لا توافق على هذه الشروط، يرجى إزالة البوت من سيرفرك فوراً.",
+                "terms-s2-h": "2. ترخيص الاستخدام",
+                "terms-s2-p": "نمنحك ترخيصاً محدوداً غير حصري وغير قابل للتحويل لاستخدام Prime Bot لأغراض شخصية أو لإدارة المجتمع داخل ديسكورد.",
+                "terms-s2-l1": "لا يجوز لك محاولة هندسة البوت عكسياً أو استخراج كوده.",
+                "terms-s2-l2": "لا يجوز لك استخدام البوت لأي أنشطة غير قانونية أو لانتهاك شروط خدمة ديسكورد.",
+                "terms-s2-l3": "لا يجوز لك استغلال ميزات البوت (الذكاء الاصطناعي، البحث عن الموارد، إلخ) لإعادة البيع التجاري.",
+                "terms-s3-h": "3. توفر الخدمة",
+                "terms-s3-p": "Prime Bot حالياً في مرحلة الوصول المبكر. نحتفظ بالحق في تعديل أو تعليق أو إيقاف أي ميزة في أي وقت دون إشعار مسبق. نحن لسنا مسؤولين عن أي فقدان للبيانات أو تعطل في السيرفر.",
+                "terms-s4-h": "4. إخلاء مسؤولية الذكاء الاصطناعي",
+                "terms-s4-p": "ميزة دردشة الذكاء الاصطناعي مدعومة بنماذج خارجية. بينما نسعى جاهدين لتقديم ردود 'ذكية'، فإننا لا نضمن دقة أو ملاءمة جميع المحتويات التي ينشئها الذكاء الاصطناعي. الاستخدام على مسؤوليتك الخاصة.",
+                "terms-s5-h": "5. تحديد المسؤولية",
+                "terms-s5-p": "لا يتحمل Prime Bot أو مطوره (BMR) بأي حال من الأحوال المسؤولية عن أي أضرار ناتجة عن استخدام أو عدم القدرة على استخدام البوت.",
+                "terms-s6-h": "6. القانون الحاكم",
+                "terms-s6-p": "تخضع هذه الشروط لقوانين الولاية القضائية التي يقيم فيها المطور.",
+                "footer-credits": "© RAXSTDIOZ 2026 // جميع الحقوق محفوظة"
+            }
+            // Add other languages similarly if needed...
+        };
+
+        function setLang(lang) {
+            document.getElementById('current-lang').innerText = lang.toUpperCase();
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (trans[lang] && trans[lang][key]) {
+                    el.innerHTML = trans[lang][key];
+                }
+            });
+            localStorage.setItem('prime-lang', lang);
+        }
+
+        function toggleLang() {
+            document.getElementById('langSwitcher').classList.toggle('open');
+        }
+
+        // Auto-load saved lang
+        const savedLang = localStorage.getItem('prime-lang') || 'en';
+        setLang(savedLang);
+
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
@@ -492,6 +660,16 @@
                 btt.classList.remove('active');
             }
         });
+
+        // Close on outside click
+        window.onclick = function (event) {
+            if (!event.target.closest('.lang-switcher')) {
+                const ls = document.getElementById('langSwitcher');
+                if (ls && ls.classList.contains('open')) {
+                    ls.classList.remove('open');
+                }
+            }
+        }
     </script>
 </body>
 

@@ -154,6 +154,72 @@
             align-items: center;
         }
 
+        /* --- NAV ENHANCEMENTS --- */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* --- LANG SWITCHER --- */
+        .lang-switcher {
+            position: relative;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+            user-select: none;
+        }
+
+        .lang-switcher:hover,
+        .lang-switcher.open {
+            border-color: var(--p);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+            z-index: 3000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+        }
+
+        .lang-dropdown div {
+            padding: 14px 24px;
+            transition: 0.3s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .lang-dropdown div:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 28px;
+        }
+
+        .lang-switcher.open .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
         /* --- SUPPORT CONTENT --- */
         main {
             min-height: 100vh;
@@ -413,35 +479,48 @@
             <a href="support.html" class="nav-link" style="color:#fff; text-shadow:0 0 10px var(--p)">Support</a>
         </div>
         <div class="nav-right">
+            <div class="lang-switcher" id="langSwitcher" onclick="toggleLang()">
+                <span id="current-lang">ENG</span>
+                <div class="lang-dropdown" id="lang-dropdown">
+                    <div onclick="setLang('en')">English</div>
+                    <div onclick="setLang('tr')">Türkçe</div>
+                    <div onclick="setLang('ar')">العربية</div>
+                    <div onclick="setLang('hi')">हिन्दी</div>
+                    <div onclick="setLang('de')">Deutsch</div>
+                    <div onclick="setLang('es')">Español</div>
+                    <div onclick="setLang('ru')">Русский</div>
+                </div>
+            </div>
             <a href="index.html" class="nav-link" style="letter-spacing: 1px;">[ Back ]</a>
         </div>
     </nav>
 
     <main>
-        <h1>GET IN<br><span>TOUCH</span></h1>
-        <p style="color: rgba(255,255,255,0.4); max-width: 600px; margin-bottom: 4rem;">Need help with Prime? Our
+        <h1 data-i18n="support-h1">GET IN<br><span>TOUCH</span></h1>
+        <p data-i18n="support-p" style="color: rgba(255,255,255,0.4); max-width: 600px; margin-bottom: 4rem;">Need help
+            with Prime? Our
             specialized support systems are ready to assist you 24/7.</p>
 
         <div class="support-grid">
             <div class="support-card">
                 <i class="fa-brands fa-discord"></i>
-                <h3>DISCORD</h3>
-                <p>Join our elite support hub for instant answers and community help.</p>
-                <a href="#" class="support-btn">Join Server</a>
+                <h3 data-i18n="support-card1-h">DISCORD</h3>
+                <p data-i18n="support-card1-p">Join our elite support hub for instant answers and community help.</p>
+                <a href="#" class="support-btn" data-i18n="support-card1-btn">Join Server</a>
             </div>
 
             <div class="support-card">
                 <i class="fa-solid fa-envelope"></i>
-                <h3>EMAIL</h3>
-                <p>For official inquiries and high-tier support requests.</p>
-                <a href="mailto:support@primebot.ai" class="support-btn">Send Email</a>
+                <h3 data-i18n="support-card2-h">EMAIL</h3>
+                <p data-i18n="support-card2-p">For official inquiries and high-tier support requests.</p>
+                <a href="mailto:support@primebot.ai" class="support-btn" data-i18n="support-card2-btn">Send Email</a>
             </div>
 
             <div class="support-card">
                 <i class="fa-solid fa-gauge-high"></i>
-                <h3>DASHBOARD</h3>
-                <p>Manage your server settings even though it's in early access.</p>
-                <a href="coming-soon.html" class="support-btn"
+                <h3 data-i18n="support-card3-h">DASHBOARD</h3>
+                <p data-i18n="support-card3-p">Manage your server settings even though it's in early access.</p>
+                <a href="coming-soon.html" class="support-btn" data-i18n="support-card3-btn"
                     style="background:transparent; color:#fff; border:1px solid #fff">Visit Hub</a>
             </div>
         </div>
@@ -449,10 +528,150 @@
 
     <footer>
         <div class="f-bottom">
-            <div class="f-logo-text">PRIME // SUPPORT</div>
-            <div>© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED</div>
+            <div class="f-logo-text" data-i18n="footer-support-h">PRIME // SUPPORT</div>
+            <div data-i18n="footer-credits">© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED</div>
         </div>
     </footer>
+
+    <script>
+        // i18n Logic
+        const trans = {
+            en: {
+                "support-h1": "GET IN<br><span>TOUCH</span>",
+                "support-p": "Need help with Prime? Our specialized support systems are ready to assist you 24/7.",
+                "support-card1-h": "DISCORD",
+                "support-card1-p": "Join our elite support hub for instant answers and community help.",
+                "support-card1-btn": "Join Server",
+                "support-card2-h": "EMAIL",
+                "support-card2-p": "For official inquiries and high-tier support requests.",
+                "support-card2-btn": "Send Email",
+                "support-card3-h": "DASHBOARD",
+                "support-card3-p": "Manage your server settings even though it's in early access.",
+                "support-card3-btn": "Visit Hub",
+                "footer-support-h": "PRIME // SUPPORT",
+                "footer-credits": "© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED"
+            },
+            tr: {
+                "support-h1": "İLETİŞİME<br><span>GEÇİN</span>",
+                "support-p": "Prime ile yardıma mı ihtiyacınız var? Uzman destek sistemlerimiz size 7/24 yardımcı olmaya hazır.",
+                "support-card1-h": "DISCORD",
+                "support-card1-p": "Anında yanıtlar ve topluluk desteği için seçkin destek merkezimize katılın.",
+                "support-card1-btn": "Sunucuya Katıl",
+                "support-card2-h": "E-POSTA",
+                "support-card2-p": "Resmi sorular ve yüksek seviye destek talepleri için.",
+                "support-card2-btn": "E-posta Gönder",
+                "support-card3-h": "PANEL",
+                "support-card3-p": "Erken erişimde olmasına rağmen sunucu ayarlarınızı yönetin.",
+                "support-card3-btn": "Merkezi Ziyaret Et",
+                "footer-support-h": "PRIME // DESTEK",
+                "footer-credits": "© RAXSTDIOZ 2026 // TÜM HAKLARI SAKLIDIR"
+            },
+            ar: {
+                "support-h1": "تواصل<br><span>معنا</span>",
+                "support-p": "تحتاج مساعدة؟ أنظمة الدعم المتخصصة لدينا جاهزة لمساعدتك على مدار الساعة.",
+                "support-card1-h": "ديسكورد",
+                "support-card1-p": "انضم لمركز الدعم المتميز للحصول على إجابات فورية ومساعدة المجتمع.",
+                "support-card1-btn": "انضم للسيرفر",
+                "support-card2-h": "إيميل",
+                "support-card2-p": "للاستفسارات الرسمية وطلبات الدعم رفيعة المستوى.",
+                "support-card2-btn": "أرسل إيميل",
+                "support-card3-h": "لوحة التحكم",
+                "support-card3-p": "إدارة إعدادات السيرفر حتى وإن كان في مرحلة الوصول المبكر.",
+                "support-card3-btn": "زيارة المركز",
+                "footer-support-h": "برايم // الدعم",
+                "footer-credits": "© RAXSTDIOZ 2026 // جميع الحقوق محفوظة"
+            },
+            hi: {
+                "support-h1": "संपर्क<br><span>करें</span>",
+                "support-p": "मदद चाहिए? हमारे विशेषज्ञ सहायता सिस्टम आपकी सहायता के लिए 24/7 तैयार हैं।",
+                "support-card1-h": "डिस्कॉर्ड",
+                "support-card1-p": "तुरंत उत्तर और सामुदायिक सहायता के लिए हमारे एलीट सपोर्ट हब से जुड़ें।",
+                "support-card1-btn": "सर्वर से जुड़ें",
+                "support-card2-h": "ईमेल",
+                "support-card2-p": "आधिकारिक पूछताछ और उच्च-स्तरीय सहायता अनुरोधों के लिए।",
+                "support-card2-btn": "ईमेल भेजें",
+                "support-card3-h": "डैशबोर्ड",
+                "support-card3-p": "अर्ली एक्सेस में होने के बावजूद अपने सर्वर सेटिंग्स प्रबंधित करें।",
+                "support-card3-btn": "हब पर जाएं",
+                "footer-support-h": "प्राइम // सहायता",
+                "footer-credits": "© RAXSTDIOZ 2026 // सर्वाधिकार सुरक्षित"
+            },
+            de: {
+                "support-h1": "IN KONTAKT<br><span>TRETEN</span>",
+                "support-p": "Brauchst du Hilfe? Unsere spezialisierten Support-Systeme stehen dir rund um die Uhr zur Verfügung.",
+                "support-card1-h": "DISCORD",
+                "support-card1-p": "Tritt unserem Elite-Support-Hub bei für sofortige Antworten und Hilfe aus der Community.",
+                "support-card1-btn": "Server beitreten",
+                "support-card2-h": "EMAIL",
+                "support-card2-p": "Für offizielle Anfragen und High-Tier-Support-Anfragen.",
+                "support-card2-btn": "E-Mail senden",
+                "support-card3-h": "DASHBOARD",
+                "support-card3-p": "Verwalte deine Servereinstellungen, auch wenn es sich noch im Early Access befindet.",
+                "support-card3-btn": "Hub besuchen",
+                "footer-support-h": "PRIME // SUPPORT",
+                "footer-credits": "© RAXSTDIOZ 2026 // ALLE RECHTE VORBEHALTEN"
+            },
+            es: {
+                "support-h1": "PONTE EN<br><span>CONTACTO</span>",
+                "support-p": "¿Necesitas ayuda con Prime? Nuestros sistemas de soporte especializados están listos para ayudarte 24/7.",
+                "support-card1-h": "DISCORD",
+                "support-card1-p": "Únete a nuestro centro de soporte de élite para obtener respuestas instantáneas.",
+                "support-card1-btn": "Unirse al servidor",
+                "support-card2-h": "EMAIL",
+                "support-card2-p": "Para consultas oficiales y solicitudes de soporte de alto nivel.",
+                "support-card2-btn": "Enviar correo",
+                "support-card3-h": "PANEL",
+                "support-card3-p": "Administra la configuración de tu servidor aunque esté en acceso anticipado.",
+                "support-card3-btn": "Visitar Centro",
+                "footer-support-h": "PRIME // SOPORTE",
+                "footer-credits": "© RAXSTDIOZ 2026 // TODOS LOS DERECHOS RESERVADOS"
+            },
+            ru: {
+                "support-h1": "СВЯЗАТЬСЯ<br><span>С НАМИ</span>",
+                "support-p": "Нужна помощь с Праймом? Наши специалисты готовы помочь вам 24/7.",
+                "support-card1-h": "DISCORD",
+                "support-card1-p": "Присоединяйтесь к нашему дискорд-серверу для мгновенных ответов.",
+                "support-card1-btn": "Войти в сервер",
+                "support-card2-h": "EMAIL",
+                "support-card2-p": "Для официальных запросов и технической поддержки.",
+                "support-card2-btn": "Написать",
+                "support-card3-h": "ПАНЕЛЬ",
+                "support-card3-p": "Управляйте настройками вашего сервера (в раннем доступе).",
+                "support-card3-btn": "В панель",
+                "footer-support-h": "PRIME // ПОДДЕРЖКА",
+                "footer-credits": "© RAXSTDIOZ 2026 // ВСЕ ПРАВА ЗАЩИЩЕНЫ"
+            }
+        };
+
+        function setLang(lang) {
+            document.getElementById('current-lang').innerText = lang.toUpperCase();
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (trans[lang] && trans[lang][key]) {
+                    el.innerHTML = trans[lang][key];
+                }
+            });
+            localStorage.setItem('prime-lang', lang);
+        }
+
+        function toggleLang() {
+            document.getElementById('langSwitcher').classList.toggle('open');
+        }
+
+        // Auto-load saved lang
+        const savedLang = localStorage.getItem('prime-lang') || 'en';
+        setLang(savedLang);
+
+        // Close on outside click
+        window.onclick = function (event) {
+            if (!event.target.closest('.lang-switcher')) {
+                const ls = document.getElementById('langSwitcher');
+                if (ls && ls.classList.contains('open')) {
+                    ls.classList.remove('open');
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
