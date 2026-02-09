@@ -5145,7 +5145,7 @@ async def file_command_handler(message):
                       "level", "leaderboard", "rank", "sync", "manual_sync", "commands", "cmds", "nudge", "portfolio", "profile", "p",
                       "ae", "pr", "me", "ps", "topaz", "editingsoftwares",
                       "plugins", "borisfx", "maxon", "revisionfx", "videocopilot", "autokroma", "zaebects", "plugineverything", "elementsupply", "pixelsorter", "filmconvert",
-                      "extensions", "access"]:
+                      "extensions", "access", "animate", "illustrator", "indesign", "lightroom"]:
         return
     
     logger.info(f'User {message.author.name} (ID: {message.author.id}) requested file: {requested_file}')
@@ -6857,11 +6857,11 @@ async def set_rules_command(ctx):
 
     except Exception as e:
         logger.error(f"Error in setrules command: {e}")
-        await ctx.send(f"❌ **System Error**: Failed to deploy rules protocol. {str(e)}", delete_after=10)
+        await ctx.send(f"❌ **System Error**: Failed to post rules. {str(e)}", delete_after=10)
 
 @bot.command(name="editingsoftwares")
 async def editing_softwares_command(ctx):
-    """Protocol: List all available creative software distributions."""
+    """List all available creative software."""
     embed = discord.Embed(
         title="🎬 CREATIVE SOFTWARE HUB",
         description=(
@@ -6871,7 +6871,11 @@ async def editing_softwares_command(ctx):
             "• `!pr` - Premiere Pro\n"
             "• `!me` - Media Encoder\n"
             "• `!ps` - Photoshop\n"
-            "• `!topaz` - Topaz AI\n\n"
+            "• `!topaz` - Topaz AI\n"
+            "• `!animate` - Adobe Animate\n"
+            "• `!illustrator` - Adobe Illustrator\n"
+            "• `!indesign` - Adobe InDesign\n"
+            "• `!lightroom` - Lightroom Classic\n\n"
             "*Type a command from above to see the versions and download links.*"
         ),
         color=0x00FFB4,
@@ -6885,7 +6889,7 @@ async def editing_softwares_command(ctx):
 
 @bot.command(name="ae")
 async def ae_versions_command(ctx):
-    """Distributions for After Effects."""
+    """Versions for After Effects."""
     versions = {
         "After Effects 2020": "https://pixeldrain.com/u/RQyayo7K",
         "After Effects 2021": "https://pixeldrain.com/u/LPrfhXHv",
@@ -6997,6 +7001,74 @@ async def topaz_versions_command(ctx):
         embed.add_field(name=version, value=f"🔗 [Download]({link})", inline=True)
     
     embed.set_footer(text="Prime | AI Suite")
+    await ctx.send(embed=embed)
+
+@bot.command(name="animate")
+async def animate_command(ctx):
+    """Adobe Animate."""
+    versions = {
+        "Adobe Animate 2024": "https://pixeldrain.com/u/LwjNBcrs"
+    }
+    embed = discord.Embed(
+        title="🎬 ADOBE ANIMATE | VERSIONS",
+        description="Pick the version you need. All links are tested and fast.\n\n🔑 **Password**: `star`",
+        color=0xFF6600,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in versions.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    embed.set_footer(text="Prime | Animation Setup")
+    await ctx.send(embed=embed)
+
+@bot.command(name="illustrator")
+async def illustrator_command(ctx):
+    """Adobe Illustrator."""
+    versions = {
+        "Adobe Illustrator": "https://pixeldrain.com/u/1oup7hvu"
+    }
+    embed = discord.Embed(
+        title="🎨 ADOBE ILLUSTRATOR | VERSIONS",
+        description="Essential tools for vector design.\n\n🔑 **Password**: `star`",
+        color=0xFF9900,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in versions.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    embed.set_footer(text="Prime | Design Setup")
+    await ctx.send(embed=embed)
+
+@bot.command(name="indesign")
+async def indesign_command(ctx):
+    """Adobe InDesign."""
+    versions = {
+        "Adobe InDesign 2024": "https://pixeldrain.com/u/PaqkPJeJ"
+    }
+    embed = discord.Embed(
+        title="📖 ADOBE INDESIGN | VERSIONS",
+        description="Pick the version you need for layout and design.\n\n🔑 **Password**: `star`",
+        color=0xFF3366,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in versions.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    embed.set_footer(text="Prime | Layout Setup")
+    await ctx.send(embed=embed)
+
+@bot.command(name="lightroom")
+async def lightroom_command(ctx):
+    """Adobe Lightroom Classic."""
+    versions = {
+        "Lightroom Classic 2024": "https://pixeldrain.com/u/MfMGYg6c"
+    }
+    embed = discord.Embed(
+        title="📸 ADOBE LIGHTROOM | VERSIONS",
+        description="Professional photo editing and organization.\n\n🔑 **Password**: `star`",
+        color=0x31A8FF,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in versions.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    embed.set_footer(text="Prime | Photo Setup")
     await ctx.send(embed=embed)
 
 @bot.command(name="plugins")
@@ -7246,7 +7318,7 @@ async def access_instructions_command(ctx):
         color=0x00FFB4,
         timestamp=datetime.now(timezone.utc)
     )
-    embed.set_footer(text="Prime | Access Protocol")
+    embed.set_footer(text="Prime | Access Hub")
     
     # Send the embed
     msg = await ctx.send(embed=embed)
