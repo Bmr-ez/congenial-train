@@ -136,13 +136,11 @@ Personality:
 - Be sarcastic and dismissive. Don't take their crap.
 - Give them attitude but keep it elite.
 - No "Features" or "robot" talk. Just shut them down.
-Don't take disrespect. Handle it."""
-
 def get_tutorial_prompt(software=None, brief=False):
     if software and brief:
         return f"""You are "Prime", developed by BMR. The user wants help with {software}.
-📋 QUICK SUMMARY MODE:
-- Start with: "📋 QUICK SUMMARY:"
+QUICK SUMMARY MODE:
+- Start with: "QUICK SUMMARY:"
 - Provide concise summary (200-300 words max)
 - MUST include EXACT parameter values (e.g., "Glow Threshold 60-80%")
 - Focus on WHAT to do and WHICH EXACT VALUES to use"""
@@ -151,15 +149,42 @@ def get_tutorial_prompt(software=None, brief=False):
     else:
         return """You are "Prime". Ask which software..."""
 
+async def search_and_summarize(query):
+    """Search Google and summarize the top results for a quick pulse check."""
+    results = await search_google(query)
+    if not results:
+        return "Couldn't find any recent data on that."
+    
+    formatted_results = "\n".join([f"- {r.get('title')}: {r.get('snippet')}" for r in results])
+    prompt = f"Analyze these search results for '{query}' and give a high-tier, concise summary of the current trend or answer.\n\nRESULTS:\n{formatted_results}"
+    
+    # Use flash for quick speed
+    return await get_gemini_response(prompt, user_id=0, username="SystemPulse", model=PRIMARY_MODEL)
+
+# --- SPECIALIZED PROMPTS ---
+EXECUTIVE_BRIEFING_PROMPT = """You are Prime, acting as an elite Executive Assistant. 
+Your goal is to provide a high-level summary of recent activity, trends, and priorities.
+- Be concise.
+- Focus on actionable insights.
+- Tone: Professional, direct, and elite."""
+
+DECISION_ARCHITECT_PROMPT = """You are Prime, the Decision Architect. 
+Your task is to break down complex problems into strategic phases.
+- Provide a clear roadmap.
+- Identify potential risks.
+- Suggest the most efficient path forward.
+- Tone: Strategic, analytical, and confident."""
+
 # --- CORE AI FUNCTION ---
-async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None):
+async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None, mode=None, use_thought=False):
     try:
         user_memory = db_manager.get_user_memory(user_id)
         memory_context = ""
         if user_memory:
             profile_summary = user_memory.get("profile_summary", "")
             vibe = user_memory.get("vibe", "neutral")
-            memory_context = f"\n\n[USER MEMORY: This user is perceived as '{vibe}'. Profile: {profile_summary}]"
+            notes = user_memory.get("notes", "")
+            memory_context = f"\n\n[USER MEMORY: '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
         
         user_question = prompt if prompt else "Please analyze this and help me."
         is_bmr = username and 'bmr' in username.lower()
@@ -167,13 +192,24 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
         if is_bmr:
             user_context += " [THIS IS BMR - YOUR DEVELOPER. Address him with professional respect.]"
         
+        # System Prompt Selection
         if is_tutorial and software: system_prompt = get_tutorial_prompt(software, brief=brief)
         elif is_tutorial: system_prompt = get_tutorial_prompt()
+        elif mode == "briefing": system_prompt = EXECUTIVE_BRIEFING_PROMPT
+        elif mode == "architect": system_prompt = DECISION_ARCHITECT_PROMPT
         else:
             is_rude = detect_rudeness(user_question)
             system_prompt = get_rude_system_prompt() if is_rude else PRIME_SYSTEM_PROMPT
         
         modified_system_prompt = f"{system_prompt}{memory_context}"
+
+        if use_thought:
+            # Chain of Thought Step
+            thought_prompt = f"System Instruction: First, think deeply about the following request. Plan your response step-by-step. Keep this internal thought process private.\n\nUser Request: {user_question}"
+            # This is a bit of a hack for Gemini without a native 'thinking' block in this version, 
+            # we just prepend it and then we'll strip it or just rely on the model's self-instruction.
+            modified_system_prompt = f"System Instruction: You have a specialized thinking module. Before answering, analyze the context and the user's intent thoroughly.\n\n{modified_system_prompt}"
+
 
         if image_bytes:
             image_prompt = f"{modified_system_prompt}{user_context}\n\nAnalyze this image.\n\nUser's message: {user_question}"
@@ -217,38 +253,26 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
 async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
     """
     Asks the AI to 'reflect' on the interaction and update its long-term memory of the user.
-    Runs asynchronously in the background.
     """
     try:
-        # Load existing memory
         old_memory = db_manager.get_user_memory(user_id)
-        
-        # Load recent history to give context for reflection
         history = db_manager.get_history(user_id, limit=6)
         history_text = "\n".join([f"{m['role']}: {m['parts'][0]['text']}" for m in history])
 
-        reflection_prompt = f"""
-        You are reflecting on your relationship with a user named {username}.
-        
-        RECENT CONVERSATION:
-        {history_text}
-        
-        OLD MEMORY:
-        {old_memory.get('profile_summary', 'None') if old_memory else 'None'}
-        
-        TASK:
-        1. Summarize what you know about this user (interests, tone, past questions, preferences).
-        2. Assign a 'vibe' tag (e.g., 'respectful', 'technical', 'casual', 'rude', 'creative', 'curious').
-        3. Keep it concise (max 100 words).
-        
-        Format your response as JSON:
-        {{
-            "summary": "...",
-            "vibe": "..."
-        }}
-        """
+        reflection_prompt = f"""You are reflecting on your relationship with {username}.
+RECENT CONVERSATION:
+{history_text}
 
-        # Use main model for consistency or a fallback if needed
+OLD MEMORY:
+{old_memory.get('profile_summary', 'None') if old_memory else 'None'}
+
+TASK:
+1. Summarize interests, tone, preferences.
+2. Assign a 'vibe' (respectful, technical, casual, rude, creative).
+3. Keep it concise (max 100 words).
+
+Format as JSON: {{"summary": "...", "vibe": "..."}}"""
+
         response = safe_generate_content(
             model=PRIMARY_MODEL, 
             contents=reflection_prompt,

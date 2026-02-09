@@ -2024,7 +2024,21 @@ async def update_user_personality(user_id, username):
     except Exception as e:
         logger.error(f"Error updating user personality: {e}")
 
-def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None):
+# --- SPECIALIZED AI PROMPTS ---
+EXECUTIVE_BRIEFING_PROMPT = """You are Prime, acting as an elite Executive Assistant. 
+Your goal is to provide a high-level summary of recent activity, trends, and priorities.
+- Be concise.
+- Focus on actionable insights.
+- Tone: Professional, direct, and elite. No robot talk."""
+
+DECISION_ARCHITECT_PROMPT = """You are Prime, the Decision Architect. 
+Your task is to break down complex problems into strategic phases.
+- Provide a clear roadmap.
+- Identify potential risks.
+- Suggest the most efficient path forward.
+- Tone: Strategic, analytical, and confident."""
+
+def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None, mode=None, use_thought=False):
     """Get response from Gemini AI with optional image analysis and persistent memory."""
     try:
         # 1. Load User Memory from Database
@@ -2034,7 +2048,7 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             profile_summary = user_memory.get("profile_summary", "")
             vibe = user_memory.get("vibe", "neutral")
             notes = user_memory.get("notes", "")
-            memory_context = f"\n\n[USER MEMORY: This user is perceived as '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
+            memory_context = f"\n\n[USER MEMORY: '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
         
         # 2. Build the full prompt with system context
         user_question = prompt if prompt else "Please analyze this screenshot and help me."
@@ -2046,17 +2060,19 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             user_context += " [THIS IS BMR - YOUR DEVELOPER. Address him with professional respect as the creator of your system.]"
         
         # Choose system prompt based on context
-        if is_tutorial and software:
-            system_prompt = get_tutorial_prompt(software, brief=brief)
-        elif is_tutorial:
-            system_prompt = get_tutorial_prompt()
+        if is_tutorial and software: system_prompt = get_tutorial_prompt(software, brief=brief)
+        elif is_tutorial: system_prompt = get_tutorial_prompt()
+        elif mode == "briefing": system_prompt = EXECUTIVE_BRIEFING_PROMPT
+        elif mode == "architect": system_prompt = DECISION_ARCHITECT_PROMPT
         else:
-            # Check if user is being rude
             is_rude = detect_rudeness(user_question)
             system_prompt = get_rude_system_prompt() if is_rude else PRIME_SYSTEM_PROMPT
         
         # Inject Memory into System Prompt
         modified_system_prompt = f"{system_prompt}{memory_context}"
+
+        if use_thought:
+            modified_system_prompt = f"System Instruction: You have a specialized thinking module. Before answering, analyze the context and the user's intent thoroughly. Plan your response step-by-step. Keep this internal thought process private.\n\n{modified_system_prompt}"
 
         if image_bytes:
             # Image analysis with Gemini Vision
@@ -6219,7 +6235,7 @@ async def prime_pulse(ctx):
             Be sharp and concise. Talk like a human member of the crew.
             """
             
-            summary = get_gemini_response(prompt, ctx.author.id, username=ctx.author.name)
+            summary = get_gemini_response(prompt, ctx.author.id, username=ctx.author.name, mode="briefing")
             
             embed = discord.Embed(
                 title="📡 RECENT CHAT RECAP",
@@ -6229,6 +6245,70 @@ async def prime_pulse(ctx):
             )
             embed.set_footer(text="Prime | Chat Recap")
             await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(BOT_ERROR_MSG)
+
+@bot.command(name="think")
+async def think_command(ctx, *, query: str):
+    """Thinking Mode: Use advanced reasoning for complex problems."""
+    async with ctx.typing():
+        try:
+            response = get_gemini_response(query, ctx.author.id, username=ctx.author.name, use_thought=True)
+            await ctx.send(f"🧠 **Deep Thought Analysis**:\n\n{response[:1900]}")
+        except Exception as e:
+            await ctx.send(BOT_ERROR_MSG)
+
+@bot.command(name="briefing")
+async def executive_briefing(ctx):
+    """Get an elite executive briefing on current server and global status."""
+    async with ctx.typing():
+        try:
+            # Get internal status
+            active_members = len([m for m in ctx.guild.members if m.status != discord.Status.offline])
+            
+            # Get external trends via search
+            from brain import search_and_summarize
+            trends = await search_and_summarize("latest creative technology and editing trends 2026")
+            
+            prompt = f"Server: {ctx.guild.name}. Active Members: {active_members}. Global Trends: {trends}. Give an elite briefing."
+            response = get_gemini_response(prompt, ctx.author.id, username=ctx.author.name, mode="briefing")
+            
+            embed = discord.Embed(
+                title="💼 EXECUTIVE BRIEFING",
+                description=response[:4000],
+                color=0x00FFB4,
+                timestamp=datetime.now(timezone.utc)
+            )
+            embed.set_footer(text="Prime | Executive Intel")
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(BOT_ERROR_MSG)
+
+@bot.command(name="strategize")
+async def strategize_command(ctx, *, query: str):
+    """Decision Architect: Map out a strategic roadmap for your project."""
+    async with ctx.typing():
+        try:
+            response = get_gemini_response(query, ctx.author.id, username=ctx.author.name, mode="architect")
+            embed = discord.Embed(
+                title="🏗️ STRATEGIC ROADMAP",
+                description=response[:4000],
+                color=0x00FFB4,
+                timestamp=datetime.now(timezone.utc)
+            )
+            embed.set_footer(text="Prime | Decision Architect")
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(BOT_ERROR_MSG)
+
+@bot.command(name="pulse_check")
+async def manual_pulse(ctx, *, query: str = "latest video editing trends"):
+    """Search and summarize current trends or news."""
+    async with ctx.typing():
+        try:
+            from brain import search_and_summarize
+            summary = await search_and_summarize(query)
+            await ctx.send(f"🛰️ **Pulse Analysis: {query}**\n\n{summary}")
         except Exception as e:
             await ctx.send(BOT_ERROR_MSG)
 
