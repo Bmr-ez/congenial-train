@@ -5143,7 +5143,8 @@ async def file_command_handler(message):
                       "creative", "story", "quote", "brainstorm", "design", "name", "aesthetic", "topics", "motivate",
                       "role", "setup_roles", "setup_verification", "check_automod", "setup_automod", "setup_content_roles", "echo",
                       "level", "leaderboard", "rank", "sync", "manual_sync", "commands", "cmds", "nudge", "portfolio", "profile", "p",
-                      "ae", "pr", "me", "ps", "topaz", "editingsoftwares"]:
+                      "ae", "pr", "me", "ps", "topaz", "editingsoftwares",
+                      "plugins", "borisfx", "maxon", "revisionfx", "videocopilot", "autokroma", "zaebects", "plugineverything", "elementsupply", "pixelsorter", "filmconvert"]:
         return
     
     logger.info(f'User {message.author.name} (ID: {message.author.id}) requested file: {requested_file}')
@@ -6995,6 +6996,216 @@ async def topaz_versions_command(ctx):
         embed.add_field(name=version, value=f"🔗 [Download]({link})", inline=True)
     
     embed.set_footer(text="Prime | AI Suite")
+    await ctx.send(embed=embed)
+
+@bot.command(name="plugins")
+async def plugins_command(ctx):
+    """The main hub for all VFX and editing plugins."""
+    embed = discord.Embed(
+        title="🔌 PLUGIN HUB",
+        description=(
+            "Welcome to the **Prime Plugin Hub**. Get all the essential tools to supercharge your workflow.\n\n"
+            "**Vendor Commands:**\n"
+            "• `!borisfx` - Continuum, Sapphire, Mocha\n"
+            "• `!maxon` - Red Giant Suite & Universe\n"
+            "• `!revisionfx` - Twixtor & RSMB\n"
+            "• `!videocopilot` - Element 3D, Optical Flares, Saber\n"
+            "• `!plugineverything` - Deep Glow, AutoFill, Shadow Studio\n"
+            "• `!autokroma` - AfterCodecs & BRAW Studio\n"
+            "• `!zaebects` - JPEG Glitch, Modulation, Physarum\n"
+            "• `!elementsupply` - Glitchify & Polytrace\n"
+            "• `!pixelsorter` - Pixel Sorter Bundle & BallPoint\n"
+            "• `!filmconvert` - FilmConvert Bundle\n\n"
+            "*Type a command from above to see the versions and download links.*"
+        ),
+        color=0xFF0055,
+        timestamp=datetime.now(timezone.utc)
+    )
+    embed.set_footer(text="Prime | Plugin Hub")
+    await ctx.send(embed=embed)
+
+@bot.command(name="borisfx")
+async def borisfx_command(ctx):
+    """BorisFX Plugins."""
+    plugins = {
+        "Continuum (BCC) 2026.0": "https://example.com/borisfx/bcc",
+        "Sapphire 2026.0": "https://example.com/borisfx/sapphire",
+        "Mocha Pro 2026.0": "https://example.com/borisfx/mocha",
+        "Silhouette 2025.5": "https://example.com/borisfx/silhouette"
+    }
+    embed = discord.Embed(
+        title="🔥 BORISFX SUITE",
+        description="Elite VFX and post-production tools.\n\n🔑 **Password**: `star`",
+        color=0xFFCC00,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="maxon")
+async def maxon_command(ctx):
+    """Maxon/Red Giant Plugins."""
+    plugins = {
+        "Red Giant 2026.2.1 Bundle": "https://example.com/maxon/redgiant"
+    }
+    embed = discord.Embed(
+        title="🔴 MAXON | RED GIANT SUITE",
+        description="Includes Magic Bullet, Trapcode, VFX Suite, and Universe.\n\n🔑 **Password**: `star`",
+        color=0xED1C24,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="revisionfx")
+async def revisionfx_command(ctx):
+    """RE:VisionFX Plugins."""
+    plugins = {
+        "Twixtor 8.1.0": "https://example.com/revision/twixtor",
+        "RE:VisionFX Bundle 25.08": "https://example.com/revision/2508",
+        "RE:VisionFX Bundle 23.08": "https://example.com/revision/2308"
+    }
+    embed = discord.Embed(
+        title="🌀 RE:VISIONFX SUITE",
+        description="Professional motion and time-remapping tools.\n\n🔑 **Password**: `star`",
+        color=0x00AEEF,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="videocopilot")
+async def videocopilot_command(ctx):
+    """Video Copilot Plugins."""
+    plugins = {
+        "Element 3D 2.2.3": "https://example.com/vc/element3d",
+        "Heat Distortion 1.0.31": "https://example.com/vc/heat",
+        "Pro Shaders 1 & 2": "https://example.com/vc/shaders",
+        "Optical Flares 1.3.8": "https://example.com/vc/flares",
+        "Saber": "https://example.com/vc/saber",
+        "Twitch": "https://example.com/vc/twitch",
+        "VC Color Vibrance": "https://example.com/vc/vibrance"
+    }
+    embed = discord.Embed(
+        title="📽️ VIDEO COPILOT SUITE",
+        description="Advanced 3D and motion design tools.\n\n🔑 **Password**: `star`",
+        color=0x0055AA,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="autokroma")
+async def autokroma_command(ctx):
+    """AutoKroma Plugins."""
+    plugins = {
+        "AfterCodecs 1.12.1 (2026 Ready)": "https://example.com/autokroma/aftercodecs",
+        "AutoKroma 2025.7 Bundle": "https://example.com/autokroma/bundle"
+    }
+    embed = discord.Embed(
+        title="🌈 AUTOKROMA SUITE",
+        description="Essential encoding and BRAW workflow tools.\n\n🔑 **Password**: `star`",
+        color=0x33CC33,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="zaebects")
+async def zaebects_command(ctx):
+    """Zaebects Plugins."""
+    plugins = {
+        "JPEG Glitch 1.0.4": "https://example.com/zaebects/jpeg",
+        "Modulation 2.1": "https://example.com/zaebects/modulation",
+        "Physarum v1.3": "https://example.com/zaebects/physarum",
+        "Signal 1.2.3": "https://example.com/zaebects/signal"
+    }
+    embed = discord.Embed(
+        title="⚡ ZAEBECTS SUITE",
+        description="Unique glitch and simulation effects.\n\n🔑 **Password**: `star`",
+        color=0xFF6600,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="plugineverything")
+async def plugineverything_command(ctx):
+    """Plugin Everything Suite."""
+    plugins = {
+        "AutoFill 2.0.2": "https://example.com/pe/autofill",
+        "Cartoon Moblur 1.6.3": "https://example.com/pe/moblur",
+        "Deep Glow 2.1.0 & 1.6.6": "https://example.com/pe/deepglow",
+        "DiscoText 1.2.6": "https://example.com/pe/discotext",
+        "Displacer Pro 1.5.0": "https://example.com/pe/displacer",
+        "Shadow Studio 3": "https://example.com/pe/shadow",
+        "TextBox 2 & TextDelay": "https://example.com/pe/text",
+        "Quick Chromatic Aberration": "https://example.com/pe/qca"
+    }
+    embed = discord.Embed(
+        title="✨ PLUGIN EVERYTHING SUITE",
+        description="Modern tools for every After Effects project.\n\n🔑 **Password**: `star`",
+        color=0xFF33CC,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="elementsupply")
+async def elementsupply_command(ctx):
+    """ElementSupply Co Plugins."""
+    plugins = {
+        "Glitchify": "https://example.com/elementsupply/glitchify",
+        "Polytrace": "https://example.com/elementsupply/polytrace"
+    }
+    embed = discord.Embed(
+        title="📦 ELEMENTSUPPLY CO",
+        description="Creative elements and tracing plugins.\n\n🔑 **Password**: `star`",
+        color=0x999999,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="pixelsorter")
+async def pixelsorter_command(ctx):
+    """Pixel Sorter Studio Plugins."""
+    plugins = {
+        "Pixel Sorter Studio Bundle": "https://example.com/pixelsorter/bundle",
+        "BallPoint 1.2.1 (Crash Fix)": "https://example.com/pixelsorter/ballpoint"
+    }
+    embed = discord.Embed(
+        title="🎞️ PIXEL SORTER STUDIO",
+        description="Advanced pixel sorting and motion textures.\n\n🔑 **Password**: `star`",
+        color=0xCC99FF,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
+    await ctx.send(embed=embed)
+
+@bot.command(name="filmconvert")
+async def filmconvert_command(ctx):
+    """FilmConvert Plugins."""
+    plugins = {
+        "FilmConvert Bundle": "https://example.com/filmconvert/bundle"
+    }
+    embed = discord.Embed(
+        title="🎞️ FILMCONVERT SUITE",
+        description="Cinematic film grading and grain tools.\n\n🔑 **Password**: `star`",
+        color=0x663300,
+        timestamp=datetime.now(timezone.utc)
+    )
+    for name, link in plugins.items():
+        embed.add_field(name=name, value=f"🔗 [Download]({link})", inline=True)
     await ctx.send(embed=embed)
 
 def run_bot():
