@@ -6839,7 +6839,7 @@ async def set_rules_command(ctx):
         )
 
         footer_text = "PRIME | THIS SERVER IS PROTECTED BY AI"
-        if ctx.guild.icon:
+        if ctx.guild and ctx.guild.icon:
             embed.set_footer(text=footer_text, icon_url=ctx.guild.icon.url)
         else:
             embed.set_footer(text=footer_text)
@@ -6882,7 +6882,7 @@ async def editing_softwares_command(ctx):
         timestamp=datetime.now(timezone.utc)
     )
     embed.set_footer(text="Prime | Software Hub")
-    if ctx.guild.icon:
+    if ctx.guild and ctx.guild.icon:
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
     
     await ctx.send(embed=embed)
