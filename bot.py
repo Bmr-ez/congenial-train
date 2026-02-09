@@ -4415,43 +4415,8 @@ async def list_files_command(ctx):
 
 @bot.command(name="software_list")
 async def software_list_command(ctx):
-    """
-    Lists all available software-related commands.
-    Usage: !software_list
-    """
-    logger.info(f'User {ctx.author.name} (ID: {ctx.author.id}) invoked !software_list command in {ctx.guild.name if ctx.guild else "DM"}')
-
-    # Prepare the software command list
-    software_list = [
-        "**Software Commands:**",
-        "!aecrack - Adobe After Effects crack information",
-        "!pscrack - Adobe Photoshop crack information",
-        "!mecrack - Adobe Media Encoder crack information",
-        "!prcrack - Adobe Premiere Pro crack information",
-        "!topazcrack - Topaz Suite crack information"
-    ]
-
-    # Format the final response
-    response = "\n".join(software_list)
-
-    try:
-        # Send the list to the user's DMs
-        await ctx.author.send(response)
-        logger.info(f'Sent software list to {ctx.author.name}')
-
-        # Send confirmation in the channel
-        if ctx.guild:
-            await ctx.send(f"{ctx.author.mention}, I've sent you the list of software commands in your DMs!")
-
-    except discord.Forbidden:
-        # If DMs are closed, send in the channel
-        logger.warning(f'Could not send software list to {ctx.author.name} - DMs may be closed')
-        await ctx.send(f"{ctx.author.mention}, I couldn't send you a DM. Here's the list of software commands:")
-        await ctx.send(response)
-
-    except Exception as e:
-        logger.error(f'Error sending software list to {ctx.author.name}: {str(e)}')
-        await ctx.send(f"{ctx.author.mention}, an error occurred while trying to send you the software list.")
+    """Outdated command replaced by !editingsoftwares."""
+    await ctx.send(f"{ctx.author.mention}, `!software_list` is deprecated. Use **!editingsoftwares** for the latest distributions.")
 
 @bot.command(name="presets")
 async def presets_command(ctx):
@@ -5236,17 +5201,17 @@ async def file_command_handler(message):
     else:
         # Define the known commands for suggestions - including common misspellings and variations
         known_commands = {
-            # software_list variations
-            "software": "software_list",
-            "softwarelist": "software_list",
-            "software_list": "software_list",
-            "softlist": "software_list",
-            "soft": "software_list",
-            "softwares": "software_list",
-            "software list": "software_list",
-            "softwre": "software_list",
-            "softwear": "software_list",
-            "sotware": "software_list",
+            # editingsoftwares variations
+            "software": "editingsoftwares",
+            "softwarelist": "editingsoftwares",
+            "software_list": "editingsoftwares",
+            "softlist": "editingsoftwares",
+            "soft": "editingsoftwares",
+            "softwares": "editingsoftwares",
+            "software list": "editingsoftwares",
+            "softwre": "editingsoftwares",
+            "softwear": "editingsoftwares",
+            "sotware": "editingsoftwares",
 
             # aecrack variations
             "aecrack": "aecrack",
@@ -6929,13 +6894,13 @@ async def ae_versions_command(ctx):
     
     embed = discord.Embed(
         title="🎬 AFTER EFFECTS | DISTRIBUTIONS",
-        description="Select your required version. All links are optimized for elite performance.",
+        description="Select your required version. All links are optimized for elite performance.\n\n🔑 **Password**: `star`",
         color=0x9999FF,
         timestamp=datetime.now(timezone.utc)
     )
     
     for version, link in versions.items():
-        embed.add_field(name=version, value=f"[Download Link]({link})", inline=True)
+        embed.add_field(name=version, value=f"🔗 [Download Link]({link})", inline=True)
     
     embed.set_footer(text="Prime | VFX Protocol")
     await ctx.send(embed=embed)
@@ -6944,20 +6909,20 @@ async def ae_versions_command(ctx):
 async def pr_versions_command(ctx):
     """Distributions for Premiere Pro."""
     versions = {
-        "Premiere Pro 2024": "https://example.com/pr/2024",
-        "Premiere Pro 2025": "https://example.com/pr/2025",
-        "Premiere Pro 2026": "https://example.com/pr/2026"
+        "Premiere Pro 2024": "https://pixeldrain.com/u/BXs2eBhN",
+        "Premiere Pro 2025": "https://pixeldrain.com/u/rAi8ZUDG",
+        "Premiere Pro 2026": "https://pixeldrain.com/u/h55RGoHf"
     }
     
     embed = discord.Embed(
         title="🎞️ PREMIERE PRO | DISTRIBUTIONS",
-        description="Elite editing distributions for your sequence workflow.",
+        description="Elite editing distributions for your sequence workflow.\n\n🔑 **Password**: `star`",
         color=0x000055,
         timestamp=datetime.now(timezone.utc)
     )
     
     for version, link in versions.items():
-        embed.add_field(name=version, value=f"[Download Link]({link})", inline=True)
+        embed.add_field(name=version, value=f"🔗 [Download Link]({link})", inline=True)
     
     embed.set_footer(text="Prime | Edit Protocol")
     await ctx.send(embed=embed)
@@ -6966,23 +6931,23 @@ async def pr_versions_command(ctx):
 async def me_versions_command(ctx):
     """Distributions for Media Encoder."""
     versions = {
-        "Media Encoder 2020": "https://example.com/me/2020",
-        "Media Encoder 2021": "https://example.com/me/2021",
-        "Media Encoder 2023": "https://example.com/me/2023",
-        "Media Encoder 2024": "https://example.com/me/2024",
-        "Media Encoder 2025": "https://example.com/me/2025",
-        "Media Encoder 2026": "https://example.com/me/2026"
+        "Media Encoder 2020": "https://pixeldrain.com/u/Yy8cD7Qi",
+        "Media Encoder 2021": "https://pixeldrain.com/u/mdJGkfhD",
+        "Media Encoder 2023": "https://pixeldrain.com/u/fS5jYvhw",
+        "Media Encoder 2024": "https://pixeldrain.com/u/r1V9ZfM1",
+        "Media Encoder 2025": "https://pixeldrain.com/u/GfgUa7eA",
+        "Media Encoder 2026": "https://pixeldrain.com/u/GfiPWYdR"
     }
     
     embed = discord.Embed(
         title="📦 MEDIA ENCODER | DISTRIBUTIONS",
-        description="Rendering and encoding protocols for multi-format export.",
+        description="Rendering and encoding protocols for multi-format export.\n\n🔑 **Password**: `star`",
         color=0xCCFF00,
         timestamp=datetime.now(timezone.utc)
     )
     
     for version, link in versions.items():
-        embed.add_field(name=version, value=f"[Download Link]({link})", inline=True)
+        embed.add_field(name=version, value=f"🔗 [Download Link]({link})", inline=True)
     
     embed.set_footer(text="Prime | Render Protocol")
     await ctx.send(embed=embed)
@@ -6991,20 +6956,20 @@ async def me_versions_command(ctx):
 async def ps_versions_command(ctx):
     """Distributions for Photoshop."""
     versions = {
-        "Photoshop 2024": "https://example.com/ps/2024",
-        "Photoshop 2025": "https://example.com/ps/2025",
-        "Photoshop 2026": "https://example.com/ps/2026"
+        "Photoshop 2024": "https://pixeldrain.com/u/N3A7wg8E",
+        "Photoshop 2025": "https://pixeldrain.com/u/ZxAswi4P",
+        "Photoshop 2026": "https://pixeldrain.com/u/4Q2b6pEF"
     }
     
     embed = discord.Embed(
         title="🎨 PHOTOSHOP | DISTRIBUTIONS",
-        description="Master imaging distributions for design and texture work.",
+        description="Master imaging distributions for design and texture work.\n\n🔑 **Password**: `star`",
         color=0x31A8FF,
         timestamp=datetime.now(timezone.utc)
     )
     
     for version, link in versions.items():
-        embed.add_field(name=version, value=f"[Download Link]({link})", inline=True)
+        embed.add_field(name=version, value=f"🔗 [Download Link]({link})", inline=True)
     
     embed.set_footer(text="Prime | Design Protocol")
     await ctx.send(embed=embed)
@@ -7013,20 +6978,20 @@ async def ps_versions_command(ctx):
 async def topaz_versions_command(ctx):
     """Distributions for Topaz AI."""
     versions = {
-        "Topaz Video AI": "https://example.com/topaz/video",
-        "Topaz Photo AI": "https://example.com/topaz/photo",
-        "Topaz Gigapixel AI": "https://example.com/topaz/gigapixel"
+        "Topaz Video AI": "https://pixeldrain.com/u/jCZq3ABi",
+        "Topaz Photo AI": "https://pixeldrain.com/u/iE9KwJ58",
+        "Topaz Gigapixel AI": "https://pixeldrain.com/u/YQtHLn9Q"
     }
     
     embed = discord.Embed(
         title="💎 TOPAZ AI | DISTRIBUTIONS",
-        description="AI-driven upscaling and enhancement protocols.",
+        description="AI-driven upscaling and enhancement protocols.\n\n🔑 **Password**: `star`",
         color=0x005AF0,
         timestamp=datetime.now(timezone.utc)
     )
     
     for version, link in versions.items():
-        embed.add_field(name=version, value=f"[Download Link]({link})", inline=True)
+        embed.add_field(name=version, value=f"🔗 [Download Link]({link})", inline=True)
     
     embed.set_footer(text="Prime | Intelligence Protocol")
     await ctx.send(embed=embed)
