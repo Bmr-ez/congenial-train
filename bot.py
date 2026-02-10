@@ -69,14 +69,14 @@ else:
     logger.error("❌ CRITICAL: NO API KEY DETECTED. Check Railway Variables for 'Gemini_key'.")
 
 # --- GLOBAL CONFIGURATION ---
-PRIMARY_MODEL = "gemini-3-flash"
+PRIMARY_MODEL = "gemini-1.5-flash"
 SECRET_LOG_CHANNEL_ID = 1456312201974644776
 
 if not GEMINI_KEYS:
     logger.error("❌ NO GEMINI API KEYS FOUND IN ENVIRONMENT")
     gemini_client = None
 else:
-    gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_index], http_options={'api_version': 'v1beta'})
+    gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_index])
 
 def rotate_gemini_key():
     """Rotate to the next available API key."""
@@ -85,12 +85,12 @@ def rotate_gemini_key():
         return False
     
     current_key_index = (current_key_index + 1) % len(GEMINI_KEYS)
-    gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_index], http_options={'api_version': 'v1beta'})
+    gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_index])
     logger.info(f"🔄 Switched to API Key Position: {current_key_index + 1}")
     return True
 
 # Fallback configuration
-FALLBACK_MODEL = "gemini-1.5-pro"
+FALLBACK_MODEL = "gemini-1.5-flash"
 
 def get_env_int(key_parts, default):
     """Safely get an integer from environment variables using obfuscated parts."""
@@ -2174,8 +2174,8 @@ def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tut
             models_to_try = [model] if model else [
                 PRIMARY_MODEL,
                 "gemini-1.5-flash",
-                "gemini-1.5-pro",
-                "gemini-1.0-pro"
+                "gemini-1.5-flash-8b",
+                "gemini-1.5-pro"
             ]
             
             attempt_log = []
