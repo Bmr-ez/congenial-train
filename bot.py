@@ -3536,7 +3536,8 @@ async def on_guild_join(guild):
                     "`!appeal_link @user` - Manually send an appeal form to a user.\n"
                     "`!ban @user` | `!mute @user` - Modern moderation (Appeals included).\n"
                     "`!check_automod` - View current security layers.\n\n"
-                    "We will notify you here once the full version is released. If you have any feedback or ideas, DM **bmr.ez** on Discord."
+                    "We will notify you here once the full version is released. If you have any feedback or ideas, DM **bmr.ez** on Discord.\n\n"
+                    "**Official Hub:** https://prime.helperbot.fun"
                 ),
                 color=0x5865F2
             )
@@ -5327,7 +5328,7 @@ async def file_command_handler(message):
                       "remind", "note", "timer", "convert", "emoji", "calculate", "weather", "profile", "serverinfo",
                       "creative", "story", "quote", "brainstorm", "design", "name", "aesthetic", "topics", "motivate",
                       "role", "setup_roles", "setup_verification", "check_automod", "setup_automod", "setup_content_roles", "echo",
-                      "level", "leaderboard", "rank", "lb", "top", "lv", "r", "sync", "manual_sync", "commands", "cmds", "nudge", "portfolio", "profile", "p",
+                      "r", "sync", "manual_sync", "commands", "cmds", "nudge", "portfolio", "profile", "p", "invite", "vote",
                       "ae", "pr", "me", "ps", "topaz", "editingsoftwares", "setup_updates", "appeal_link", "broadcast_update",
                       "plugins", "borisfx", "maxon", "revisionfx", "videocopilot", "autokroma", "zaebects", "plugineverything", "elementsupply", "pixelsorter", "filmconvert",
                       "extensions", "access", "animate", "illustrator", "indesign", "lightroom", "audition", "incopy"]:
@@ -6061,6 +6062,43 @@ async def serverinfo_command(ctx):
     embed.add_field(name="Created", value=guild.created_at.strftime("%B %d, %Y"), inline=False)
     embed.add_field(name="Verification Level", value=str(guild.verification_level).title(), inline=False)
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    
+    await ctx.send(embed=embed)
+
+@bot.command(name="invite")
+async def invite_command(ctx):
+    """Get the official invite link for PRIME"""
+    invite_url = f"https://discord.com/oauth2/authorize?client_id={bot.user.id}&permissions=8&scope=bot"
+    
+    embed = discord.Embed(
+        title="🚀 ADD PRIME TO YOUR SERVER",
+        description=(
+            "Bring the ultimate AI power to your community.\n\n"
+            f"**[Click Here to Invite PRIME]({invite_url})**\n\n"
+            "**Official Website:** [prime.helperbot.fun](https://prime.helperbot.fun)"
+        ),
+        color=0x00FFB4
+    )
+    embed.set_footer(text="Prime Collective | Powered by BMR")
+    embed.set_thumbnail(url=bot.user.display_avatar.url)
+    
+    await ctx.send(embed=embed)
+
+@bot.command(name="vote")
+async def vote_command(ctx):
+    """Vote for PRIME on bot lists and support growth!"""
+    embed = discord.Embed(
+        title="💎 SUPPORT PRIME GROWTH",
+        description=(
+            "Voting helps PRIME reach more creators and communities.\n\n"
+            "🗳️ **[Vote on Top.gg](https://top.gg/bot/1466029119275012139/vote)**\n"
+            "🗳️ **[Vote on DiscordBotList.com](https://discordbotlist.com/bots/1466029119275012139/vote)**\n\n"
+            "*Your support keeps the updates rolling. Thank you!*"
+        ),
+        color=0x00FFB4
+    )
+    embed.set_footer(text="Prime Collective | Powered by BMR")
+    embed.set_thumbnail(url=bot.user.display_avatar.url)
     
     await ctx.send(embed=embed)
 
