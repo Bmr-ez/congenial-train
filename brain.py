@@ -22,8 +22,8 @@ load_dotenv()
 logger = logging.getLogger('prime_brain')
 
 # --- CONFIGURATION ---
-PRIMARY_MODEL = "gemini-2.0-flash"
-FALLBACK_MODEL = "gemini-1.5-flash"
+PRIMARY_MODEL = "gemini-1.5-flash-latest"
+FALLBACK_MODEL = "gemini-1.5-pro-latest"
 SECRET_LOG_CHANNEL_ID = 1456312201974644776
 
 # --- API KEY MANAGEMENT ---
@@ -59,29 +59,26 @@ def safe_generate_content(model, contents, config=None):
     if not GEMINI_KEYS:
         return None
     last_err = None
-    for model_to_try in [model, FALLBACK_MODEL] if model != FALLBACK_MODEL else [model]:
-        for _ in range(len(GEMINI_KEYS)):
-            try:
-                if not gemini_client:
-                    if not rotate_gemini_key(): break
-                # Use the provided config or create a default one with user's specific settings
-                if config is None:
-                    config = types.GenerateContentConfig(
-                        temperature=1.0
-                    )
-                
-                # Note: Some SDK versions use 'thinking_level' directly in the config dict
-                # We'll stick to the standard types for safety but include the parameters
-                return gemini_client.models.generate_content(
-                    model=model_to_try,
-                    contents=contents,
-                    config=config
-                )
-            except Exception as e:
-                last_err = e
-                err_str = str(e).lower()
-                if ("429" in err_str or "exhausted" in err_str or "limit" in err_str or "401" in err_str):
-                    if rotate_gemini_key(): continue
+    # Unify logic: only rotate keys, don't double-loop models here
+    for _ in range(len(GEMINI_KEYS)):
+        try:
+            if not gemini_client:
+                if not rotate_gemini_key(): break
+            
+            if config is None:
+                config = types.GenerateContentConfig(temperature=1.0)
+
+            return gemini_client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            last_err = e
+            if rotate_gemini_key():
+                continue
+            break
+            
     if last_err: raise last_err
     return None
 
