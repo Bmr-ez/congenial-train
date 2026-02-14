@@ -1,0 +1,13 @@
+{
+    "detail": [
+        {
+            "type": "connection_error",
+            "loc": [
+                "query",
+                "code"
+            ],
+            "msg": "cant connect to server",
+            "input": null
+        }
+    ]
+}

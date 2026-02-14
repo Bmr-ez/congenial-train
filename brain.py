@@ -10,6 +10,7 @@ import hashlib
 import aiohttp
 import tempfile
 import requests
+import httpx
 from google import genai
 from google.genai import types
 from PIL import Image, ImageDraw, ImageFont
@@ -24,9 +25,14 @@ logger = logging.getLogger('prime_brain')
 # --- CONFIGURATION ---
 PRIMARY_MODEL = "gemini-3-flash-preview"
 FALLBACK_MODEL = "gemini-1.5-flash"
+GROK_MODEL = "grok-4-1-fast-non-reasoning"
 SECRET_LOG_CHANNEL_ID = 1456312201974644776
 
 # --- API KEY MANAGEMENT ---
+XAI_API_KEY = os.getenv("XAI_API_KEY")
+if XAI_API_KEY and "your_xai_api_key" in XAI_API_KEY:
+    XAI_API_KEY = None
+
 def find_keys():
     found = []
     for k, v in os.environ.items():
@@ -43,8 +49,13 @@ if GEMINI_KEYS:
     logger.info(f"✅ BRAIN: Detected {len(GEMINI_KEYS)} Gemini API Key(s).")
     gemini_client = genai.Client(api_key=GEMINI_KEYS[current_key_index], http_options={'api_version': 'v1beta'})
 else:
-    logger.error("❌ BRAIN: NO API KEY DETECTED.")
+    logger.error("❌ BRAIN: NO Gemini API KEY DETECTED.")
     gemini_client = None
+
+if XAI_API_KEY:
+    logger.info("✅ BRAIN: Grok (xAI) API Key Detected. Chatting will use Grok.")
+else:
+    logger.warning("⚠️ BRAIN: No Grok API Key found. Falling back to Gemini for all tasks.")
 
 def rotate_gemini_key():
     global current_key_index, gemini_client
@@ -183,9 +194,80 @@ Your task is to break down complex problems into strategic phases.
 - Suggest the most efficient path forward.
 - Tone: Strategic, analytical, and confident."""
 
-# --- CORE AI FUNCTION ---
-async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None, mode=None, use_thought=False):
+# --- GROK (xAI) INTEGRATION ---
+async def get_grok_response(prompt, user_id, username=None, system_prompt=None, guild_id=None):
+    if not XAI_API_KEY:
+        return None
+    
     try:
+        # 1. Load User Memory
+        user_memory = db_manager.get_user_memory(user_id)
+        memory_context = ""
+        if user_memory:
+            vibe = user_memory.get("vibe", "neutral")
+            profile = user_memory.get("profile_summary", "")
+            memory_context = f"\n\n[USER MEMORY: '{vibe}'. Profile: {profile}]"
+            
+        # 2. Check for Overlay
+        overlay_context = ""
+        if guild_id:
+            aesthetic = db_manager.get_guild_setting(guild_id, "aesthetic_overlay")
+            if aesthetic:
+                overlay_context = f"\n\n[SERVER AESTHETIC OVERLAY: {aesthetic.upper()}]"
+
+        final_system = f"{system_prompt if system_prompt else PRIME_SYSTEM_PROMPT}{memory_context}{overlay_context}"
+        
+        # 3. Build Messages (History + Current)
+        history = db_manager.get_history(user_id, limit=10)
+        messages = [{"role": "system", "content": final_system}]
+        
+        # Add history
+        for msg in history:
+            role = "user" if msg['role'] == 'user' else "assistant"
+            messages.append({"role": role, "content": msg['parts'][0]['text']})
+        
+        # Add current prompt
+        messages.append({"role": "user", "content": prompt})
+
+        # 4. Call xAI API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.x.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {XAI_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": GROK_MODEL,
+                    "messages": messages,
+                    "temperature": 0.8
+                },
+                timeout=60.0
+            )
+            
+            if response.status_code == 200:
+                res_data = response.json()
+                result_text = res_data['choices'][0]['message']['content']
+                
+                # Save to history
+                db_manager.save_message(user_id, "user", prompt)
+                db_manager.save_message(user_id, "model", result_text)
+                
+                # Reflect in background
+                asyncio.create_task(reflect_on_user(user_id, username, prompt, result_text))
+                
+                return result_text
+            else:
+                logger.error(f"Grok API Error: {response.status_code} - {response.text}")
+                return None
+    except Exception as e:
+        logger.error(f"Grok Execution Error: {e}")
+        return None
+
+# --- CORE AI FUNCTION ---
+async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None, mode=None, use_thought=False, guild_id=None):
+    try:
+        # 1. Load User Memory from Database
         user_memory = db_manager.get_user_memory(user_id)
         memory_context = ""
         if user_memory:
@@ -194,13 +276,23 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             notes = user_memory.get("notes", "")
             memory_context = f"\n\n[USER MEMORY: '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
         
+        # 2. Check for Server Aesthetic Overlay
+        overlay_context = ""
+        if guild_id:
+            aesthetic = db_manager.get_guild_setting(guild_id, "aesthetic_overlay")
+            if aesthetic:
+                overlay_context = f"\n\n[SERVER AESTHETIC OVERLAY: {aesthetic.upper()}. Adopt this tone and style for your response specifically for this server.]"
+        
+        # 3. Build the full prompt with system context
         user_question = prompt if prompt else "Please analyze this and help me."
+        
+        # Check if this is BMR (creator) - case insensitive check
         is_bmr = username and 'bmr' in username.lower()
         user_context = f"\n\n[Message from: {username}]" if username else ""
         if is_bmr:
-            user_context += " [THIS IS BMR - YOUR DEVELOPER. Address him with professional respect.]"
+            user_context += " [THIS IS BMR - YOUR DEVELOPER. Address him with professional respect as the creator of your system.]"
         
-        # System Prompt Selection
+        # Choose system prompt based on context
         if is_tutorial and software: system_prompt = get_tutorial_prompt(software, brief=brief)
         elif is_tutorial: system_prompt = get_tutorial_prompt()
         elif mode == "briefing": system_prompt = EXECUTIVE_BRIEFING_PROMPT
@@ -209,7 +301,8 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             is_rude = detect_rudeness(user_question)
             system_prompt = get_rude_system_prompt() if is_rude else PRIME_SYSTEM_PROMPT
         
-        modified_system_prompt = f"{system_prompt}{memory_context}"
+        # Inject Memory into System Prompt
+        modified_system_prompt = f"{system_prompt}{memory_context}{overlay_context}"
 
         if use_thought:
             # Chain of Thought Step
@@ -218,6 +311,14 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             # we just prepend it and then we'll strip it or just rely on the model's self-instruction.
             modified_system_prompt = f"System Instruction: You have a specialized thinking module. Before answering, analyze the context and the user's intent thoroughly.\n\n{modified_system_prompt}"
 
+        # --- GROK ROUTING (FAST CHAT) ---
+        # Route to Grok if: No image, no specified model, and Grok is available
+        if not image_bytes and not model and not mode and XAI_API_KEY:
+            logger.info(f"🚀 Routing chat request for {username} to Grok ({GROK_MODEL})")
+            grok_res = await get_grok_response(user_question, user_id, username=username, system_prompt=modified_system_prompt, guild_id=guild_id)
+            if grok_res:
+                return grok_res
+            logger.warning("Grok failed, falling back to Gemini.")
 
         if image_bytes:
             image_prompt = f"{modified_system_prompt}{user_context}\n\nAnalyze this image.\n\nUser's message: {user_question}"

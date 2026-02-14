@@ -117,17 +117,286 @@
             top: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
+            width: 95%;
             max-width: 1400px;
-            padding: 1rem 3rem;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
             background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 100px;
+        }
+
+        nav.scrolled {
+            top: 1rem;
+            width: 85%;
+            padding: 0.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.85);
+            border-color: rgba(var(--p-rgb), 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+            white-space: nowrap;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--p);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(var(--p-rgb), 0.5);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--f-h);
+            font-size: 1.5rem;
+            letter-spacing: -2px;
+            text-decoration: none;
+            transition: 0.3s;
+            text-transform: lowercase;
+            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .logo span {
+            color: var(--p);
+            -webkit-text-fill-color: var(--p);
+        }
+
+        .nav-search-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-search-trigger i {
+            color: var(--p);
+            font-size: 0.7rem;
+        }
+
+        .nav-search-trigger b {
+            font-size: 0.5rem;
+            color: var(--p);
+            background: rgba(var(--p-rgb), 0.1);
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 2px;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(0, 255, 170, 0.05);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            border-radius: 6px;
+            color: var(--p);
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--p);
+        }
+
+        .pulse {
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* --- LOGIN BUTTON --- */
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: #5865F2;
+            color: #fff;
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid transparent;
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: #4752c4;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .user-profile:hover {
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        .user-profile img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--p);
+        }
+
+        .user-profile span {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: 0.3s;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .user-profile:hover .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown a {
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .profile-dropdown a:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 30px;
+        }
+
+        @media (max-width: 1300px) {
+            .nav-center {
+                display: none;
+            }
         }
 
         /* --- LANG SWITCHER --- */
@@ -513,9 +782,33 @@
         <div class="aura a-2"></div>
     </div>
 
-    <nav>
-        <a href="index.html" class="logo">prime<span>bot</span></a>
-        <div style="display:flex; align-items:center; gap:1.5rem;">
+    <nav id="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">prime<span>bot</span></a>
+        </div>
+
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#features" class="nav-link">Features</a>
+            <a href="updates.html" class="nav-link">Updates</a>
+            <a href="coming-soon.html" class="nav-link">Dashboard</a>
+            <a href="support.html" class="nav-link">Support</a>
+        </div>
+
+        <div class="nav-right">
+            <div class="nav-search-trigger">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+                <b>CTRL K</b>
+            </div>
+
+            <div class="status-wrap">
+                <div class="bot-status">
+                    <div class="dot pulse"></div>
+                    <span>Bot is Online</span>
+                </div>
+            </div>
+
             <div class="lang-switcher" id="langSwitcher" onclick="toggleLang()">
                 <span id="current-lang">ENG</span>
                 <div class="lang-dropdown" id="lang-dropdown">
@@ -528,7 +821,21 @@
                     <div onclick="setLang('ru')">Русский</div>
                 </div>
             </div>
-            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> back</a>
+
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <div class="profile-dropdown">
+                        <a href="/dashboard/index.html">Dashboard</a>
+                        <a href="#" onclick="openLogoutModal()">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -587,7 +894,8 @@
         <div class="f-links">
             <a href="terms.html">Terms</a>
             <a href="privacy.html">Privacy</a>
-            <a href="support.html">Support</a>
+            <a href="dmca.html">DMCA</a>
+            <a href="sitemap.html">Sitemap</a>
         </div>
         <div class="f-bottom" data-i18n="footer-credits">
             © RAXSTDIOZ 2026 // ALL RIGHTS RESERVED
@@ -681,19 +989,45 @@
         const savedLang = localStorage.getItem('prime-lang') || 'en';
         setLang(savedLang);
 
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+        // Auth Check
+        async function checkAuth() {
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+            }
+
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated) {
+                        const userProfile = document.getElementById('userProfile');
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (userProfile) {
+                            userProfile.style.display = 'flex';
+                            document.getElementById('userName').innerText = data.discord.username;
+                            document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+                        }
+                    }
+                }
+            } catch (e) { console.log('Auth check bypassed or failed.') }
         }
+        checkAuth();
+
+        // Logout Modal
+        function openLogoutModal() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
 
         window.addEventListener('scroll', () => {
             const btt = document.getElementById('backToTop');
-            if (window.scrollY > 200) {
-                btt.classList.add('active');
-            } else {
-                btt.classList.remove('active');
+            const nav = document.getElementById('navbar');
+            if (btt) {
+                if (window.scrollY > 200) btt.classList.add('active');
+                else btt.classList.remove('active');
+            }
+            if (nav) {
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
             }
         });
 

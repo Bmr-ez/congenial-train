@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prime // sitemap</title>
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Outfit:wght@100;300;600;900&family=Space+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- ICONS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --p: #00ffaa;
+            --p-rgb: 0, 255, 170;
+            --s: #bc00ff;
+            --bg: #000;
+            --glass: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.05);
+            --f-h: 'Unbounded', sans-serif;
+            --f-b: 'Outfit', sans-serif;
+            --f-m: 'Space Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--p);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: var(--f-b);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- EFFECTS --- */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .auras {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            filter: blur(120px);
+        }
+
+        .aura {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: moveAura 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .a-1 {
+            background: var(--s);
+            top: -10%;
+            right: -10%;
+        }
+
+        .a-2 {
+            background: var(--p);
+            bottom: -10%;
+            left: -10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes moveAura {
+            from {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            to {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1550px;
+            padding: 0.8rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+        }
+
+        nav.scrolled {
+            top: 1rem;
+            width: 85%;
+            padding: 0.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.85);
+            border-color: rgba(var(--p-rgb), 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left,
+        .nav-right {
+            flex: 1;
+            flex-basis: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left {
+            justify-content: flex-start;
+        }
+
+        .nav-right {
+            justify-content: flex-end;
+            gap: 1.5rem;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 2rem;
+            flex-shrink: 0;
+            justify-content: center;
+        }
+
+        .logo {
+            font-family: var(--f-h);
+            font-size: 1.5rem;
+            letter-spacing: -2px;
+            text-decoration: none;
+            text-transform: lowercase;
+            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--p);
+            transition: 0.4s;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px var(--p);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s;
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            box-shadow: 0 0 20px rgba(var(--p-rgb), 0.4);
+        }
+
+        /* --- HERO --- */
+        .hero {
+            padding: 12rem 5% 5rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: var(--f-h);
+            font-size: clamp(3rem, 8vw, 6rem);
+            letter-spacing: -5px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.2) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .hero p {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: var(--p);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* --- SITEMAP GRID --- */
+        .sitemap-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 5rem 5% 10rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .map-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 0;
+            background: var(--p);
+            transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .map-section:hover {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-10px);
+            border-color: rgba(var(--p-rgb), 0.2);
+        }
+
+        .map-section:hover::before {
+            height: 100%;
+        }
+
+        .section-tag {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: var(--p);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .map-section h2 {
+            font-family: var(--f-h);
+            font-size: 1.8rem;
+            letter-spacing: -1px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .link-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .map-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: var(--f-m);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .map-link i {
+            font-size: 0.7rem;
+            color: var(--p);
+            opacity: 0.3;
+            transition: 0.3s;
+        }
+
+        .map-link:hover {
+            color: #fff;
+            padding-left: 10px;
+        }
+
+        .map-link:hover i {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto;
+            padding: 5rem 10% 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .f-logo {
+            font-family: var(--f-h);
+            font-size: 3rem;
+            letter-spacing: -2px;
+            margin-bottom: 2rem;
+            background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.1) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .f-bottom {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .f-link {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
+
+        .f-link:hover {
+            color: var(--p);
+        }
+
+        /* --- CURSOR --- */
+        #eyeCursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 1000000;
+            mix-blend-mode: difference;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        .eye-outer {
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .eye-iris {
+            width: 18px;
+            height: 18px;
+            background: var(--p);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px var(--p);
+        }
+
+        .eye-pupil {
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="auras">
+        <div class="aura a-1"></div>
+        <div class="aura a-2"></div>
+    </div>
+
+    <div id="eyeCursor">
+        <div class="eye-outer">
+            <div class="eye-iris">
+                <div class="eye-pupil"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav id="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">prime<span>bot</span></a>
+        </div>
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#features" class="nav-link">Features</a>
+            <a href="updates.html" class="nav-link">Updates</a>
+            <a href="coming-soon.html" class="nav-link">Dashboard</a>
+            <a href="support.html" class="nav-link">Support</a>
+        </div>
+        <div class="nav-right">
+            <a href="login.json" class="login-btn">
+                <i class="fa-brands fa-discord"></i>
+                <span>login</span>
+            </a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <p>// navigation guide</p>
+        <h1>SITE MAP.</h1>
+    </header>
+
+    <main class="sitemap-container">
+        <!-- CORE NODES -->
+        <section class="map-section">
+            <span class="section-tag">node: 01 // main</span>
+            <h2>MAIN PAGES</h2>
+            <ul class="link-list">
+                <li><a href="index.html" class="map-link"><i class="fa-solid fa-house"></i> Home / Landing Page</a>
+                </li>
+                <li><a href="updates.html" class="map-link"><i class="fa-solid fa-code-branch"></i> Website
+                        Updates</a></li>
+                <li><a href="coming-soon.html" class="map-link"><i class="fa-solid fa-gauge-high"></i> Dashboard
+                        Panel</a></li>
+                <li><a href="roadmap.html" class="map-link"><i class="fa-solid fa-route"></i> Roadmap</a></li>
+            </ul>
+        </section>
+
+        <!-- UTILITY NODES -->
+        <section class="map-section">
+            <span class="section-tag">node: 02 // features</span>
+            <h2>TOOLS & FEATURES</h2>
+            <ul class="link-list">
+                <li><a href="playground.html" class="map-link"><i class="fa-solid fa-flask"></i> Bot Playground</a>
+                </li>
+                <li><a href="status.html" class="map-link"><i class="fa-solid fa-signal"></i> System Status</a></li>
+                <li><a href="support.html" class="map-link"><i class="fa-solid fa-headset"></i> Help & Support</a></li>
+                <li><a href="bmr.html" class="map-link"><i class="fa-solid fa-user-gear"></i> About Developer</a></li>
+            </ul>
+        </section>
+
+        <!-- LEGAL NODES -->
+        <section class="map-section">
+            <span class="section-tag">node: 03 // help</span>
+            <h2>LEGAL & SECURITY</h2>
+            <ul class="link-list">
+                <li><a href="terms.html" class="map-link"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+                </li>
+                <li><a href="privacy.html" class="map-link"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</a>
+                </li>
+                <li><a href="dmca.html" class="map-link"><i class="fa-solid fa-copyright"></i> DMCA / Copyright</a></li>
+                <li><a href="sitemap.html" class="map-link"><i class="fa-solid fa-sitemap"></i> Site Map (You are
+                        here)</a></li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <div class="f-logo">PRIME.</div>
+        <div class="f-bottom">
+            <a href="terms.html" class="f-link">TERMS</a>
+            <a href="privacy.html" class="f-link">PRIVACY</a>
+            <a href="sitemap.html" class="f-link">SITEMAP</a>
+        </div>
+    </footer>
+
+    <script>
+        const eye = document.getElementById('eyeCursor');
+        window.addEventListener('mousemove', (e) => {
+            eye.style.opacity = '1';
+            eye.style.left = e.clientX - 20 + 'px';
+            eye.style.top = e.clientY - 20 + 'px';
+        });
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+
+        // Hover effect for cursor
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                eye.style.transform = 'scale(1.5)';
+            });
+            link.addEventListener('mouseleave', () => {
+                eye.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -105,6 +105,23 @@
             z-index: 100;
         }
 
+        .nav-left,
+        .nav-right {
+            flex: 1;
+            flex-basis: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left {
+            justify-content: flex-start;
+        }
+
+        .nav-right {
+            justify-content: flex-end;
+            gap: 1.5rem;
+        }
+
         .logo-text {
             font-family: var(--f-h);
             font-size: 1.5rem;
@@ -659,6 +676,32 @@
             display: none;
             pointer-events: none;
         }
+
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.4);
+            border-color: var(--p);
+        }
     </style>
 </head>
 
@@ -678,11 +721,29 @@
     </div>
 
     <nav>
-        <a href="index.html" class="logo-text">PRIME<span>.</span></a>
-        <a href="index.html" class="back-btn">
-            <i class="fa-solid fa-power-off"></i>
-            <span>EXIT SESSION</span>
-        </a>
+        <div class="nav-left">
+            <a href="index.html" class="logo-text">PRIME<span>.</span></a>
+        </div>
+        <div style="display:flex; align-items:center; gap:1.5rem;">
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <div class="profile-dropdown">
+                        <a href="/dashboard/index.html">Dashboard</a>
+                        <a href="/logout">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-power-off"></i>
+                <span>EXIT SESSION</span>
+            </a>
+        </div>
     </nav>
 
     <main>
@@ -709,7 +770,7 @@
             </div>
 
             <div class="console-input-area">
-                <div class="input-prefix">USER></div>
+                <div class="input-prefix" id="userPrefix">USER></div>
                 <input type="text" id="consoleInput" placeholder="Enter command..." autocomplete="off" autofocus>
             </div>
         </div>
@@ -772,6 +833,7 @@
         <div class="f-bottom">
             <a href="terms.html" class="f-link">TERMS</a>
             <a href="privacy.html" class="f-link">PRIVACY</a>
+            <a href="sitemap.html" class="f-link">SITEMAP</a>
         </div>
     </footer>
 
@@ -780,6 +842,30 @@
         const consoleInput = document.getElementById('consoleInput');
         const eye = document.getElementById('eyeCursor');
         const iris = eye.querySelector('.eye-iris');
+
+        // Auth Check
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated) {
+                        const loginBtn = document.getElementById('loginBtn');
+                        const userProfile = document.getElementById('userProfile');
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (userProfile) {
+                            userProfile.style.display = 'flex';
+                            document.getElementById('userName').innerText = data.discord.username;
+                            document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+                        }
+                        // Update prefix with username
+                        const up = document.getElementById('userPrefix');
+                        if (up) up.innerText = data.discord.username.toUpperCase() + '>';
+                    }
+                }
+            } catch (e) { console.log('Auth check bypassed or failed.') }
+        }
+        checkAuth();
 
         // Eye Cursor Logic
         let lastX = 0, lastY = 0;

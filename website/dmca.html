@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prime | dmca</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Outfit:wght@100;300;600;900&family=Space+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --p: #00ffaa;
+            --p-rgb: 0, 255, 170;
+            --s: #bc00ff;
+            --bg: #000;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --f-h: 'Unbounded', sans-serif;
+            --f-b: 'Outfit', sans-serif;
+            --f-m: 'Space Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--p);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: var(--f-b);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.loading {
+            overflow: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: radial-gradient(circle, transparent 40%, #000 100%);
+            pointer-events: none;
+        }
+
+        .auras {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            filter: blur(120px);
+        }
+
+        .aura {
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: moveAura 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .a-1 {
+            background: var(--s);
+            top: -10%;
+            right: -20%;
+        }
+
+        .a-2 {
+            background: var(--p);
+            bottom: -10%;
+            left: -20%;
+            animation-delay: -5s;
+        }
+
+        @keyframes moveAura {
+            from {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            to {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
+        nav {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1400px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--f-h);
+            font-size: 1.5rem;
+            letter-spacing: -2px;
+            text-decoration: none !important;
+            transition: 0.3s;
+            text-transform: lowercase;
+            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .logo span {
+            color: var(--p);
+            -webkit-text-fill-color: var(--p);
+        }
+
+        nav {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1550px;
+            padding: 0.8rem 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+        }
+
+        nav.scrolled {
+            top: 1rem;
+            width: 85%;
+            padding: 0.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.85);
+            border-color: rgba(var(--p-rgb), 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            justify-self: start;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            justify-self: end;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 2rem;
+            justify-self: center;
+        }
+
+        .nav-link {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+            white-space: nowrap;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--p);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(var(--p-rgb), 0.5);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            justify-self: end;
+        }
+
+        .nav-search-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-search-trigger i {
+            color: var(--p);
+            font-size: 0.7rem;
+        }
+
+        .nav-search-trigger b {
+            font-size: 0.5rem;
+            color: var(--p);
+            background: rgba(var(--p-rgb), 0.1);
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 2px;
+        }
+
+        .nav-search-trigger:hover {
+            border-color: var(--p);
+            color: #fff;
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        .status-wrap {
+            display: flex;
+            align-items: center;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--p);
+            background: rgba(var(--p-rgb), 0.1);
+            padding: 6px 12px;
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            white-space: nowrap;
+        }
+
+        .dot.pulse {
+            width: 6px;
+            height: 6px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--p);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+                box-shadow: 0 0 0px var(--p);
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 15px var(--p);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+                box-shadow: 0 0 0px var(--p);
+            }
+        }
+
+        .lang-switcher {
+            position: relative;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+            user-select: none;
+        }
+
+        .lang-switcher:hover,
+        .lang-switcher.open {
+            border-color: var(--p);
+        }
+
+        /* --- LOGIN BUTTON --- */
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.4);
+            border-color: var(--p);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .user-profile:hover {
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        .user-profile img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--p);
+        }
+
+        .user-profile span {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: 0.3s;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .user-profile:hover .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown a {
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .profile-dropdown a:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 30px;
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+            z-index: 3000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+            border-radius: 8px;
+            padding: 8px 0;
+        }
+
+        .lang-dropdown div {
+            padding: 12px 20px;
+            transition: 0.3s;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lang-dropdown div:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 25px;
+        }
+
+        .lang-switcher.open .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .back-link {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--p);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+            text-shadow: 0 0 10px var(--p);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 12rem auto 10rem;
+            padding: 0 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .legal-header {
+            margin-bottom: 5rem;
+            text-align: center;
+        }
+
+        .section-tag {
+            font-family: var(--f-m);
+            color: var(--p);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            display: block;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: var(--f-h);
+            font-size: clamp(3rem, 10vw, 6rem);
+            line-height: 0.9;
+            letter-spacing: -4px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .last-updated {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .legal-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 4rem;
+            backdrop-filter: blur(10px);
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .legal-content h2 {
+            font-family: var(--f-h);
+            font-size: 1.8rem;
+            color: #fff;
+            margin: 3rem 0 1.5rem;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .legal-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-content ul {
+            margin-bottom: 2rem;
+            list-style: none;
+        }
+
+        .legal-content li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .legal-content li::before {
+            content: "//";
+            position: absolute;
+            left: 0;
+            color: var(--p);
+            font-family: var(--f-m);
+        }
+
+        .contact-box {
+            margin-top: 3rem;
+            padding: 2rem;
+            border: 1px solid var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+            text-align: center;
+        }
+
+        .contact-box a {
+            color: var(--p);
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        footer {
+            padding: 8rem 5% 5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            background: linear-gradient(to top, rgba(var(--p-rgb), 0.02), transparent);
+        }
+
+        .f-logo {
+            font-family: var(--f-h);
+            font-size: 1.5rem;
+            letter-spacing: -1px;
+            text-transform: lowercase;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .f-logo span {
+            color: var(--p);
+        }
+
+        .f-links {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .f-links a {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .f-links a:hover {
+            color: var(--p);
+        }
+
+        .f-bottom {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: #000;
+            border: 1px solid var(--p);
+            color: var(--p);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            border-radius: 50%;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(var(--p-rgb), 0.1);
+        }
+
+        .back-to-top.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1300px) {
+            .nav-center {
+                display: none;
+            }
+        }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        #preloader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(1.1);
+            z-index: -1;
+        }
+
+        .loader-hub {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .cyber-ring {
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(var(--p-rgb), 0.1);
+            border-top: 2px solid var(--p);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-text {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: var(--p);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* --- LOGOUT MODAL --- */
+        .logout-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        .logout-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .logout-card {
+            background: #080808;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4rem 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 4px;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+            transform: translateY(30px) scale(0.95);
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .logout-modal.active .logout-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .logout-card i {
+            font-size: 3.5rem;
+            color: var(--p);
+            margin-bottom: 2rem;
+        }
+
+        .logout-card h3 {
+            font-family: var(--f-h);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .logout-card p {
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 3rem;
+            line-height: 1.7;
+        }
+
+        .logout-btns {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .logout-btns button,
+        .logout-btns a {
+            padding: 15px 35px;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.4s;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff;
+        }
+
+        .btn-confirm {
+            background: #ff3c00;
+            color: #fff;
+        }
+
+        /* --- COMMAND PALETTE --- */
+        .cmd-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 15vh;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .cmd-overlay.open {
+            display: flex;
+        }
+
+        .cmd-box {
+            width: 100%;
+            max-width: 650px;
+            background: #0a0a0a;
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+        }
+
+        .cmd-input-wrap {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .cmd-input {
+            background: transparent;
+            border: none;
+            width: 100%;
+            color: #fff;
+            font-family: var(--f-m);
+            font-size: 1.1rem;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .cmd-results {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .cmd-item {
+            padding: 1rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 2px solid transparent;
+        }
+
+        .cmd-item:hover,
+        .cmd-item.active {
+            background: rgba(var(--p-rgb), 0.05);
+            border-left-color: var(--p);
+        }
+
+        .cmd-label {
+            font-family: var(--f-m);
+            font-size: 0.75rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .item-desc {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 4px;
+            display: block;
+        }
+
+        .cmd-footer {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 2rem;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="loading">
+    <div id="preloader">
+        <div class="loader-hub">
+            <div class="cyber-ring"></div>
+            <div class="loader-text">loading</div>
+        </div>
+    </div>
+    <div class="interference" id="interference"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <!-- LOGOUT MODAL -->
+    <div class="logout-modal" id="logoutModal">
+        <div class="logout-card">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <h3>Terminate Session?</h3>
+            <p>Are you sure you want to disconnect? You will need to re-authenticate with Discord to access protected
+                areas.</p>
+            <div class="logout-btns">
+                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <a href="/logout" class="btn-confirm">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMAND PALETTE -->
+    <div class="cmd-overlay" id="cmdPalette">
+        <div class="cmd-box">
+            <div class="cmd-input-wrap">
+                <i class="fa-solid fa-terminal" style="color:var(--p)"></i>
+                <input type="text" class="cmd-input" placeholder="SEARCH COMMANDS..." id="cmdInput">
+            </div>
+            <div class="cmd-results" id="cmdResults">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="cmd-footer">
+                <span><b>↑↓</b> NAVIGATE</span>
+                <span><b>ENTER</b> SELECT</span>
+                <span><b>ESC</b> CLOSE</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function removeLoader() {
+            var loader = document.getElementById('preloader');
+            if (loader && !loader.classList.contains('fade-out')) {
+                loader.classList.add('fade-out');
+                document.body.classList.remove('loading');
+            }
+        }
+        setTimeout(removeLoader, 2000);
+        window.addEventListener('load', function () {
+            setTimeout(removeLoader, 500);
+        });
+    </script>
+
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        <i class="fa-solid fa-chevron-up"></i>
+    </div>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="auras">
+        <div class="aura a-1"></div>
+        <div class="aura a-2"></div>
+    </div>
+
+    <nav id="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">prime<span>bot</span></a>
+        </div>
+
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#features" class="nav-link">Features</a>
+            <a href="updates.html" class="nav-link">Updates</a>
+            <a href="coming-soon.html" class="nav-link">Dashboard</a>
+            <a href="support.html" class="nav-link">Support</a>
+        </div>
+
+        <div class="nav-right">
+            <div class="nav-search-trigger" onclick="togglePalette()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+                <b>CTRL K</b>
+            </div>
+
+            <div class="status-wrap">
+                <div class="bot-status">
+                    <div class="dot pulse"></div>
+                    <span>Bot is Online</span>
+                </div>
+            </div>
+
+            <div class="lang-switcher" id="langSwitcher" onclick="toggleDropDown()">
+                <span id="current-lang">ENG</span>
+                <div class="lang-dropdown" id="lang-dropdown">
+                    <div onclick="setLang('en')">English</div>
+                    <div onclick="setLang('tr')">Türkçe</div>
+                    <div onclick="setLang('ru')">Русский</div>
+                    <div onclick="setLang('ar')">العربية</div>
+                    <div onclick="setLang('hi')">हिन्दी</div>
+                    <div onclick="setLang('de')">Deutsch</div>
+                    <div onclick="setLang('es')">Español</div>
+                </div>
+            </div>
+
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <div class="profile-dropdown">
+                        <a href="/dashboard/index.html">Dashboard</a>
+                        <a href="#" onclick="openLogoutModal()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <header class="legal-header">
+            <span class="section-tag" data-i18n="dmca-tag">copyright</span>
+            <h1 data-i18n="dmca-h1">DMCA<br>Policy.</h1>
+            <p class="last-updated" data-i18n="last-updated">Last Updated: February 11, 2026</p>
+        </header>
+
+        <section class="legal-content">
+            <h2 data-i18n="dmca-s1-h">1. Copyright Infringement</h2>
+            <p data-i18n="dmca-s1-p">Prime Bot respects the intellectual property rights of others. If you believe that
+                any content generated
+                or hosted by our systems infringes upon your copyright, you may submit a notification pursuant to the
+                Digital Millennium Copyright Act (DMCA).</p>
+
+            <h2 data-i18n="dmca-s2-h">2. DMCA Notice Requirements</h2>
+            <p data-i18n="dmca-s2-p">To be effective, your infringement notification must include the following
+                information:</p>
+            <ul>
+                <li data-i18n="dmca-s2-l1">A physical or electronic signature of a person authorized to act on behalf of
+                    the owner of an
+                    exclusive right that is allegedly infringed.</li>
+                <li data-i18n="dmca-s2-l2">Identification of the copyrighted work claimed to have been infringed.</li>
+                <li data-i18n="dmca-s2-l3">Identification of the material that is claimed to be infringing and that is
+                    to be removed or access
+                    to which is to be disabled.</li>
+                <li data-i18n="dmca-s2-l4">Information reasonably sufficient to permit us to contact you, such as an
+                    address, telephone number,
+                    and email address.</li>
+                <li data-i18n="dmca-s2-l5">A statement that you have a good faith belief that use of the material in the
+                    manner complained of
+                    is not authorized by the copyright owner, its agent, or the law.</li>
+                <li data-i18n="dmca-s2-l6">A statement that the information in the notification is accurate, and under
+                    penalty of perjury, that
+                    you are authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
+                </li>
+            </ul>
+
+            <h2 data-i18n="dmca-s3-h">3. Counter-Notification</h2>
+            <p data-i18n="dmca-s3-p">If you believe that your content was removed or access to it was disabled by
+                mistake or
+                misidentification, you may send us a counter-notification containing the necessary legal requirements.
+            </p>
+
+            <h2 data-i18n="dmca-s4-h">4. Repeat Infringers</h2>
+            <p data-i18n="dmca-s4-p">It is our policy in appropriate circumstances to disable and/or terminate the
+                accounts of users who are
+                repeat infringers.</p>
+
+            <div class="contact-box">
+                <p data-i18n="dmca-contact-p">Send all legal and DMCA inquiries to:</p>
+                <a href="mailto:legal@prime.helperbot.fun">legal@prime.helperbot.fun</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <a href="index.html" class="f-logo">prime<span>bot</span></a>
+        <div class="f-links">
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="dmca.html">DMCA</a>
+            <a href="sitemap.html">Sitemap</a>
+        </div>
+        <div class="f-bottom">
+            © RAXSTDIOZ 2026 // ALL RIGHTS RESERVED
+        </div>
+    </footer>
+
+    <script>
+        const trans = {
+            en: {
+                "dmca-tag": "copyright",
+                "dmca-h1": "DMCA<br>Policy.",
+                "last-updated": "Last Updated: February 11, 2026",
+                "dmca-s1-h": "1. Copyright Infringement",
+                "dmca-s1-p": "Prime Bot respects the intellectual property rights of others. If you believe that any content generated or hosted by our systems infringes upon your copyright, you may submit a notification pursuant to the Digital Millennium Copyright Act (DMCA).",
+                "dmca-s2-h": "2. DMCA Notice Requirements",
+                "dmca-s2-p": "To be effective, your infringement notification must include the following information:",
+                "dmca-s2-l1": "A physical or electronic signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.",
+                "dmca-s2-l2": "Identification of the copyrighted work claimed to have been infringed.",
+                "dmca-s2-l3": "Identification of the material that is claimed to be infringing and that is to be removed or access to which is to be disabled.",
+                "dmca-s2-l4": "Information reasonably sufficient to permit us to contact you, such as an address, telephone number, and email address.",
+                "dmca-s2-l5": "A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.",
+                "dmca-s2-l6": "A statement that the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.",
+                "dmca-s3-h": "3. Counter-Notification",
+                "dmca-s3-p": "If you believe that your content was removed or access to it was disabled by mistake or misidentification, you may send us a counter-notification containing the necessary legal requirements.",
+                "dmca-s4-h": "4. Repeat Infringers",
+                "dmca-s4-p": "It is our policy in appropriate circumstances to disable and/or terminate the accounts of users who are repeat infringers.",
+                "dmca-contact-p": "Send all legal and DMCA inquiries to:"
+            },
+            tr: {
+                "dmca-tag": "telif hakkı",
+                "dmca-h1": "DMCA<br>Politikası.",
+                "last-updated": "Son Güncelleme: 11 Şubat 2026",
+                "dmca-s1-h": "1. Telif Hakkı İhlali",
+                "dmca-s1-p": "Prime Bot başkalarının fikri mülkiyet haklarına saygı duyar. Herhangi bir içeriğin telif hakkınızı ihlal ettiğini düşünüyorsanız bir bildirim gönderebilirsiniz.",
+                "dmca-s2-h": "2. Bildirim Gereksinimleri",
+                "dmca-s2-p": "Etkili olması için bildiriminiz şu bilgileri içermelidir:",
+                "dmca-s2-l1": "Telif hakkı sahibi adına hareket etmeye yetkili kişinin imzası.",
+                "dmca-s2-l2": "İhlal edildiği iddia edilen eserin tanımlanması.",
+                "dmca-s2-l3": "Kaldırılması istenen içeriğin tanımlanması.",
+                "dmca-s2-l4": "Sizinle iletişim kurmamızı sağlayacak bilgiler (adres, telefon, e-posta).",
+                "dmca-s2-l5": "Kullanımın yetkisiz olduğuna dair iyi niyetli bir beyan.",
+                "dmca-s2-l6": "Bildirimdeki bilgilerin doğru olduğuna dair yeminli beyan.",
+                "dmca-s3-h": "3. Karşı Bildirim",
+                "dmca-s3-p": "İçeriğinizin yanlışlıkla kaldırıldığını düşünüyorsanız karşı bildirim gönderebilirsiniz.",
+                "dmca-s4-h": "4. Tekrarlanan İhlaller",
+                "dmca-s4-p": "Tekrarlanan ihlallerde hesapları askıya almak politikamızdır.",
+                "dmca-contact-p": "Tüm yasal başvuruları şuraya gönderin:"
+            },
+            ru: {
+                "dmca-tag": "авторское право",
+                "dmca-h1": "Политика<br>DMCA.",
+                "last-updated": "Обновлено: 11 февраля 2026",
+                "dmca-s1-h": "1. Нарушение прав",
+                "dmca-s1-p": "Prime Bot уважает интеллектуальную собственность. Если ваш контент используется неправомерно, подайте жалобу DMCA.",
+                "dmca-s2-h": "2. Требования к жалобе",
+                "dmca-s2-p": "Уведомление должно содержать:",
+                "dmca-s2-l1": "Подпись владельца прав или его представителя.",
+                "dmca-s2-l2": "Описание объекта авторского права.",
+                "dmca-s2-l3": "Описание нарушающего контента.",
+                "dmca-s2-l4": "Ваши контактные данные.",
+                "dmca-s2-l5": "Заявление о добросовестном предположении нарушения.",
+                "dmca-s2-l6": "Заявление о точности данных под страхом ответственности.",
+                "dmca-s3-h": "3. Встречное уведомление",
+                "dmca-s3-p": "Если контент удален ошибочно, вы можете подать встречное уведомление.",
+                "dmca-s4-h": "4. Повторные нарушения",
+                "dmca-s4-p": "Мы блокируем аккаунты за повторные нарушения.",
+                "dmca-contact-p": "Юридические вопросы направляйте сюда:"
+            },
+            ar: {
+                "dmca-tag": "حقوق النشر",
+                "dmca-h1": "سياسة<br>DMCA.",
+                "last-updated": "آخر تحديث: 11 فبراير 2026",
+                "dmca-s1-h": "1. انتهاك حقوق النشر",
+                "dmca-s1-p": "Prime Bot يحترم حقوق الملكية الفكرية. إذا كنت تعتقد أن هناك انتهاكًا، يمكنك تقديم إشعار.",
+                "dmca-s2-h": "2. متطلبات الإشعار",
+                "dmca-s2-p": "يجب أن يتضمن الإشعار المعلومات التالية:",
+                "dmca-s2-l1": "توقيع الشخص المفوض من قبل مالك الحق.",
+                "dmca-s2-l2": "تحديد العمل المنتهك.",
+                "dmca-s2-l3": "تحديد المادة المراد إزالتها.",
+                "dmca-s2-l4": "معلومات الاتصال الخاصة بك.",
+                "dmca-s2-l5": "بيان حسن النية بخصوص الانتهاك.",
+                "dmca-s2-l6": "بيان دقة المعلومات تحت طائلة المسؤولية.",
+                "dmca-s3-h": "3. الإشعار المضاد",
+                "dmca-s3-p": "إذا تمت إزالة المحتوى بالخطأ، يمكنك تقديم إشعار مضاد.",
+                "dmca-s4-h": "4. المخالفون المتكررون",
+                "dmca-s4-p": "سياستنا هي تعطيل حسابات المخالفين المتكررين.",
+                "dmca-contact-p": "أرسل جميع الاستفسارات القانونية إلى:"
+            },
+            hi: {
+                "dmca-tag": "कॉपीराइट",
+                "dmca-h1": "DMCA<br>नीति।",
+                "last-updated": "अंतिम अपडेट: 11 फरवरी, 2026",
+                "dmca-s1-h": "1. कॉपीराइट उल्लंघन",
+                "dmca-s1-p": "Prime Bot बौद्धिक संपदा अधिकारों का सम्मान करता है। यदि आपको लगता है कि उल्लंघन हुआ है, तो आप सूचना भेज सकते हैं।",
+                "dmca-s2-h": "2. सूचना की आवश्यकताएं",
+                "dmca-s2-p": "सूचना में निम्नलिखित होना चाहिए:",
+                "dmca-s2-l1": "अधिकारों के स्वामी द्वारा अधिकृत व्यक्ति के हस्ताक्षर।",
+                "dmca-s2-l2": "कॉपीराइट कार्य की पहचान।",
+                "dmca-s2-l3": "हटाने योग्य सामग्री की पहचान।",
+                "dmca-s2-l4": "आपकी संपर्क जानकारी।",
+                "dmca-s2-l5": "अच्छे विश्वास में दिया गया बयान।",
+                "dmca-s2-l6": "सटीकता का शपथ पत्र।",
+                "dmca-s3-h": "3. प्रति-सूचना",
+                "dmca-s3-p": "यदि सामग्री गलती से हटाई गई है, तो आप प्रति-सूचना भेज सकते हैं।",
+                "dmca-s4-h": "4. दोबारा उल्लंघन",
+                "dmca-s4-p": "बार-बार उल्लंघन करने वाले खातों को बंद करना हमारी नीति है।",
+                "dmca-contact-p": "सभी कानूनी प्रश्न यहाँ भेजें:"
+            },
+            de: {
+                "dmca-tag": "urheberrecht",
+                "dmca-h1": "DMCA<br>Richtlinie.",
+                "last-updated": "Zuletzt aktualisiert: 11. Februar 2026",
+                "dmca-s1-h": "1. Urheberrechtsverletzung",
+                "dmca-s1-p": "Prime Bot respektiert geistiges Eigentum. Wenn Sie eine Verletzung vermuten, können Sie eine Meldung einreichen.",
+                "dmca-s2-h": "2. DMCA-Anforderungen",
+                "dmca-s2-p": "Eine Meldung muss folgende Informationen enthalten:",
+                "dmca-s2-l1": "Unterschrift des Rechteinhabers oder Vertreters.",
+                "dmca-s2-l2": "Identifizierung des verletzten Werks.",
+                "dmca-s2-l3": "Identifizierung des zu entfernenden Materials.",
+                "dmca-s2-l4": "Ihre Kontaktdaten.",
+                "dmca-s2-l5": "Erklärung des guten Glaubens.",
+                "dmca-s2-l6": "Eidesstattliche Versicherung der Richtigkeit.",
+                "dmca-s3-h": "3. Gegendarstellung",
+                "dmca-s3-p": "Bei fälschlicher Entfernung können Sie eine Gegendarstellung einreichen.",
+                "dmca-s4-h": "4. Wiederholungstäter",
+                "dmca-s4-p": "Wir sperren Accounts bei wiederholten Verstößen.",
+                "dmca-contact-p": "Rechtliche Anfragen an:"
+            },
+            es: {
+                "dmca-tag": "derechos de autor",
+                "dmca-h1": "Política<br>DMCA.",
+                "last-updated": "Actualizado: 11 de febrero de 2026",
+                "dmca-s1-h": "1. Infracción de derechos",
+                "dmca-s1-p": "Prime Bot respeta la propiedad intelectual. Si cree que hay una infracción, puede enviar una notificación.",
+                "dmca-s2-h": "2. Requisitos de DMCA",
+                "dmca-s2-p": "La notificación debe incluir:",
+                "dmca-s2-l1": "Firma de la persona autorizada por el titular.",
+                "dmca-s2-l2": "Identificación de la obra infringida.",
+                "dmca-s2-l3": "Identificación del material a eliminar.",
+                "dmca-s2-l4": "Su información de contacto.",
+                "dmca-s2-l5": "Declaración de buena fe.",
+                "dmca-s2-l6": "Declaración de exactitud bajo juramento.",
+                "dmca-s3-h": "3. Contra-notificación",
+                "dmca-s3-p": "Si se eliminó por error, puede enviar una contra-notificación.",
+                "dmca-s4-h": "4. Infractores habituales",
+                "dmca-s4-p": "Nuestra política es desactivar cuentas reincidentes.",
+                "dmca-contact-p": "Consultas legales a:"
+            }
+        };
+
+        let currentLang = localStorage.getItem('prime-lang') || 'en';
+
+        function setLang(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (trans[lang] && trans[lang][key]) {
+                    el.innerHTML = trans[lang][key];
+                }
+            });
+            document.getElementById('current-lang').innerText = lang.toUpperCase();
+            localStorage.setItem('prime-lang', lang);
+            currentLang = lang;
+            document.getElementById('langSwitcher').classList.remove('open');
+        }
+
+        function toggleDropDown() {
+            document.getElementById('langSwitcher').classList.toggle('open');
+        }
+
+        function removeLoader() {
+            const loader = document.getElementById('preloader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                document.body.classList.remove('loading');
+            }
+        }
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.lang-switcher')) {
+                document.getElementById('langSwitcher').classList.remove('open');
+            }
+        }
+
+        setTimeout(removeLoader, 1500);
+        window.addEventListener('load', removeLoader);
+        setLang(currentLang);
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        // Auth Check
+        async function checkAuth() {
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+            }
+
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated) {
+                        const userProfile = document.getElementById('userProfile');
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (userProfile) {
+                            userProfile.style.display = 'flex';
+                            document.getElementById('userName').innerText = data.discord.username;
+                            document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+                        }
+                    }
+                }
+            } catch (e) { console.log('Auth check bypassed or failed.') }
+        }
+        checkAuth();
+
+        // Logout Modal
+        function openLogoutModal() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+
+        // Command Palette Logic
+        const cmdOverlay = document.getElementById('cmdPalette');
+        const cmdInput = document.getElementById('cmdInput');
+        const cmdResults = document.getElementById('cmdResults');
+
+        const commands = [
+            { label: 'Home', desc: 'Return to start', action: () => window.location.href = 'index.html' },
+            { label: 'DMCA', desc: 'Legal Information', action: () => window.location.href = 'dmca.html' },
+            { label: 'Support', desc: 'Get Help', action: () => window.location.href = 'support.html' },
+            { label: 'Dashboard', desc: 'User Panel', action: () => window.location.href = 'coming-soon.html' }
+        ];
+
+        function togglePalette() {
+            cmdOverlay.classList.toggle('open');
+            if (cmdOverlay.classList.contains('open')) {
+                cmdInput.value = '';
+                renderResults();
+                setTimeout(() => cmdInput.focus(), 100);
+            }
+        }
+
+        function renderResults() {
+            cmdResults.innerHTML = '';
+            commands.forEach(cmd => {
+                const div = document.createElement('div');
+                div.className = 'cmd-item';
+                div.innerHTML = `<div class="cmd-item-info"><i class="fa-solid fa-bolt"></i><div><span class="cmd-label">${cmd.label}</span><span class="item-desc">${cmd.desc}</span></div></div>`;
+                div.onclick = cmd.action;
+                cmdResults.appendChild(div);
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                togglePalette();
+            }
+            if (e.key === 'Escape' && cmdOverlay.classList.contains('open')) {
+                togglePalette();
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            const btt = document.getElementById('backToTop');
+            const nav = document.getElementById('navbar');
+            if (btt) {
+                if (window.scrollY > 200) btt.classList.add('active');
+                else btt.classList.remove('active');
+            }
+            if (nav) {
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            }
+        });
+
+        // Security
+        window.addEventListener('contextmenu', e => e.preventDefault());
+        window.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+
+</html>

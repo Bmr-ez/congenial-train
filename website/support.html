@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>prime</title>
+    <title>prime | support</title>
 
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Outfit:wght@100;300;600;900&family=Space+Mono&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Outfit:wght@300;400;600;900&family=Space+Mono&display=swap"
         rel="stylesheet">
 
     <!-- ICONS -->
@@ -22,7 +22,8 @@
             --p-rgb: 0, 255, 170;
             --s: #bc00ff;
             --bg: #000;
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
             --f-h: 'Unbounded', sans-serif;
             --f-b: 'Outfit', sans-serif;
             --f-m: 'Space Mono', monospace;
@@ -32,7 +33,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            cursor: crosshair;
+            cursor: default;
         }
 
         ::-webkit-scrollbar {
@@ -59,15 +60,98 @@
             overflow: hidden;
         }
 
-        /* --- OVERLAYS --- */
+        /* --- CYBER LOADER --- */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        #preloader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(1.1);
+            z-index: -1;
+        }
+
+        .loader-hub {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .cyber-ring {
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(var(--p-rgb), 0.1);
+            border-top: 2px solid var(--p);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-text {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: var(--p);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* --- BACKGROUND --- */
         .scanlines {
             position: fixed;
             inset: 0;
             z-index: 1000;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 2px;
             pointer-events: none;
-            opacity: 0.3;
+            opacity: 0.2;
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .interference {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: rgba(var(--p-rgb), 0.05);
+            display: none;
+            pointer-events: none;
         }
 
         .vignette {
@@ -78,42 +162,105 @@
             pointer-events: none;
         }
 
+        .auras {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            filter: blur(120px);
+        }
+
+        .aura {
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: moveAura 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .a-1 {
+            background: var(--s);
+            top: -10%;
+            right: -20%;
+        }
+
+        .a-2 {
+            background: var(--p);
+            bottom: -10%;
+            left: -20%;
+            animation-delay: -5s;
+        }
+
+        @keyframes moveAura {
+            from {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            to {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
         /* --- NAV --- */
         nav {
             position: fixed;
             top: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            max-width: 1400px;
-            padding: 1rem 3rem;
-            display: flex;
-            justify-content: space-between;
+            width: 95%;
+            max-width: 1550px;
+            padding: 0.8rem 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
             background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 100px;
         }
 
-        .nav-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+        nav.scrolled {
+            top: 1rem;
+            width: 85%;
+            padding: 0.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.85);
+            border-color: rgba(var(--p-rgb), 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left {
             display: flex;
-            gap: 3rem;
+            align-items: center;
+            justify-self: start;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            justify-self: end;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 2rem;
+            justify-self: center;
         }
 
         .nav-link {
             font-family: var(--f-m);
-            font-size: 0.65rem;
-            color: #bbb;
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
             text-decoration: none;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            transition: 0.3s;
             position: relative;
             padding: 5px 0;
+            white-space: nowrap;
         }
 
         .nav-link::after {
@@ -124,14 +271,17 @@
             width: 0;
             height: 1px;
             background: var(--p);
-            transition: 0.4s;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        .nav-link:hover {
+        .nav-link:hover,
+        .nav-link.active {
             color: #fff;
+            text-shadow: 0 0 10px rgba(var(--p-rgb), 0.5);
         }
 
-        .nav-link:hover::after {
+        .nav-link:hover::after,
+        .nav-link.active::after {
             width: 100%;
         }
 
@@ -143,41 +293,238 @@
             font-size: 1.5rem;
             letter-spacing: -2px;
             text-decoration: none;
+            transition: 0.3s;
+            text-transform: lowercase;
             background: linear-gradient(180deg, #fff 0%, #888 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            flex-shrink: 0;
         }
 
-        .logo-text {
+        .logo span {
+            color: var(--p);
+            -webkit-text-fill-color: var(--p);
+        }
+
+        .nav-search-trigger {
             display: flex;
             align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        /* --- NAV ENHANCEMENTS --- */
-        .nav-right {
+        .nav-search-trigger i {
+            color: var(--p);
+            font-size: 0.7rem;
+        }
+
+        .nav-search-trigger b {
+            font-size: 0.5rem;
+            color: var(--p);
+            background: rgba(var(--p-rgb), 0.1);
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 2px;
+        }
+
+        .bot-status {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(0, 255, 170, 0.05);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            border-radius: 6px;
+            color: var(--p);
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* --- LANG SWITCHER --- */
-        .lang-switcher {
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--p);
+        }
+
+        .pulse {
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* --- LOGIN BUTTON --- */
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.4);
+            border-color: var(--p);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            cursor: pointer;
             position: relative;
+            transition: 0.3s;
+        }
+
+        .user-profile:hover {
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        .user-profile img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--p);
+        }
+
+        .user-profile span {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: 0.3s;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .user-profile:hover .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown a {
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
             font-family: var(--f-m);
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             transition: 0.3s;
-            user-select: none;
         }
 
-        .lang-switcher:hover,
-        .lang-switcher.open {
+        .profile-dropdown a:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 30px;
+        }
+
+        @media (max-width: 1300px) {
+            .nav-center {
+                display: none;
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--p);
+        }
+
+        /* LANG SWITCHER */
+        .lang-switcher {
+            position: relative;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: var(--p);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 50px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .lang-switcher:hover {
+            background: rgba(var(--p-rgb), 0.1);
             border-color: var(--p);
         }
 
@@ -197,20 +544,23 @@
             transform: translateY(10px) scale(0.95);
             transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             pointer-events: none;
+            border-radius: 8px;
+            padding: 8px 0;
         }
 
         .lang-dropdown div {
-            padding: 14px 24px;
+            padding: 12px 20px;
             transition: 0.3s;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .lang-dropdown div:hover {
             background: var(--p);
             color: #000;
-            padding-left: 28px;
+            padding-left: 25px;
         }
 
         .lang-switcher.open .lang-dropdown {
@@ -220,95 +570,112 @@
             pointer-events: auto;
         }
 
-        /* --- SUPPORT CONTENT --- */
+        /* --- CONTENT --- */
         main {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 10rem 5%;
+            padding: 10rem 5% 5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
             text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .tag {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: var(--p);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: block;
         }
 
         h1 {
             font-family: var(--f-h);
-            font-size: clamp(3rem, 10vw, 8rem);
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            margin-bottom: 1.5rem;
             line-height: 1;
-            letter-spacing: -4px;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            background: linear-gradient(180deg, #fff 0%, #666 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
-        .support-grid {
+        h1 span {
+            color: var(--p);
+        }
+
+        .desc {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.4);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* --- SIMPLIFIED GRID --- */
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            width: 100%;
-            margin-top: 4rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
         }
 
-        .support-card {
+        .card {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
-            padding: 4rem 2rem;
-            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .support-card:hover {
-            border-color: var(--p);
-            transform: translateY(-10px);
-            background: rgba(var(--p-rgb), 0.02);
-        }
-
-        .support-card i {
-            font-size: 3rem;
-            color: var(--p);
-            margin-bottom: 2rem;
-        }
-
-        .support-card h3 {
-            font-family: var(--f-h);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            letter-spacing: -1px;
-        }
-
-        .support-card p {
-            color: rgba(255, 255, 255, 0.4);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .support-btn {
+            padding: 2.5rem;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 1.1rem 2.2rem;
-            background: var(--p);
-            color: #000;
-            text-decoration: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: 0.4s;
+            border-radius: 12px;
+        }
+
+        .card:hover {
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--p);
+        }
+
+        .card h3 {
             font-family: var(--f-h);
-            font-size: 0.7rem;
-            font-weight: 900;
+            font-size: 1.2rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            text-align: center;
             transition: 0.3s;
             border-radius: 4px;
         }
 
-        .support-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.3);
-            background: #fff;
+        .btn:hover {
+            background: var(--p);
+            color: #000;
+            border-color: var(--p);
+        }
+
+        .wide {
+            grid-column: span 2;
         }
 
         /* --- FOOTER --- */
@@ -364,115 +731,14 @@
             margin-top: 2rem;
         }
 
-
-        /* --- AURAS --- */
-        .auras {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            filter: blur(120px);
-        }
-
-        .aura {
-            position: absolute;
-            width: 60vw;
-            height: 60vw;
-            border-radius: 50%;
-            opacity: 0.1;
-        }
-
-        .a-1 {
-            background: var(--s);
-            top: -10%;
-            right: -10%;
-        }
-
-        .a-2 {
-            background: var(--p);
-            bottom: -10%;
-            left: -10%;
-        }
-
-        /* --- CYBER LOADER --- */
-        #preloader {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 9999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        #preloader.fade-out {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transform: scale(1.1);
-            z-index: -1;
-        }
-
-        .loader-hub {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3rem;
-        }
-
-        .cyber-ring {
-            width: 60px;
-            height: 60px;
-            border: 2px solid rgba(var(--p-rgb), 0.1);
-            border-top: 2px solid var(--p);
-            border-radius: 50%;
-            animation: spin 1s linear infinite, glowPulse 2s infinite alternate ease-in-out;
-            position: relative;
-        }
-
-        .cyber-ring::after {
-            content: '';
-            position: absolute;
-            inset: 8px;
-            border: 1px solid rgba(var(--p-rgb), 0.05);
-            border-bottom: 1px solid var(--p);
-            border-radius: 50%;
-            animation: spin 2s linear infinite reverse;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes glowPulse {
-            from {
-                box-shadow: 0 0 10px rgba(var(--p-rgb), 0.1), inset 0 0 5px rgba(var(--p-rgb), 0.05);
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
             }
 
-            to {
-                box-shadow: 0 0 30px rgba(var(--p-rgb), 0.3), inset 0 0 10px rgba(var(--p-rgb), 0.1);
+            .wide {
+                grid-column: span 1;
             }
-        }
-
-        .loader-text {
-            font-family: var(--f-m);
-            font-size: 0.6rem;
-            color: var(--p);
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            animation: blink 1.5s infinite;
-        }
-
-        .interference {
-            position: fixed;
-            inset: 0;
-            z-index: 99999999;
-            background: rgba(var(--p-rgb), 0.05);
-            display: none;
-            pointer-events: none;
         }
     </style>
 </head>
@@ -484,95 +750,126 @@
             <div class="loader-text">loading</div>
         </div>
     </div>
+
     <div class="interference" id="interference"></div>
-
-    <script>
-        function removeLoader() {
-            var loader = document.getElementById('preloader');
-            if (loader && !loader.classList.contains('fade-out')) {
-                loader.classList.add('fade-out');
-                document.body.classList.remove('loading');
-            }
-        }
-
-        setTimeout(removeLoader, 4000);
-
-        window.addEventListener('load', function () {
-            setTimeout(removeLoader, 800);
-        });
-    </script>
     <div class="scanlines"></div>
     <div class="vignette"></div>
+    <div class="grid-bg"></div>
     <div class="auras">
         <div class="aura a-1"></div>
         <div class="aura a-2"></div>
     </div>
 
-    <nav>
+    <nav id="navbar">
         <div class="nav-left">
-            <a href="index.html" class="logo">
-                <div class="logo-text">prime<span>bot</span></div>
-            </a>
+            <a href="index.html" class="logo">prime<span>bot</span></a>
         </div>
+
         <div class="nav-center">
             <a href="index.html" class="nav-link">Home</a>
             <a href="index.html#features" class="nav-link">Features</a>
+            <a href="updates.html" class="nav-link">Updates</a>
             <a href="coming-soon.html" class="nav-link">Dashboard</a>
-            <a href="support.html" class="nav-link" style="color:#fff; text-shadow:0 0 10px var(--p)">Support</a>
+            <a href="support.html" class="nav-link active">Support</a>
         </div>
+
         <div class="nav-right">
-            <div class="lang-switcher" id="langSwitcher" onclick="toggleLang()">
+            <div class="nav-search-trigger">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span>
+                <b>CTRL K</b>
+            </div>
+
+            <div class="status-wrap">
+                <div class="bot-status">
+                    <div class="dot pulse"></div>
+                    <span>Bot is Online</span>
+                </div>
+            </div>
+
+            <div class="lang-switcher" id="langSwitcher" onclick="toggleDropDown()">
                 <span id="current-lang">ENG</span>
                 <div class="lang-dropdown" id="lang-dropdown">
                     <div onclick="setLang('en')">English</div>
                     <div onclick="setLang('tr')">Türkçe</div>
+                    <div onclick="setLang('ru')">Русский</div>
                     <div onclick="setLang('ar')">العربية</div>
                     <div onclick="setLang('hi')">हिन्दी</div>
                     <div onclick="setLang('de')">Deutsch</div>
                     <div onclick="setLang('es')">Español</div>
-                    <div onclick="setLang('ru')">Русский</div>
                 </div>
             </div>
-            <a href="index.html" class="nav-link" style="letter-spacing: 1px;">[ Back ]</a>
+
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <div class="profile-dropdown">
+                        <a href="/dashboard/index.html">Dashboard</a>
+                        <a href="/logout">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
     <main>
-        <h1 data-i18n="support-h1">GET IN<br><span>TOUCH</span></h1>
-        <p data-i18n="support-p" style="color: rgba(255,255,255,0.4); max-width: 600px; margin-bottom: 4rem;">Need help
-            with Prime? Our
-            specialized support systems are ready to assist you 24/7.</p>
+        <section class="hero">
+            <span class="tag" data-i18n="tag">// help desk</span>
+            <h1 data-i18n="h1">NEED ANY<br><span>HELP?</span></h1>
+            <p class="desc" data-i18n="desc">Got a question or found a bug? We're here to help you get back on track.
+            </p>
+        </section>
 
-        <div class="support-grid">
-            <div class="support-card">
-                <i class="fa-brands fa-discord"></i>
-                <h3 data-i18n="support-card1-h">DISCORD</h3>
-                <p data-i18n="support-card1-p">Join our elite support hub for instant answers and community help.</p>
-                <a href="#" class="support-btn">
-                    <i class="fa-brands fa-discord"></i>
-                    <span data-i18n="support-card1-btn">Join Server</span>
-                </a>
+        <div class="grid">
+            <div class="card wide">
+                <i class="fa-brands fa-discord card-icon"></i>
+                <div>
+                    <h3 data-i18n="c1-h">Discord Community</h3>
+                    <p data-i18n="c1-p">The fastest way to get help. Chat with other users and our team in real-time.
+                    </p>
+                </div>
+                <a href="#" class="btn" data-i18n="c1-b">Join Server</a>
             </div>
 
-            <div class="support-card">
-                <i class="fa-solid fa-envelope"></i>
-                <h3 data-i18n="support-card2-h">EMAIL</h3>
-                <p data-i18n="support-card2-p">For official inquiries and high-tier support requests.</p>
-                <a href="mailto:support@primebot.ai" class="support-btn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <span data-i18n="support-card2-btn">Send Email</span>
-                </a>
+            <div class="card">
+                <i class="fa-solid fa-envelope card-icon"></i>
+                <div>
+                    <h3 data-i18n="c2-h">Email Support</h3>
+                    <p data-i18n="c2-p">For billing or private account issues, send us a direct message.</p>
+                </div>
+                <a href="mailto:support@prime.helperbot.fun" class="btn" data-i18n="c2-b">Contact Us</a>
             </div>
 
-            <div class="support-card">
-                <i class="fa-solid fa-gauge-high"></i>
-                <h3 data-i18n="support-card3-h">DASHBOARD</h3>
-                <p data-i18n="support-card3-p">Manage your server settings even though it's in early access.</p>
-                <a href="coming-soon.html" class="support-btn"
-                    style="background:transparent; color:#fff; border:1px solid #fff">
-                    <i class="fa-solid fa-compass"></i>
-                    <span data-i18n="support-card3-btn">Visit Hub</span>
-                </a>
+            <div class="card">
+                <i class="fa-solid fa-scale-balanced card-icon" style="color: var(--s);"></i>
+                <div>
+                    <h3 data-i18n="c3-h">Legal Help</h3>
+                    <p data-i18n="c3-p">DMCA, copyright claims, or other official documentation.</p>
+                </div>
+                <a href="mailto:legal@prime.helperbot.fun" class="btn" data-i18n="c3-b">Contact Legal</a>
+            </div>
+
+            <div class="card wide">
+                <i class="fa-solid fa-comment-dots card-icon"></i>
+                <div>
+                    <h3 data-i18n="c4-h">Feedback</h3>
+                    <p data-i18n="c4-p">Tell us what you want to see next. We build based on your suggestions.</p>
+                </div>
+                <a href="mailto:feedback@prime.helperbot.fun" class="btn" data-i18n="c4-b">Send Idea</a>
+            </div>
+
+            <div class="card">
+                <i class="fa-solid fa-server card-icon"></i>
+                <div>
+                    <h3 data-i18n="c5-h">Status</h3>
+                    <p data-i18n="c5-p">Check if the bot and website are running smoothly.</p>
+                </div>
+                <a href="status.html" class="btn" data-i18n="c5-b">View Status</a>
             </div>
         </div>
     </main>
@@ -582,172 +879,249 @@
         <div class="f-links">
             <a href="terms.html">Terms</a>
             <a href="privacy.html">Privacy</a>
-            <a href="support.html">Support</a>
+            <a href="dmca.html">DMCA</a>
+            <a href="sitemap.html">Sitemap</a>
         </div>
         <div class="f-bottom">
-            <div data-i18n="footer-credits">© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED</div>
+            © RAXSTDIOZ 2026 // ALL RIGHTS RESERVED
         </div>
     </footer>
 
     <script>
-        // i18n Logic
         const trans = {
             en: {
-                "support-h1": "GET IN<br><span>TOUCH</span>",
-                "support-p": "Need help with Prime? Our specialized support systems are ready to assist you 24/7.",
-                "support-card1-h": "DISCORD",
-                "support-card1-p": "Join our elite support hub for instant answers and community help.",
-                "support-card1-btn": "Join Server",
-                "support-card2-h": "EMAIL",
-                "support-card2-p": "For official inquiries and high-tier support requests.",
-                "support-card2-btn": "Send Email",
-                "support-card3-h": "DASHBOARD",
-                "support-card3-p": "Manage your server settings even though it's in early access.",
-                "support-card3-btn": "Visit Hub",
-                "footer-support-h": "PRIME // SUPPORT",
-                "footer-credits": "© RAXSTDIOZ 2026 // ALL RIGHTS RESERVED"
+                tag: "// help desk",
+                h1: "NEED ANY<br><span>HELP?</span>",
+                desc: "Got a question or found a bug? We're here to help you get back on track.",
+                "c1-h": "Discord Community",
+                "c1-p": "The fastest way to get help. Chat with other users and our team in real-time.",
+                "c1-b": "Join Server",
+                "c2-h": "Email Support",
+                "c2-p": "For billing or private account issues, send us a direct message.",
+                "c2-b": "Contact Us",
+                "c3-h": "Legal Help",
+                "c3-p": "DMCA, copyright claims, or other official documentation.",
+                "c3-b": "Contact Legal",
+                "c4-h": "Feedback",
+                "c4-p": "Tell us what you want to see next. We build based on your suggestions.",
+                "c4-b": "Send Idea",
+                "c5-h": "Status",
+                "c5-p": "Check if the bot and website are running smoothly.",
+                "c5-b": "View Status"
             },
             tr: {
-                "support-h1": "İLETİŞİME<br><span>GEÇİN</span>",
-                "support-p": "Prime ile yardıma mı ihtiyacınız var? Uzman destek sistemlerimiz size 7/24 yardımcı olmaya hazır.",
-                "support-card1-h": "DISCORD",
-                "support-card1-p": "Anında yanıtlar ve topluluk desteği için seçkin destek merkezimize katılın.",
-                "support-card1-btn": "Sunucuya Katıl",
-                "support-card2-h": "E-POSTA",
-                "support-card2-p": "Resmi sorular ve yüksek seviye destek talepleri için.",
-                "support-card2-btn": "E-posta Gönder",
-                "support-card3-h": "PANEL",
-                "support-card3-p": "Erken erişimde olmasına rağmen sunucu ayarlarınızı yönetin.",
-                "support-card3-btn": "Merkezi Ziyaret Et",
-                "footer-support-h": "PRIME // DESTEK",
-                "footer-credits": "© RAXSTDIOZ 2026 // TÜM HAKLARI SAKLIDIR"
-            },
-            ar: {
-                "support-h1": "تواصل<br><span>معنا</span>",
-                "support-p": "تحتاج مساعدة؟ أنظمة الدعم المتخصصة لدينا جاهزة لمساعدتك على مدار الساعة.",
-                "support-card1-h": "ديسكورد",
-                "support-card1-p": "انضم لمركز الدعم المتميز للحصول على إجابات فورية ومساعدة المجتمع.",
-                "support-card1-btn": "انضم للسيرفر",
-                "support-card2-h": "إيميل",
-                "support-card2-p": "للاستفسارات الرسمية وطلبات الدعم رفيعة المستوى.",
-                "support-card2-btn": "أرسل إيميل",
-                "support-card3-h": "لوحة التحكم",
-                "support-card3-p": "إدارة إعدادات السيرفر حتى وإن كان في مرحلة الوصول المبكر.",
-                "support-card3-btn": "زيارة المركز",
-                "footer-support-h": "برايم // الدعم",
-                "footer-credits": "© RAXSTDIOZ 2026 // جميع الحقوق محفوظة"
-            },
-            hi: {
-                "support-h1": "संपर्क<br><span>करें</span>",
-                "support-p": "मदद चाहिए? हमारे विशेषज्ञ सहायता सिस्टम आपकी सहायता के लिए 24/7 तैयार हैं।",
-                "support-card1-h": "डिस्कॉर्ड",
-                "support-card1-p": "तुरंत उत्तर और सामुदायिक सहायता के लिए हमारे एलीट सपोर्ट हब से जुड़ें।",
-                "support-card1-btn": "सर्वर से जुड़ें",
-                "support-card2-h": "ईमेल",
-                "support-card2-p": "आधिकारिक पूछताछ और उच्च-स्तरीय सहायता अनुरोधों के लिए।",
-                "support-card2-btn": "ईमेल भेजें",
-                "support-card3-h": "डैशबोर्ड",
-                "support-card3-p": "अर्ली एक्सेस में होने के बावजूद अपने सर्वर सेटिंग्स प्रबंधित करें।",
-                "support-card3-btn": "हब पर जाएं",
-                "footer-support-h": "प्राइम // सहायता",
-                "footer-credits": "© RAXSTDIOZ 2026 // सर्वाधिकार सुरक्षित"
-            },
-            de: {
-                "support-h1": "IN KONTAKT<br><span>TRETEN</span>",
-                "support-p": "Brauchst du Hilfe? Unsere spezialisierten Support-Systeme stehen dir rund um die Uhr zur Verfügung.",
-                "support-card1-h": "DISCORD",
-                "support-card1-p": "Tritt unserem Elite-Support-Hub bei für sofortige Antworten und Hilfe aus der Community.",
-                "support-card1-btn": "Server beitreten",
-                "support-card2-h": "EMAIL",
-                "support-card2-p": "Für offizielle Anfragen und High-Tier-Support-Anfragen.",
-                "support-card2-btn": "E-Mail senden",
-                "support-card3-h": "DASHBOARD",
-                "support-card3-p": "Verwalte deine Servereinstellungen, auch wenn es sich noch im Early Access befindet.",
-                "support-card3-btn": "Hub besuchen",
-                "footer-support-h": "PRIME // SUPPORT",
-                "footer-credits": "© RAXSTDIOZ 2026 // ALLE RECHTE VORBEHALTEN"
-            },
-            es: {
-                "support-h1": "PONTE EN<br><span>CONTACTO</span>",
-                "support-p": "¿Necesitas ayuda con Prime? Nuestros sistemas de soporte especializados están listos para ayudarte 24/7.",
-                "support-card1-h": "DISCORD",
-                "support-card1-p": "Únete a nuestro centro de soporte de élite para obtener respuestas instantáneas.",
-                "support-card1-btn": "Unirse al servidor",
-                "support-card2-h": "EMAIL",
-                "support-card2-p": "Para consultas oficiales y solicitudes de soporte de alto nivel.",
-                "support-card2-btn": "Enviar correo",
-                "support-card3-h": "PANEL",
-                "support-card3-p": "Administra la configuración de tu servidor aunque esté en acceso anticipado.",
-                "support-card3-btn": "Visitar Centro",
-                "footer-support-h": "PRIME // SOPORTE",
-                "footer-credits": "© RAXSTDIOZ 2026 // TODOS LOS DERECHOS RESERVADOS"
+                tag: "// yardım masası",
+                h1: "YARDIMA MI<br><span>İHTİYACIN VAR?</span>",
+                desc: "Bir sorunuz mu var veya bir hata mı buldunuz? Yardımcı olmak için buradayız.",
+                "c1-h": "Discord Topluluğu",
+                "c1-p": "Yardım almanın en hızlı yolu. Diğer kullanıcılarla ve ekibimizle sohbet edin.",
+                "c1-b": "Sunucuya Katıl",
+                "c2-h": "E-posta Desteği",
+                "c2-p": "Ödeme veya gizli hesap sorunları için bize doğrudan mesaj gönderin.",
+                "c2-b": "İletişime Geç",
+                "c3-h": "Yasal Yardım",
+                "c3-p": "DMCA, telif hakkı talepleri veya diğer resmi belgeler.",
+                "c3-b": "Yasal Destek",
+                "c4-h": "Geri Bildirim",
+                "c4-p": "Bir sonraki adımda ne görmek istediğinizi bize anlatın. Önerilerinize göre geliştiriyoruz.",
+                "c4-b": "Fikir Gönder",
+                "c5-h": "Durum",
+                "c5-p": "Botun ve web sitesinin sorunsuz çalışıp çalışmadığını kontrol edin.",
+                "c5-b": "Duruma Bak"
             },
             ru: {
-                "support-h1": "СВЯЗАТЬСЯ<br><span>С НАМИ</span>",
-                "support-p": "Нужна помощь с Праймом? Наши специалисты готовы помочь вам 24/7.",
-                "support-card1-h": "DISCORD",
-                "support-card1-p": "Присоединяйтесь к нашему дискорд-серверу для мгновенных ответов.",
-                "support-card1-btn": "Войти в сервер",
-                "support-card2-h": "EMAIL",
-                "support-card2-p": "Для официальных запросов и технической поддержки.",
-                "support-card2-btn": "Написать",
-                "support-card3-h": "ПАНЕЛЬ",
-                "support-card3-p": "Управляйте настройками вашего сервера (в раннем доступе).",
-                "support-card3-btn": "В панель",
-                "footer-support-h": "PRIME // ПОДДЕРЖКА",
-                "footer-credits": "© RAXSTDIOZ 2026 // ВСЕ ПРАВА ЗАЩИЩЕНЫ"
+                tag: "// служба поддержки",
+                h1: "НУЖНА<br><span>ПОМОЩЬ?</span>",
+                desc: "Есть вопросы или баги? Мы поможем во всем разобраться.",
+                "c1-h": "Discord Сообщество",
+                "c1-p": "Самый быстрый способ получить помощь. Общайтесь с командой напрямую.",
+                "c1-b": "Зайти в Discord",
+                "c2-h": "Email Поддержка",
+                "c2-p": "По вопросам оплаты или личных аккаунтов пишите нам напрямую.",
+                "c2-b": "Написать",
+                "c3-h": "Юристы",
+                "c3-p": "DMCA, авторские права и официальные документы.",
+                "c3-b": "Написать в юр. отдел",
+                "c4-h": "Идеи",
+                "c4-p": "Расскажите, что добавить. Мы строим бота на ваших отзывах.",
+                "c4-b": "Предложить идею",
+                "c5-h": "Статус",
+                "c5-p": "Проверьте стабильность работы бота и сайта.",
+                "c5-b": "Проверить"
+            },
+            ar: {
+                tag: "// مركز المساعدة",
+                h1: "هل تحتاج<br><span>مساعدة؟</span>",
+                desc: "لديك سؤال أو وجدت خطأ؟ نحن هنا لمساعدتك على العودة إلى المسار الصحيح.",
+                "c1-h": "مجتمع ديسكورد",
+                "c1-p": "أسرع طريقة للحصول على المساعدة. تواصل مع المستخدمين وفريقنا مباشرة.",
+                "c1-b": "انضم للسيرفر",
+                "c2-h": "الدعم عبر الإيميل",
+                "c2-p": "للقضايا المتعلقة بـ الفواتير أو الحسابات الخاصة، أرسل لنا رسالة مباشرة.",
+                "c2-b": "تواصل معنا",
+                "c3-h": "المساعدة القانونية",
+                "c3-p": "DMCA، حقوق النشر، أو الوثائق الرسمية الأخرى.",
+                "c3-b": "تواصل مع القسم القانوني",
+                "c4-h": "الآراء والمقترحات",
+                "c4-p": "أخبرنا بما تريد رؤيته لاحقاً. نحن نطور البناء على اقتراحاتكم.",
+                "c4-b": "أرسل فكرة",
+                "c5-h": "الحالة",
+                "c5-p": "تحقق مما إذا كان البوت والموقع يعملان بسلاسة.",
+                "c5-b": "عرض الحالة"
+            },
+            hi: {
+                tag: "// सहायता केंद्र",
+                h1: "क्या आपको<br><span>मदद चाहिए?</span>",
+                desc: "कोई सवाल है या कोई बग मिला है? हम आपकी मदद के लिए यहाँ हैं।",
+                "c1-h": "डिस्कॉर्ड कम्युनिटी",
+                "c1-p": "मदद पाने का सबसे तेज़ तरीका। रीयल-टाइम में मदद लें।",
+                "c1-b": "सर्वर से जुड़ें",
+                "c2-h": "ईमेल सपोर्ट",
+                "c2-p": "बिलिंग या निजी खाता संबंधी समस्याओं के लिए हमें ईमेल करें।",
+                "c2-b": "संपर्क करें",
+                "c3-h": "कानूनी मदद",
+                "c3-p": "DMCA, कॉपीराइट दावे, या अन्य आधिकारिक दस्तावेज़।",
+                "c3-b": "लीगल टीम से संपर्क करें",
+                "c4-h": "फीडबैक",
+                "c4-p": "बताएं कि आप आगे क्या देखना चाहते हैं। हम आपकी सलाह पर काम करते हैं।",
+                "c4-b": "विचार भेजें",
+                "c5-h": "स्टेटस",
+                "c5-p": "जांचें कि क्या बॉट और वेबसाइट सुचारू रूप से चल रहे हैं।",
+                "c5-b": "स्टेटस देखें"
+            },
+            de: {
+                tag: "// help desk",
+                h1: "BRAUCHST DU<br><span>HILFE?</span>",
+                desc: "Hast du eine Frage oder einen Fehler gefunden? Wir sind hier, um dir zu helfen.",
+                "c1-h": "Discord Community",
+                "c1-p": "Der schnellste Weg für Hilfe. Chatte direkt mit unserem Team.",
+                "c1-b": "Server beitreten",
+                "c2-h": "E-Mail Support",
+                "c2-p": "Bei Problemen mit Zahlungen oder privaten Konten schreibe uns direkt.",
+                "c2-b": "Kontakt",
+                "c3-h": "Rechtliches",
+                "c3-p": "DMCA, Urheberrechtsansprüche oder andere offizielle Dokumente.",
+                "c3-b": "Rechtsabteilung",
+                "c4-h": "Feedback",
+                "c4-p": "Sag uns, was du als Nächstes sehen willst. Wir bauen auf deinen Ideen auf.",
+                "c4-b": "Idee senden",
+                "c5-h": "Status",
+                "c5-p": "Überprüfe, ob der Bot und die Website reibungslos laufen.",
+                "c5-b": "Status anzeigen"
+            },
+            es: {
+                tag: "// centro de ayuda",
+                h1: "¿NECESITAS<br><span>AYUDA?</span>",
+                desc: "¿Tienes alguna pregunta o encontraste un error? Estamos aquí para ayudarte a volver al camino.",
+                "c1-h": "Comunidad de Discord",
+                "c1-p": "La forma más rápida de obtener ayuda. Habla con nuestro equipo en tiempo real.",
+                "c1-b": "Unirse al Servidor",
+                "c2-h": "Soporte por Email",
+                "c2-p": "Para problemas de facturación o cuentas privadas, envíanos un mensaje directo.",
+                "c2-b": "Contactar",
+                "c3-h": "Ayuda Legal",
+                "c3-p": "DMCA, reclamaciones de derechos de autor u otra documentación oficial.",
+                "c3-b": "Contactar Legal",
+                "c4-h": "Feedback",
+                "c4-p": "Cuéntanos qué quieres ver después. Construimos en base a tus sugerencias.",
+                "c4-b": "Enviar Idea",
+                "c5-h": "Estado",
+                "c5-p": "Comprueba si el bot y el sitio web funcionan correctamente.",
+                "c5-b": "Ver Estado"
             }
         };
 
+        let currentLang = localStorage.getItem('prime-lang') || 'en';
+
         function setLang(lang) {
-            document.getElementById('current-lang').innerText = lang.toUpperCase();
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (trans[lang] && trans[lang][key]) {
                     el.innerHTML = trans[lang][key];
                 }
             });
+            document.getElementById('current-lang').innerText = lang.toUpperCase();
             localStorage.setItem('prime-lang', lang);
+            currentLang = lang;
+            document.getElementById('langSwitcher').classList.remove('open');
         }
 
-        function toggleLang() {
+        function toggleDropDown() {
             document.getElementById('langSwitcher').classList.toggle('open');
         }
 
-        // Auto-load saved lang
-        const savedLang = localStorage.getItem('prime-lang') || 'en';
-        setLang(savedLang);
-
-        // Close on outside click
-        window.onclick = function (event) {
-            if (!event.target.closest('.lang-switcher')) {
-                const ls = document.getElementById('langSwitcher');
-                if (ls && ls.classList.contains('open')) {
-                    ls.classList.remove('open');
-                }
+        function removeLoader() {
+            const loader = document.getElementById('preloader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                document.body.classList.remove('loading');
             }
         }
-        // --- SECURITY BLOCKING ---
-        window.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            showInterference();
-        });
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
-                e.preventDefault();
-                showInterference();
-                return false;
+        // Close dropdown on outside click
+        window.onclick = function (event) {
+            if (!event.target.closest('.lang-switcher')) {
+                document.getElementById('langSwitcher').classList.remove('open');
+            }
+        }
+
+        // Auth Check
+        async function checkAuth() {
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+            }
+
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated) {
+                        const userProfile = document.getElementById('userProfile');
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (userProfile) {
+                            userProfile.style.display = 'flex';
+                            document.getElementById('userName').innerText = data.discord.username;
+                            document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+                        }
+                    }
+                }
+            } catch (e) { console.log('Auth check bypassed or failed.') }
+        }
+        checkAuth();
+
+        // Logout Modal
+        function openLogoutModal() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (nav) {
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
             }
         });
 
-        function showInterference() {
+        setTimeout(removeLoader, 1500);
+        window.addEventListener('load', removeLoader);
+        setLang(currentLang);
+
+        // Security
+        window.addEventListener('contextmenu', e => {
+            e.preventDefault();
             const inf = document.getElementById('interference');
-            if (inf) {
+            inf.style.display = 'block';
+            setTimeout(() => inf.style.display = 'none', 200);
+        });
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) || (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                const inf = document.getElementById('interference');
                 inf.style.display = 'block';
                 setTimeout(() => inf.style.display = 'none', 200);
             }
-        }
+        });
     </script>
 </body>
 

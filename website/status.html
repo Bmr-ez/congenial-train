@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIME | SYSTEM STATUS</title>
+    <title>PRIME // SYSTEM STATUS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -16,8 +16,11 @@
         :root {
             --p: #00ffaa;
             --p-rgb: 0, 255, 170;
-            --s: #bc00ff;
-            --bg: #030303;
+            --err: #ff3c00;
+            --warn: #ffbd2e;
+            --bg: #050505;
+            --panel: #0a0a0a;
+            --border: rgba(255, 255, 255, 0.05);
             --f-h: 'Unbounded', sans-serif;
             --f-b: 'Outfit', sans-serif;
             --f-m: 'Space Mono', monospace;
@@ -34,14 +37,12 @@
             background: var(--bg);
             color: #fff;
             font-family: var(--f-b);
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            text-transform: uppercase;
+            min-height: 100vh;
+            padding-bottom: 10rem;
+            overflow-x: hidden;
         }
 
-        /* Scanline Overlay */
+        /* --- SCANLINES & VIGNETTE --- */
         .scanlines {
             position: fixed;
             inset: 0;
@@ -49,22 +50,23 @@
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
             z-index: 1000;
+            opacity: 0.3;
         }
 
-        /* HUD Frame */
         .hud-frame {
             position: fixed;
-            inset: 20px;
+            inset: 30px;
             pointer-events: none;
-            border: 1px solid rgba(var(--p-rgb), 0.1);
+            border: 1px solid rgba(var(--p-rgb), 0.05);
             z-index: 999;
         }
 
         .hud-corner {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             border: 2px solid var(--p);
+            opacity: 0.5;
         }
 
         .tl {
@@ -95,236 +97,238 @@
             border-top: 0;
         }
 
-        /* Top Bar */
-        header {
-            padding: 30px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(var(--p-rgb), 0.1);
-        }
-
-        .sys-id {
-            font-family: var(--f-m);
-            font-size: 0.7rem;
-            letter-spacing: 5px;
-            color: var(--p);
-        }
-
-        .uptime-wrap {
-            text-align: right;
-        }
-
-        .uptime-wrap h2 {
-            font-family: var(--f-m);
-            font-size: 1.2rem;
-            color: #fff;
-        }
-
-        /* Main Grid */
-        main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 350px 1fr 350px;
-            gap: 2px;
-            padding: 2px;
-            background: rgba(var(--p-rgb), 0.05);
-        }
-
-        .panel {
-            background: var(--bg);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        /* --- MAIN CONTAINER --- */
+        .status-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 8rem 2rem 2rem;
             position: relative;
-            overflow: hidden;
+            z-index: 10;
         }
 
-        .panel-h {
+        .back-link {
+            position: absolute;
+            top: 4rem;
+            left: 2rem;
             font-family: var(--f-m);
             font-size: 0.6rem;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-h::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(var(--p-rgb), 0.1);
-        }
-
-        /* Gauges */
-        .gauge-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .gauge-item {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .g-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.7rem;
+            text-transform: uppercase;
             letter-spacing: 2px;
-        }
-
-        .g-bar-bg {
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            position: relative;
-        }
-
-        .g-bar-fill {
-            height: 100%;
-            background: var(--p);
-            width: 0%;
-            transition: width 1s cubic-bezier(0.19, 1, 0.22, 1);
-            box-shadow: 0 0 10px var(--p);
-        }
-
-        /* World Map Mock */
-        .map-container {
-            flex: 1;
+            color: var(--p);
+            text-decoration: none;
             display: flex;
-            justify-content: center;
             align-items: center;
-            position: relative;
+            gap: 8px;
+            opacity: 0.6;
+            transition: 0.3s;
         }
 
-        .map-svg {
-            width: 80%;
-            opacity: 0.1;
-            filter: drop-shadow(0 0 10px var(--p));
+        .back-link:hover {
+            opacity: 1;
+            text-shadow: 0 0 10px var(--p);
         }
 
-        .pulse-node {
-            position: absolute;
-            width: 6px;
-            height: 6px;
+        /* --- OVERALL STATUS --- */
+        .overall-status {
+            background: rgba(var(--p-rgb), 0.05);
+            border: 1px solid var(--p);
+            padding: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            box-shadow: 0 0 30px rgba(var(--p-rgb), 0.05);
+        }
+
+        .status-pulse {
+            width: 12px;
+            height: 12px;
             background: var(--p);
             border-radius: 50%;
             box-shadow: 0 0 15px var(--p);
-            animation: nodePulse 2s infinite;
+            animation: pulse-ring 2s infinite;
         }
 
-        @keyframes nodePulse {
+        @keyframes pulse-ring {
             0% {
                 transform: scale(1);
                 opacity: 1;
+                box-shadow: 0 0 0 0 rgba(var(--p-rgb), 0.4);
+            }
+
+            70% {
+                transform: scale(1.2);
+                opacity: 0.8;
+                box-shadow: 0 0 0 10px rgba(var(--p-rgb), 0);
             }
 
             100% {
-                transform: scale(4);
-                opacity: 0;
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(var(--p-rgb), 0);
             }
         }
 
-        /* Feed Logs */
-        .feed-logs {
-            flex: 1;
-            font-family: var(--f-m);
-            font-size: 0.65rem;
-            line-height: 2;
-            overflow-y: hidden;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .log-line {
-            display: flex;
-            gap: 10px;
-        }
-
-        .log-line span:first-child {
-            color: var(--p);
-        }
-
-        /* Spectrogram */
-        .spectrogram-wrap {
-            height: 120px;
-            background: rgba(var(--p-rgb), 0.02);
-            border-top: 1px solid rgba(var(--p-rgb), 0.1);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        canvas {
-            flex: 1;
-            height: 60px;
-        }
-
-        /* Bot Identity */
-        .bot-id {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-prime {
+        .overall-status h1 {
             font-family: var(--f-h);
             font-size: 1.2rem;
-            letter-spacing: -2px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .logo-prime span {
+        /* --- COMPONENT LIST --- */
+        .section-h {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 4px;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .component-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .comp-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .comp-name {
+            font-family: var(--f-m);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .comp-status {
+            font-size: 0.65rem;
             color: var(--p);
+            font-weight: 900;
         }
 
-        @keyframes glitch {
-            0% {
-                transform: translate(0);
-            }
-
-            20% {
-                transform: translate(-2px, 2px);
-            }
-
-            40% {
-                transform: translate(-2px, -2px);
-            }
-
-            60% {
-                transform: translate(2px, 2px);
-            }
-
-            80% {
-                transform: translate(2px, -2px);
-            }
-
-            100% {
-                transform: translate(0);
-            }
+        /* Uptime Grid */
+        .uptime-grid {
+            display: flex;
+            gap: 3px;
+            height: 30px;
+            align-items: flex-end;
         }
 
-        .glitch-text:hover {
-            animation: glitch 0.2s infinite;
-            color: var(--p);
+        .bar {
+            flex: 1;
+            height: 100%;
+            background: var(--p);
+            opacity: 0.6;
+            border-radius: 1px;
+            transition: 0.3s;
+        }
+
+        .bar:hover {
+            opacity: 1;
+            transform: scaleY(1.1);
+        }
+
+        .bar.down {
+            background: var(--err);
+            opacity: 1;
+        }
+
+        .bar.slow {
+            background: var(--warn);
+            opacity: 1;
+        }
+
+        .uptime-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- INCIDENT LOGS --- */
+        .incidents-list {
+            margin-top: 5rem;
+        }
+
+        .incident-item {
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .incident-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+        }
+
+        .incident-item.active {
+            border-color: var(--err);
+        }
+
+        .incident-item.active::before {
+            border-color: var(--err);
+            background: var(--err);
+            box-shadow: 0 0 10px var(--err);
+        }
+
+        .incident-date {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: var(--warn);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .incident-item h3 {
+            font-family: var(--f-h);
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .incident-update {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .update-time {
+            font-weight: 700;
+            color: #fff;
+            margin-right: 10px;
         }
 
         .interference {
             position: fixed;
             inset: 0;
             z-index: 99999999;
-            background: rgba(var(--p-rgb), 0.05);
+            background: rgba(var(--p-rgb), 0.1);
             display: none;
             pointer-events: none;
         }
     </style>
 </head>
 
-<body onload="initStatus()">
+<body class="loading">
     <div class="scanlines"></div>
     <div class="hud-frame">
         <div class="hud-corner tl"></div>
@@ -332,213 +336,205 @@
         <div class="hud-corner bl"></div>
         <div class="hud-corner br"></div>
     </div>
-
     <div class="interference" id="interference"></div>
 
-    <header>
-        <div class="bot-id">
-            <div class="logo-prime">PRIME<span>.</span></div>
-            <div class="sys-id">SYSTEM_UPLINK // NOD_01</div>
-        </div>
-        <div class="uptime-wrap">
-            <span class="panel-h" style="margin-bottom: 5px;">SESSION_UPTIME</span>
-            <h2 id="uptimeCounter">00:00:00</h2>
-        </div>
-    </header>
+    <div class="status-container">
+        <a href="index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            BACK_TO_CORE
+        </a>
 
-    <main>
-        <!-- Left Panel: Core Vitals -->
-        <section class="panel">
-            <span class="panel-h">CORE_VITALS</span>
-            <div class="gauge-wrap">
-                <div class="gauge-item">
-                    <div class="g-label"><span>NEURAL_LOAD</span><span id="loadVal">42%</span></div>
-                    <div class="g-bar-bg">
-                        <div class="g-bar-fill" id="loadBar" style="width: 42%;"></div>
-                    </div>
+        <div class="overall-status">
+            <div class="status-pulse"></div>
+            <h1 id="mainStatus">ALL_SYSTEMS_OPERATIONAL</h1>
+        </div>
+
+        <section>
+            <span class="section-h">SYSTEM_COMPONENTS</span>
+
+            <div class="component-card">
+                <div class="comp-top">
+                    <span class="comp-name">API_GATEWAY</span>
+                    <span class="comp-status">OPERATIONAL</span>
                 </div>
-                <div class="gauge-item">
-                    <div class="g-label"><span>COGNITIVE_TEMP</span><span id="tempVal">31°C</span></div>
-                    <div class="g-bar-bg">
-                        <div class="g-bar-fill" id="tempBar" style="width: 31%; --p: #00ffaa;"></div>
-                    </div>
-                </div>
-                <div class="gauge-item">
-                    <div class="g-label"><span>SYNC_STABILITY</span><span id="syncVal">99.9%</span></div>
-                    <div class="g-bar-bg">
-                        <div class="g-bar-fill" id="syncBar" style="width: 99.9%;"></div>
-                    </div>
+                <div class="uptime-grid" id="grid-api"></div>
+                <div class="uptime-footer">
+                    <span>90_DAYS_AGO</span>
+                    <span>100.0%_UPTIME</span>
+                    <span>TODAY</span>
                 </div>
             </div>
 
-            <div style="margin-top: auto; font-family: var(--f-m); font-size: 0.6rem; opacity: 0.3;">
-                ENCRYPTION: AES_256_ACTIVE<br>
-                PROTOCOL: PRIME_SENTINEL_V3<br>
-                AUTH_LVL: COMMAND_CENTER
+            <div class="component-card">
+                <div class="comp-top">
+                    <span class="comp-name">BOT_CORE</span>
+                    <span class="comp-status">OPERATIONAL</span>
+                </div>
+                <div class="uptime-grid" id="grid-bot"></div>
+                <div class="uptime-footer">
+                    <span>90_DAYS_AGO</span>
+                    <span>99.8%_UPTIME</span>
+                    <span>TODAY</span>
+                </div>
+            </div>
+
+            <div class="component-card">
+                <div class="comp-top">
+                    <span class="comp-name">DATABASE_CLUSTER</span>
+                    <span class="comp-status">OPERATIONAL</span>
+                </div>
+                <div class="uptime-grid" id="grid-db"></div>
+                <div class="uptime-footer">
+                    <span>90_DAYS_AGO</span>
+                    <span>100.0%_UPTIME</span>
+                    <span>TODAY</span>
+                </div>
+            </div>
+
+            <div class="component-card">
+                <div class="comp-top">
+                    <span class="comp-name">WEB_DASHBOARD</span>
+                    <span class="comp-status" style="color:var(--warn)">PARTIAL_OUTAGE</span>
+                </div>
+                <div class="uptime-grid" id="grid-web"></div>
+                <div class="uptime-footer">
+                    <span>90_DAYS_AGO</span>
+                    <span>94.2%_UPTIME</span>
+                    <span>TODAY</span>
+                </div>
             </div>
         </section>
 
-        <!-- Center Panel: Neural Map -->
-        <section class="panel">
-            <span class="panel-h">NEURAL_TRAFFIC_MAP</span>
-            <div class="map-container">
-                <svg class="map-svg" viewBox="0 0 1000 500">
-                    <path fill="currentColor" d="M150,250 Q250,100 400,250 T650,400 T850,250" stroke="var(--p)"
-                        stroke-width="0.5" fill="none" opacity="0.3"></path>
-                    <g opacity="0.1">
-                        <circle cx="200" cy="200" r="2"></circle>
-                        <circle cx="500" cy="300" r="2"></circle>
-                        <circle cx="800" cy="150" r="2"></circle>
-                        <circle cx="400" cy="400" r="2"></circle>
-                    </g>
-                </svg>
-                <div class="pulse-node" style="top: 30%; left: 20%;"></div>
-                <div class="pulse-node" style="top: 60%; left: 45%; animation-delay: 0.5s;"></div>
-                <div class="pulse-node" style="top: 40%; left: 75%; animation-delay: 1.2s;"></div>
+        <section class="incidents-list">
+            <span class="section-h">PAST_INCIDENTS</span>
+
+            <div class="incident-item active">
+                <span class="incident-date">FEB_14, 2026</span>
+                <h3>DASHBOARD_PERFORMANCE_ISSUES</h3>
+                <div class="incident-update">
+                    <span class="update-time">21:44_UTC</span> 我们正在调查某些地区的控制面板加载速度慢的问题。
+                </div>
+                <div class="incident-update">
+                    <span class="update-time">21:10_UTC</span> 发现 API 服务器延迟增加，正在尝试重启受影响的节点。
+                </div>
+            </div>
+
+            <div class="incident-item">
+                <span class="incident-date">FEB_10, 2026</span>
+                <h3>SCHEDULED_MAINTENANCE // DATABASE_UPGRADE</h3>
+                <div class="incident-update">
+                    <span class="update-time">04:00_UTC</span> 系统现已恢复正常，数据库迁移已完成，响应速度提升 15%。
+                </div>
+            </div>
+
+            <div class="incident-item">
+                <span class="incident-date">JAN_22, 2026</span>
+                <h3>BOT_CORE_REBOOT</h3>
+                <div class="incident-update">
+                    <span class="update-time">12:30_UTC</span> 发现内存泄露问题，主节点已自动重启，服务中断时间小于 2 分钟。
+                </div>
             </div>
         </section>
-
-        <!-- Right Panel: Security Feed -->
-        <section class="panel">
-            <span class="panel-h">CMD_PROTOCOL_LOGS</span>
-            <div class="feed-logs" id="logFeed">
-                <!-- Logs injected here -->
-            </div>
-        </section>
-    </main>
-
-    <footer class="spectrogram-wrap">
-        <div style="font-family: var(--f-m); font-size: 0.6rem; min-width: 120px;">
-            LATENCY_STREAM<br>
-            <span id="latencyVal" style="color: var(--p); font-size: 1.2rem;">24ms</span>
-        </div>
-        <canvas id="spectrogram"></canvas>
-    </footer>
-
-    <script>
-        const logs = [
-            "INITIALIZING NEURAL LINK...",
-            "HANDSHAKE SUCCESSFUL.",
-            "DATABASE_UPLINK: ACTIVE",
-            "SCANNING GUILD_ID: 1466029...",
-            "USER_AUTH: Rayan // RECOGNIZED",
-            "MOD_SCAN: 0 THREATS DETECTED",
-            "ASSET_CACHE: SYNCHRONIZED",
-            "AI_CORE: IDLE_VIBE_MODE",
-            "MEMORY_BANK: 1042_RECORDS",
-            "SYSTEM_TEMP: NOMINAL",
-            "WATCHDOG: ARMED",
-            "PING: 0.2ms INTERNAL"
-        ];
-
-        let startTime = Date.now();
-
-        function initStatus() {
-            // Log Injection (keep rotating mock logs for aesthetic but add real ones if needed)
-            const feed = document.getElementById('logFeed');
-            let logIdx = 0;
-            setInterval(() => {
-                const line = document.createElement('div');
-                line.className = 'log-line';
-                const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                line.innerHTML = `<span>[${timeStr}]</span> <span>${logs[logIdx % logs.length]}</span>`;
-                feed.prepend(line);
-                if (feed.childNodes.length > 25) feed.lastChild.remove();
-                logIdx++;
-            }, 3000);
-
-            // Spectrogram Canvas
-            const canvas = document.getElementById('spectrogram');
-            const ctx = canvas.getContext('2d');
-            let offset = 0;
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = '#00ffaa';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                for (let i = 0; i < canvas.width; i++) {
-                    const y = (canvas.height / 2) + Math.sin((i + offset) * 0.05) * 10 + Math.sin((i + offset) * 0.1) * 5;
-                    if (i === 0) ctx.moveTo(i, y);
-                    else ctx.lineTo(i, y);
-                }
-                ctx.stroke();
-                offset += 2;
-                requestAnimationFrame(draw);
+        <style>
+            footer {
+                margin-top: 10rem;
+                padding: 5rem 5% 2rem;
+                border-top: 1px solid var(--border);
+                text-align: center;
             }
-            draw();
 
-            // Initial fetch
-            fetchStats();
-            // Refresh every 3 seconds for "Real-time" feel
-            setInterval(fetchStats, 3000);
-        }
-
-        async function fetchStats() {
-            try {
-                const startFetch = Date.now();
-                const res = await fetch('/api/stats');
-                const data = await res.json();
-                const latency = Date.now() - startFetch;
-
-                // Update Uptime
-                const totalSeconds = data.uptime_seconds;
-                const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-                const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-                const s = (totalSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('uptimeCounter').innerText = `${h}:${m}:${s}`;
-
-                // Update Vitals
-                document.getElementById('loadBar').style.width = data.cpu_load + '%';
-                document.getElementById('loadVal').innerText = data.cpu_load + '%';
-
-                document.getElementById('tempBar').style.width = data.ram_usage + '%';
-                document.getElementById('tempVal').innerText = data.ram_usage + '%';
-                // Change label to RAM usage since that's what we're sending
-                document.querySelector('.gauge-item:nth-child(2) .g-label span').innerText = "MEMORY_LOAD";
-
-                document.getElementById('latencyVal').innerText = latency + 'ms';
-
-                // Add a "Real-time" log when data updates
-                if (Math.random() > 0.7) {
-                    const feed = document.getElementById('logFeed');
-                    const line = document.createElement('div');
-                    line.className = 'log-line';
-                    line.style.borderLeft = "2px solid var(--p)";
-                    line.style.paddingLeft = "5px";
-                    line.innerHTML = `<span>[SYSTEM]</span> <span style="color:#fff">HEARTBEAT_ACK // LATENCY: ${latency}ms</span>`;
-                    feed.prepend(line);
-                }
-
-            } catch (e) {
-                console.warn("API Offline", e);
-                document.getElementById('uptimeCounter').innerText = "OFFLINE";
-                document.getElementById('uptimeCounter').style.color = "#ff3c00";
+            .f-logo {
+                font-family: var(--f-h);
+                font-size: 2.5rem;
+                letter-spacing: -2px;
+                margin-bottom: 2rem;
+                background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.1) 100%);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
-        }
 
-        // --- SECURITY BLOCKING ---
-        window.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            showInterference();
-        });
+            .f-bottom {
+                display: flex;
+                justify-content: center;
+                gap: 2rem;
+                padding-top: 2rem;
+                border-top: 1px solid var(--border);
+            }
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
+            .f-link {
+                font-family: var(--f-m);
+                font-size: 0.6rem;
+                color: rgba(255, 255, 255, 0.3);
+                text-decoration: none;
+                letter-spacing: 3px;
+                transition: 0.3s;
+            }
+
+            .f-link:hover {
+                color: var(--p);
+            }
+        </style>
+        <footer>
+            <div class="f-logo">PRIME.</div>
+            <div class="f-bottom">
+                <a href="terms.html" class="f-link">TERMS</a>
+                <a href="privacy.html" class="f-link">PRIVACY</a>
+                <a href="sitemap.html" class="f-link">SITEMAP</a>
+            </div>
+        </footer>
+
+        <script>
+            function generateGrid(containerId, reliability) {
+                const container = document.getElementById(containerId);
+                for (let i = 0; i < 90; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+
+                    const rand = Math.random();
+                    if (rand > reliability) {
+                        if (rand > (reliability + 0.05)) {
+                            bar.classList.add('down');
+                            bar.title = "Down - Heavy Outage";
+                        } else {
+                            bar.classList.add('slow');
+                            bar.title = "Slow - Performance Lag";
+                        }
+                        bar.style.height = (40 + Math.random() * 60) + '%';
+                    } else {
+                        bar.style.height = (80 + Math.random() * 20) + '%';
+                    }
+
+                    container.appendChild(bar);
+                }
+            }
+
+            generateGrid('grid-api', 0.99);
+            generateGrid('grid-bot', 0.98);
+            generateGrid('grid-db', 1.0);
+            generateGrid('grid-web', 0.90);
+
+            // Security
+            window.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 showInterference();
-                return false;
-            }
-        });
+            });
 
-        function showInterference() {
-            const inf = document.getElementById('interference');
-            if (inf) {
-                inf.style.display = 'block';
-                setTimeout(() => inf.style.display = 'none', 200);
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey)) {
+                    e.preventDefault();
+                    showInterference();
+                }
+            });
+
+            function showInterference() {
+                const inf = document.getElementById('interference');
+                if (inf) {
+                    inf.style.display = 'block';
+                    setTimeout(() => inf.style.display = 'none', 150);
+                }
             }
-        }
-    </script>
+        </script>
 </body>
 
 </html>

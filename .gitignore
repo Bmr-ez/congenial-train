@@ -20,6 +20,7 @@ ENV/
 !portfolios.json
 !warnings.json
 !yt_cooldowns.json
+!login.json
 *.db
 *.db-shm
 *.db-wal

@@ -20,7 +20,7 @@
             <div class="logo">Prime<span>.</span></div>
             <h1>Prime Access</h1>
             <p>Connect with Discord to enter the Command Center.</p>
-            <a href="/login" class="btn-login"><i class="fab fa-discord"></i> Login with Discord</a>
+            <a href="../login.json" class="btn-login"><i class="fab fa-discord"></i> Login with Discord</a>
         </div>
     </div>
 
@@ -83,12 +83,12 @@
                     <p>Prime AI is currently monitoring 12 servers with optimal performance levels.</p>
                     <div class="metrics">
                         <div class="metric">
-                            <span class="m-val">99.9%</span>
+                            <span class="m-val" id="uptimeVal">99.9%</span>
                             <span class="m-label">Uptime</span>
                         </div>
                         <div class="metric">
-                            <span class="m-val">24ms</span>
-                            <span class="m-label">Latency</span>
+                            <span class="m-val" id="ramVal">--%</span>
+                            <span class="m-label">RAM Load</span>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="card stat-card">
                     <div class="stat-icon p-color"><i class="fas fa-users"></i></div>
                     <div class="stat-info">
-                        <h3>14,204</h3>
+                        <h3 id="totalUsersVal">14,204</h3>
                         <p>Total Users</p>
                     </div>
                     <div class="trend up">+12%</div>
@@ -110,7 +110,7 @@
                 <div class="card stat-card">
                     <div class="stat-icon s-color"><i class="fas fa-terminal"></i></div>
                     <div class="stat-info">
-                        <h3>42.5k</h3>
+                        <h3 id="totalCmdsVal">42.5k</h3>
                         <p>Cmds Executed</p>
                     </div>
                     <div class="trend up">+8%</div>
@@ -118,7 +118,7 @@
                 <div class="card stat-card">
                     <div class="stat-icon t-color"><i class="fas fa-brain"></i></div>
                     <div class="stat-info">
-                        <h3>1.2k</h3>
+                        <h3 id="aiReflectionsVal">1.2k</h3>
                         <p>AI Reflections</p>
                     </div>
                     <div class="trend up">+24%</div>
@@ -131,7 +131,7 @@
                     <h3>Neural Activity Feed</h3>
                     <button class="btn-text">View All</button>
                 </div>
-                <div class="log-list">
+                <div class="log-list" id="activityList">
                     <div class="log-item">
                         <div class="log-time">2m ago</div>
                         <div class="log-content">
@@ -167,7 +167,7 @@
                 <div class="card-header">
                     <h3>User Vibe Analysis</h3>
                 </div>
-                <div class="vibe-chart">
+                <div class="vibe-chart" id="vibeChart">
                     <div class="vibe-bar" style="--val: 45%; --color: var(--p);">
                         <span class="v-label">Creative Flow</span>
                         <div class="v-progress"></div>
@@ -188,6 +188,15 @@
                         <div class="v-progress"></div>
                         <span class="v-percent">10%</span>
                     </div>
+                </div>
+            </div>
+            <!-- Connected Servers -->
+            <div class="card guilds-card">
+                <div class="card-header">
+                    <h3>Connected Servers</h3>
+                </div>
+                <div class="guild-list" id="guildList">
+                    <p style="opacity:0.5; font-size:0.9rem;">Connecting to neural network...</p>
                 </div>
             </div>
         </section>

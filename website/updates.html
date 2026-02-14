@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE MANIFEST // UPDATE LOGS</title>
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Outfit:wght@100;300;600;900&family=Space+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --p: #00ffaa;
+            --p-rgb: 0, 255, 170;
+            --s: #bc00ff;
+            --bg: #000;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --f-h: 'Unbounded', sans-serif;
+            --f-b: 'Outfit', sans-serif;
+            --f-m: 'Space Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--p);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: var(--f-b);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- GLOBAL OVERLAYS --- */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 2px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: radial-gradient(circle, transparent 40%, #000 100%);
+            pointer-events: none;
+        }
+
+        .auras {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            filter: blur(120px);
+        }
+
+        .aura {
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: moveAura 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .a-1 {
+            background: var(--s);
+            top: -10%;
+            right: -10%;
+        }
+
+        .a-2 {
+            background: var(--p);
+            bottom: -10%;
+            left: -10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes moveAura {
+            0% {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            100% {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+
+        /* --- CURSOR --- */
+        #eyeCursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 9999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .eye-outer {
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            backdrop-filter: blur(5px);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eye-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--p);
+        }
+
+        /* --- NAV --- */
+        nav {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1550px;
+            padding: 0.8rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2000;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+        }
+
+        nav.scrolled {
+            top: 1rem;
+            width: 85%;
+            padding: 0.8rem 2.5rem;
+            background: rgba(0, 0, 0, 0.85);
+            border-color: rgba(var(--p-rgb), 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            flex-basis: 0;
+            justify-content: flex-start;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex: 1;
+            flex-basis: 0;
+            justify-content: flex-end;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 2rem;
+            flex-shrink: 0;
+            justify-content: center;
+        }
+
+        .logo {
+            font-family: var(--f-h);
+            font-size: 1.5rem;
+            letter-spacing: -2px;
+            text-decoration: none;
+            text-transform: lowercase;
+            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            color: var(--p);
+            -webkit-text-fill-color: var(--p);
+        }
+
+        .nav-link {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--p);
+            transition: 0.4s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #fff;
+            text-shadow: 0 0 10px var(--p);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* --- BOT STATUS & LOGIN --- */
+        .bot-status {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--p);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bot-status .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--p);
+        }
+
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.4);
+            border-color: var(--p);
+        }
+
+        /* --- HERO --- */
+        .hero {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .section-tag {
+            font-family: var(--f-m);
+            color: var(--p);
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: var(--f-h);
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+
+        /* --- FILTERS --- */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 5rem;
+        }
+
+        .filter-btn {
+            font-family: var(--f-m);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            color: var(--p);
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        /* --- LOG ENTRIES --- */
+        .logs-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 5% 15rem;
+        }
+
+        .log-entry {
+            margin-bottom: 6rem;
+            position: relative;
+            padding-left: 40px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 9px;
+            height: 9px;
+            background: var(--p);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--p);
+        }
+
+        .log-date {
+            font-family: var(--f-m);
+            font-size: 0.75rem;
+            color: var(--p);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .log-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            transition: 0.5s;
+        }
+
+        .log-content:hover {
+            border-color: var(--p);
+            transform: translateX(10px);
+        }
+
+        .cat-tag {
+            font-family: var(--f-m);
+            font-size: 0.55rem;
+            padding: 4px 10px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            margin-right: 1rem;
+            display: inline-block;
+        }
+
+        .tag-bot {
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            border: 1px solid var(--p);
+        }
+
+        .tag-web {
+            background: rgba(188, 0, 255, 0.1);
+            color: #bc00ff;
+            border: 1px solid #bc00ff;
+        }
+
+        .v-tag {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .log-content h3 {
+            font-family: var(--f-h);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .log-content ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .log-content li {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-content li::before {
+            content: '>';
+            color: var(--p);
+            font-family: var(--f-m);
+        }
+
+        .log-entry.hidden {
+            display: none;
+        }
+
+        footer {
+            padding: 10rem 10% 5rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .f-logo {
+            font-family: var(--f-h);
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            letter-spacing: -2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="auras">
+        <div class="aura a-1"></div>
+        <div class="aura a-2"></div>
+    </div>
+
+    <div id="eyeCursor">
+        <div class="eye-outer">
+            <div class="eye-dot"></div>
+        </div>
+    </div>
+
+    <nav id="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">prime<span>bot</span></a>
+        </div>
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#features" class="nav-link">Features</a>
+            <a href="updates.html" class="nav-link active">Updates</a>
+            <a href="coming-soon.html" class="nav-link">Dashboard</a>
+            <a href="support.html" class="nav-link">Support</a>
+        </div>
+        <div class="nav-right">
+            <div class="bot-status">
+                <div class="dot pulse"></div>
+                <span>bot is online</span>
+            </div>
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <span class="section-tag">// evolution timeline</span>
+        <h1>SYSTEM<br>UPDATES.</h1>
+    </header>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterLogs('all')">all_updates</button>
+        <button class="filter-btn" onclick="filterLogs('bot')">bot_code</button>
+        <button class="filter-btn" onclick="filterLogs('website')">web_interface</button>
+    </div>
+
+    <div class="logs-container">
+        <!-- BOT UPDATE -->
+        <div class="log-entry" data-cat="bot">
+            <span class="log-date">FEB 14, 2026</span>
+            <div class="log-content">
+                <span class="cat-tag tag-bot">bot_update</span>
+                <span class="v-tag">v2.4.0</span>
+                <h3>INTELLIGENCE OVERHAUL</h3>
+                <ul>
+                    <li>Integrated Grok AI as the primary chat engine for faster responses.</li>
+                    <li>Refined command processing core for lower interaction latency.</li>
+                    <li>Improved asset discovery algorithms for community requests.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- WEBSITE UPDATE -->
+        <div class="log-entry" data-cat="website">
+            <span class="log-date">FEB 14, 2026</span>
+            <div class="log-content">
+                <span class="cat-tag tag-web">website</span>
+                <span class="v-tag">v2.4.0</span>
+                <h3>DASHBOARD & STATUS SYNC</h3>
+                <ul>
+                    <li>Overhauled the Server Status page with a clean layout.</li>
+                    <li>Implemented persistent session management for secure login.</li>
+                    <li>Replaced legacy roadmap with this categorized update system.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- WEBSITE UPDATE -->
+        <div class="log-entry" data-cat="website">
+            <span class="log-date">FEB 08, 2026</span>
+            <div class="log-content">
+                <span class="cat-tag tag-web">website</span>
+                <span class="v-tag">v2.3.5</span>
+                <h3>AESTHETIC ASCENSION</h3>
+                <ul>
+                    <li>Deployed UI updates across the entire landing page.</li>
+                    <li>Implemented holographic interface layers and smooth animations.</li>
+                    <li>Added interactive background effects and kinetic typography.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .f-bottom {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 2rem;
+        }
+
+        .f-link {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
+
+        .f-link:hover {
+            color: var(--p);
+        }
+    </style>
+    <footer>
+        <div class="f-logo"
+            style="font-family: var(--f-h); font-size: 3rem; letter-spacing: -2px; margin-bottom: 2rem; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.1) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            PRIME.</div>
+        <div class="f-bottom">
+            <a href="terms.html" class="f-link">TERMS</a>
+            <a href="privacy.html" class="f-link">PRIVACY</a>
+            <a href="sitemap.html" class="f-link">SITEMAP</a>
+        </div>
+        <p
+            style="font-family: var(--f-m); font-size: 0.5rem; color: rgba(255,255,255,0.1); letter-spacing: 5px; margin-top: 2rem;">
+            EST. 2026 // RAXZSTDIOZ</p>
+    </footer>
+
+    <script>
+        function filterLogs(cat) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.toLowerCase().includes(cat) || (cat === 'all' && btn.innerText.toLowerCase().includes('all'))) {
+                    btn.classList.add('active');
+                }
+            });
+            document.querySelectorAll('.log-entry').forEach(entry => {
+                if (cat === 'all' || entry.getAttribute('data-cat') === cat) {
+                    entry.classList.remove('hidden');
+                } else {
+                    entry.classList.add('hidden');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (nav && window.scrollY > 50) nav.classList.add('scrolled');
+            else if (nav) nav.classList.remove('scrolled');
+        });
+
+        const eye = document.getElementById('eyeCursor');
+        eye.style.opacity = '0';
+        window.addEventListener('mousemove', (e) => {
+            eye.style.opacity = '1';
+            eye.style.left = e.clientX - 20 + 'px';
+            eye.style.top = e.clientY - 20 + 'px';
+        });
+
+        document.querySelectorAll('.log-content').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                eye.style.transform = 'scale(1.5)';
+                eye.querySelector('.eye-outer').style.borderColor = 'var(--p)';
+            });
+            card.addEventListener('mouseleave', () => {
+                eye.style.transform = 'scale(1)';
+                eye.querySelector('.eye-outer').style.borderColor = 'rgba(255,255,255,0.1)';
+            });
+        });
+    </script>
+</body>
+
+</html>

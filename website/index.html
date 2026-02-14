@@ -199,69 +199,104 @@
             top: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            max-width: 1400px;
-            padding: 1rem 3rem;
+            width: 95%;
+            max-width: 1550px;
+            padding: 0.7rem 2.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 2000;
             transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             border-radius: 100px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.02);
+        }
+
+        nav::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--p), transparent);
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            border-radius: 100px;
+            opacity: 0.5;
+        }
+
+        nav.scrolled::after {
+            width: 80%;
         }
 
         nav.scrolled {
             top: 1rem;
             width: 85%;
             padding: 0.8rem 2.5rem;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             border-color: rgba(var(--p-rgb), 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            flex-basis: 0;
+            justify-content: flex-start;
         }
 
         .nav-right {
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            flex: 1;
+            flex-basis: 0;
+            justify-content: flex-end;
         }
 
         .nav-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
-            gap: 3rem;
+            gap: 2rem;
+            flex-shrink: 0;
+            justify-content: center;
         }
 
         .nav-link {
             font-family: var(--f-m);
-            font-size: 0.65rem;
-            color: #bbb;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.4);
             text-decoration: none;
             text-transform: uppercase;
             letter-spacing: 3px;
-            transition: 0.3s;
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             position: relative;
-            padding: 5px 0;
+            padding: 8px 0;
+            white-space: nowrap;
         }
 
         .nav-link::after {
             content: '';
             position: absolute;
             bottom: 0;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 0;
             height: 1px;
             background: var(--p);
-            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 0 10px var(--p);
         }
 
         .nav-link:hover {
             color: #fff;
-            text-shadow: 0 0 10px rgba(var(--p-rgb), 0.5);
+            text-shadow: 0 0 15px rgba(var(--p-rgb), 0.6);
+            letter-spacing: 4px;
         }
 
         .nav-link:hover::after {
@@ -286,6 +321,107 @@
         .lang-switcher:hover,
         .lang-switcher.open {
             border-color: var(--p);
+        }
+
+        /* --- LOGIN BUTTON --- */
+        .login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 24px;
+            background: rgba(var(--p-rgb), 0.1);
+            color: var(--p);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(var(--p-rgb), 0.3);
+            font-weight: 700;
+        }
+
+        .login-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.4);
+            border-color: var(--p);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .user-profile:hover {
+            border-color: var(--p);
+            background: rgba(var(--p-rgb), 0.05);
+        }
+
+        .user-profile img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--p);
+        }
+
+        .user-profile span {
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: #080808;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: 0.3s;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .user-profile:hover .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown a {
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-family: var(--f-m);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .profile-dropdown a:hover {
+            background: var(--p);
+            color: #000;
+            padding-left: 30px;
         }
 
         .lang-dropdown {
@@ -1271,6 +1407,107 @@
             transform: translateY(-3px);
         }
 
+        /* --- LOGOUT MODAL --- */
+        .logout-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        .logout-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .logout-card {
+            background: #080808;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4rem 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 4px;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+            transform: translateY(30px) scale(0.95);
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .logout-modal.active .logout-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .logout-card i {
+            font-size: 3.5rem;
+            color: var(--p);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+        }
+
+        .logout-card h3 {
+            font-family: var(--f-h);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .logout-card p {
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 3rem;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+
+        .logout-btns {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .logout-btns button,
+        .logout-btns a {
+            padding: 15px 35px;
+            font-family: var(--f-m);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #fff !important;
+        }
+
+        .btn-confirm {
+            background: #ff3c00;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .btn-confirm:hover {
+            background: #ff5500;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 60, 0, 0.4);
+        }
+
         /* --- STATUS PULSE --- */
         .status-wrap {
             display: flex;
@@ -1281,15 +1518,25 @@
         .bot-status {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-family: var(--f-m);
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             color: var(--p);
-            background: rgba(var(--p-rgb), 0.1);
-            padding: 8px 16px;
-            border: 1px solid rgba(var(--p-rgb), 0.2);
+            background: rgba(var(--p-rgb), 0.05);
+            padding: 10px 20px;
+            border: 1px solid rgba(var(--p-rgb), 0.15);
+            border-radius: 4px;
+            transition: 0.4s;
+            box-shadow: inset 0 0 10px rgba(var(--p-rgb), 0.02);
+            cursor: default;
+        }
+
+        .bot-status:hover {
+            background: rgba(var(--p-rgb), 0.08);
+            border-color: rgba(var(--p-rgb), 0.3);
+            box-shadow: 0 0 20px rgba(var(--p-rgb), 0.1);
         }
 
         .dot.pulse {
@@ -1359,7 +1606,7 @@
         }
 
         /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 1024px) {
+        @media (max-width: 1300px) {
             .nav-center {
                 display: none;
             }
@@ -1580,24 +1827,44 @@
         .nav-search-trigger {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 8px 16px;
+            gap: 15px;
+            padding: 10px 20px;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
             cursor: pointer;
-            transition: 0.3s;
-            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            color: rgba(255, 255, 255, 0.4);
             font-family: var(--f-m);
             font-size: 0.6rem;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-search-trigger b {
+            font-size: 0.55rem;
+            color: var(--p);
+            background: rgba(var(--p-rgb), 0.1);
+            padding: 4px 8px;
+            border-radius: 3px;
+            opacity: 0.6;
+            transition: 0.4s;
         }
 
         .nav-search-trigger:hover {
             border-color: var(--p);
             color: #fff;
-            background: rgba(var(--p-rgb), 0.05);
+            background: rgba(var(--p-rgb), 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(var(--p-rgb), 0.1);
+        }
+
+        .nav-search-trigger:hover b {
+            opacity: 1;
+            background: var(--p);
+            color: #000;
         }
 
         .nav-search-trigger b {
@@ -1813,6 +2080,20 @@
     <div class="scanlines"></div>
     <div class="vignette"></div>
 
+    <!-- LOGOUT MODAL -->
+    <div class="logout-modal" id="logoutModal">
+        <div class="logout-card">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <h3 data-i18n="logout-h">Terminate Session?</h3>
+            <p data-i18n="logout-p">Are you sure you want to disconnect? You will need to re-authenticate with Discord
+                to access protected areas.</p>
+            <div class="logout-btns">
+                <button class="btn-cancel" onclick="closeLogoutModal()" data-i18n="logout-cancel">Cancel</button>
+                <a href="/logout" class="btn-confirm" data-i18n="logout-confirm">Logout</a>
+            </div>
+        </div>
+    </div>
+
     <div class="back-to-top" id="backToTop" onclick="scrollToTop()" title="Go to top">
         <i class="fa-solid fa-chevron-up"></i>
         <span style="display:none">↑</span>
@@ -1833,7 +2114,7 @@
         <div class="nav-center">
             <a href="index.html" class="nav-link">Home</a>
             <a href="#features" class="nav-link">Features</a>
-            <a href="roadmap.html" class="nav-link">Roadmap</a>
+            <a href="updates.html" class="nav-link">Updates</a>
             <a href="coming-soon.html" class="nav-link">Dashboard</a>
             <a href="support.html" class="nav-link">Support</a>
         </div>
@@ -1862,6 +2143,21 @@
                     <div onclick="setLang('de')">Deutsch</div>
                     <div onclick="setLang('es')">Español</div>
                     <div onclick="setLang('ru')">Русский</div>
+                </div>
+            </div>
+
+            <div id="navAuth">
+                <a href="login.json" class="login-btn" id="loginBtn">
+                    <i class="fa-brands fa-discord"></i>
+                    <span>login</span>
+                </a>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <div class="profile-dropdown">
+                        <a href="/dashboard/index.html">Dashboard</a>
+                        <a href="#" onclick="openLogoutModal()">Logout</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2029,6 +2325,10 @@
                 <a href="terms.html" data-i18n="footer-terms">TERMS</a>
                 <span>//</span>
                 <a href="privacy.html" data-i18n="footer-privacy">PRIVACY</a>
+                <span>//</span>
+                <a href="dmca.html">DMCA</a>
+                <span>//</span>
+                <a href="sitemap.html" data-i18n="footer-sitemap">SITEMAP</a>
             </div>
             <div data-i18n="footer-status">STATUS: EARLY_ACCESS // NO_CUSTOM_STUFF_YET</div>
         </div>
@@ -2243,7 +2543,9 @@
             { label: "GET SUPPORT", desc: "Join our community for help", icon: "fa-headset", action: () => window.location.href = 'support.html', hint: "S" },
             { label: "TERMS OF SERVICE", desc: "Read our rules and usage terms", icon: "fa-file-shield", action: () => window.location.href = 'terms.html', hint: "T" },
             { label: "PRIVACY POLICY", desc: "Learn how we protect your data", icon: "fa-user-secret", action: () => window.location.href = 'privacy.html', hint: "P" },
-            { label: "SYSTEM STATUS", desc: "Check bot and API uptime", icon: "fa-server", action: () => window.location.href = 'status.html', hint: "U" }
+            { label: "DMCA POLICY", desc: "Report copyright infringement", icon: "fa-copyright", action: () => window.location.href = 'dmca.html', hint: "D" },
+            { label: "SYSTEM STATUS", desc: "Check bot and API uptime", icon: "fa-server", action: () => window.location.href = 'status.html', hint: "U" },
+            { label: "VIEW SITE MAP", desc: "View the complete site structure", icon: "fa-sitemap", action: () => window.location.href = 'sitemap.html', hint: "M" }
         ];
 
         let selectedIdx = 0;
@@ -2480,12 +2782,13 @@
                 "f5-h": "AI CHAT", "f5-p": "actual smart ai. doesn't talk like a robot. handles roasts, advice, and casual talk like a human would.",
                 "f6-h": "MOD STUFF", "f6-p": "cleans up the chat. bans slurs and bad words instantly. it's silent and stays out of the way until needed.",
                 "footer-tagline": "the only bot you actually need for your server. simple as that.",
-                "footer-chill-h": "// chill", "footer-chill-p": "come join our discord and just vibe. no stress, no clankery stuff.",
+                "footer-chill-h": "// chill", "footer-chill-p": "come join our discord and just vibe. no stress, no complicated stuff.",
                 "footer-support-h": "// support", "footer-support-p": "need help with prime? just ask anyone in the server or dm us.",
                 "footer-status": "STATUS: EARLY_ACCESS // NO_CUSTOM_STUFF_YET",
                 "footer-credits": "DESIGNED AND DEVELOPED BY BMR",
                 "footer-terms": "TERMS",
                 "footer-privacy": "PRIVACY",
+                "footer-sitemap": "SITEMAP",
                 "modal-close": "[ close ]", "modal-h": "early access",
                 "modal-can-h": "available now", "modal-cannot-h": "locked stuff",
                 "modal-c1": "AI Chat System", "modal-c2": "Asset Discovery", "modal-c3": "Server Security", "modal-c4": "Global Ranking",
@@ -2513,6 +2816,8 @@
                 "footer-credits": "BMR TARAFINDAN TASARLANDI VE GELİŞTİRİLDİ",
                 "footer-terms": "KOŞULLAR",
                 "footer-privacy": "GİZLİLİK",
+                "footer-sitemap": "SİTE HARİTASI",
+                "footer-sitemap": "SİTE HARİTASI",
                 "modal-close": "[ kapat ]", "modal-h": "dikkat", "modal-p": "prime sunucunu koruyacak ve varlık bulma, yapay zeka sohbeti gibi tüm havalı şeyleri anında yapacak. <br><br> şimdilik ayarlari veya paneli özelleştiremezsin çünkü hala erken erişimde.",
                 "modal-btn-p": "botu şimdi ekle", "modal-btn-s": "sonra"
             },
@@ -2537,6 +2842,7 @@
                 "footer-credits": "تم التصميم والتطوير بواسطة BMR",
                 "footer-terms": "الشروط",
                 "footer-privacy": "الخصوصية",
+                "footer-sitemap": "خريطة الموقع",
                 "modal-close": "[ إغلاق ]", "modal-h": "تنبيه", "modal-p": "برايم بيحمي سيرفرك ويسوي كل الأشياء الرهيبة مثل البحث عن الموارد ودردشة الذكاء الاصطناعي فوراً. <br><br> حالياً ما تقدر تخصص الإعدادات أو لوحة التحكم لأنه لسه في مرحلة الوصول المبكر.",
                 "modal-btn-p": "أضف البوت الآن", "modal-btn-s": "ليس الآن"
             },
@@ -2561,6 +2867,7 @@
                 "footer-credits": "BMR द्वारा डिज़ाइन और विकसित",
                 "footer-terms": "शर्तें",
                 "footer-privacy": "गोपनीयता",
+                "footer-sitemap": "साइटमैप",
                 "modal-close": "[ बंद करें ]", "modal-h": "ध्यान दें", "modal-p": "प्राइम आपके सर्वर की सुरक्षा करेगा और एसेट्स खोजने और AI चैट जैसी सभी कूल चीज़ें तुरंत करेगा। <br><br> अभी के लिए, आप सेटिंग्स या डैशबोर्ड को कस्टमाइज़ नहीं कर सकते क्योंकि यह अभी भी अर्ली एक्सेस में है।",
                 "modal-btn-p": "बॉट जोड़ें", "modal-btn-s": "बाद में"
             },
@@ -2585,6 +2892,7 @@
                 "footer-credits": "ENTWORFEN UND ENTWICKELT VON BMR",
                 "footer-terms": "BEDINGUNGEN",
                 "footer-privacy": "DATENSCHUTZ",
+                "footer-sitemap": "SITEMAP",
                 "modal-close": "[ schließen ]", "modal-h": "aufgepasst", "modal-p": "prime wird deinen server schützen und sofort coole dinge wie asset-suche und ki-chat erledigen. <br><br> vorerst kannst du die einstellungen oder das dashboard nicht anpassen, da es sich noch im early access befindet.",
                 "modal-btn-p": "jetzt hinzufügen", "modal-btn-s": "später"
             },
@@ -2609,6 +2917,7 @@
                 "footer-credits": "DISEÑADO Y DESARROLLADO POR BMR",
                 "footer-terms": "TÉRMINOS",
                 "footer-privacy": "PRIVACIDAD",
+                "footer-sitemap": "MAPA DEL SITIO",
                 "modal-close": "[ cerrar ]", "modal-h": "atención", "modal-p": "prime protegerá tu servidor y hará cosas geniales como buscar recursos y chat ai de inmediato. <br><br> por ahora, no puedes personalizar la configuración ni el panel porque todavía está en acceso anticipado.",
                 "modal-btn-p": "añadir bot ahora", "modal-btn-s": "luego"
             },
@@ -2633,6 +2942,7 @@
                 "footer-credits": "ДИЗАЙН И РАЗРАБОТКА BMR",
                 "footer-terms": "УСЛОВИЯ",
                 "footer-privacy": "ПРИВАТНОСТЬ",
+                "footer-sitemap": "КАРТА САЙТА",
                 "modal-close": "[ закрыть ]", "modal-h": "внимание", "modal-p": "прайм защитит твой сервер и сразу начнет искать ассеты и общаться в чате. <br><br> пока что нельзя менять настройки или панель управления, так как бот в раннем доступе.",
                 "modal-btn-p": "добавить сейчас", "modal-btn-s": "потом"
             }
@@ -2669,21 +2979,58 @@
             document.getElementById('langSwitcher').classList.toggle('open');
         }
 
-        // Back to top logic
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+        // Auth Check
+        async function checkAuth() {
+            // Update login link with current path for redirect
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+            }
+
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.authenticated) {
+                        const userProfile = document.getElementById('userProfile');
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (userProfile) {
+                            userProfile.style.display = 'flex';
+                            document.getElementById('userName').innerText = data.discord.username;
+                            document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+                        }
+                    }
+                }
+            } catch (e) { console.log('Auth check bypassed or failed.') }
+        }
+        checkAuth();
+
+        // Logout Modal Logic
+        function openLogoutModal() {
+            document.getElementById('logoutModal').classList.add('active');
+        }
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('active');
         }
 
-        // Close on outside click (removed redundant scroll listener)
+        window.addEventListener('scroll', () => {
+            const btt = document.getElementById('backToTop');
+            const nav = document.getElementById('navbar');
+            if (btt) {
+                if (window.scrollY > 200) btt.classList.add('active');
+                else btt.classList.remove('active');
+            }
+            if (nav) {
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            }
+        });
 
         // Close on outside click
         window.onclick = function (event) {
             if (!event.target.closest('.lang-switcher')) {
                 const ls = document.getElementById('langSwitcher');
-                if (ls.classList.contains('open')) {
+                if (ls && ls.classList.contains('open')) {
                     ls.classList.remove('open');
                 }
             }

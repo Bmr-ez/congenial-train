@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import logging
 import psutil
 import time
+from datetime import datetime
 
 # Fix imports for database and brain since they are in the parent directory
 BASE_DIR = Path(__file__).parent
@@ -36,7 +37,9 @@ app = FastAPI(title="Prime AI Dashboard API")
 app.add_middleware(
     SessionMiddleware, 
     secret_key=SESSION_SECRET,
-    session_cookie="prime_session"
+    session_cookie="prime_session",
+    same_site="lax",
+    https_only=False
 )
 
 app.add_middleware(
@@ -82,19 +85,46 @@ async def status_page():
 async def playground_page():
     return FileResponse(BASE_DIR / "playground.html")
 
+@app.get("/dmca.html")
+async def dmca_page():
+    return FileResponse(BASE_DIR / "dmca.html")
+
+@app.get("/support.html")
+async def support_page():
+    return FileResponse(BASE_DIR / "support.html")
+
+@app.get("/roadmap.html")
+async def roadmap_page():
+    return FileResponse(BASE_DIR / "roadmap.html")
+
+@app.get("/coming-soon.html")
+async def coming_soon_page():
+    return FileResponse(BASE_DIR / "coming-soon.html")
+
+@app.get("/sitemap.html")
+async def sitemap_page():
+    return FileResponse(BASE_DIR / "sitemap.html")
+
+@app.get("/bmr.html")
+async def bmr_page():
+    return FileResponse(BASE_DIR / "bmr.html")
+
 @app.get("/login")
-async def login():
-    if not CLIENT_ID:
-        return JSONResponse({"error": "DISCORD_CLIENT_ID not configured in .env"}, status_code=500)
-    
-    discord_auth_url = (
-        f"https://discord.com/api/oauth2/authorize"
-        f"?client_id={CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
-        f"&response_type=code"
-        f"&scope=identify%20guilds"
+async def login(request: Request):
+    # Dashboard not ready - return simulated classic server error as requested
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": [
+                {
+                    "type": "connection_error",
+                    "loc": ["query", "code"],
+                    "msg": "cant connect to server",
+                    "input": None
+                }
+            ]
+        }
     )
-    return RedirectResponse(discord_auth_url)
 
 @app.get("/callback")
 async def callback(request: Request, code: str):
@@ -137,12 +167,15 @@ async def callback(request: Request, code: str):
         request.session["user"] = user_info
         request.session["guilds"] = guilds
         
-        # Redirect back to dashboard
-        return RedirectResponse(url="/dashboard/index.html")
+        # Redirect back to the original page or dashboard
+        next_url = request.session.pop("next_url", "/")
+        return RedirectResponse(url=next_url)
 
 @app.get("/api/me")
 async def get_me(request: Request):
     user = request.session.get("user")
+    logger.info(f"Checking auth for session: {user.get('username') if user else 'No user detected'}")
+    
     if not user:
         return JSONResponse({"authenticated": False}, status_code=401)
     
@@ -164,6 +197,29 @@ async def get_me(request: Request):
             "notes_count": len(notes)
         }
     }
+    
+def format_time_ago(dt):
+    if not dt: return "unknown"
+    if isinstance(dt, str):
+        try:
+            # Handle standard SQLite/Postgres formats
+            clean_dt = dt.split('.')[0] if '.' in dt else dt
+            dt = datetime.strptime(clean_dt, "%Y-%m-%d %H:%M:%S")
+        except:
+            return "just now"
+    
+    now = datetime.now()
+    diff = now - dt
+    
+    if diff.days > 0:
+        return f"{diff.days}d ago"
+    hours = diff.seconds // 3600
+    if hours > 0:
+        return f"{hours}h ago"
+    minutes = (diff.seconds % 3600) // 60
+    if minutes > 0:
+        return f"{minutes}m ago"
+    return "just now"
 
 @app.get("/api/stats")
 async def get_stats():
@@ -178,11 +234,59 @@ async def get_stats():
     ram_usage = psutil.virtual_memory().percent
     
     # DB stats
-    levels = db_manager.get_levels()
-    total_users = len(levels)
+    total_users = 0
+    total_commands = 0
+    ai_reflections = 0
+    vibe_distribution = {}
+    activities = []
     
+    try:
+        with db_manager.get_connection() as conn:
+            with db_manager.get_cursor(conn) as cursor:
+                # Total users
+                cursor.execute('SELECT COUNT(*) FROM user_levels')
+                total_users = cursor.fetchone()[0]
+                
+                # Total commands
+                cursor.execute("SELECT COUNT(*) FROM conversation_history WHERE role = 'user' AND content LIKE '!%'")
+                total_commands = cursor.fetchone()[0]
+
+                # AI Reflections
+                cursor.execute("SELECT COUNT(*) FROM conversation_history WHERE role = 'model'")
+                ai_reflections = cursor.fetchone()[0]
+                
+                # Vibe distribution
+                cursor.execute('SELECT vibe, COUNT(*) FROM user_memory GROUP BY vibe')
+                vibe_distribution = {str(row[0]): row[1] for row in cursor.fetchall()}
+
+                # LATEST ACTIVITIES
+                # 1. Latest AI Vibe Updates
+                cursor.execute('SELECT username, vibe, last_updated FROM user_memory ORDER BY last_updated DESC LIMIT 3')
+                for row in cursor.fetchall():
+                    activities.append({
+                        "type": "AI Reflection",
+                        "content": f"Updated vibe for <strong>@{row[0]}</strong> to <span class='mention'>'{row[1]}'</span>",
+                        "time": format_time_ago(row[2])
+                    })
+
+                # 2. Latest Snipe Activity
+                cursor.execute('SELECT username, timestamp FROM deleted_messages ORDER BY timestamp DESC LIMIT 2')
+                for row in cursor.fetchall():
+                    activities.append({
+                        "type": "Moderation",
+                        "content": f"Sniped a deleted message from <strong>@{row[0]}</strong>.",
+                        "time": format_time_ago(row[1])
+                    })
+    except Exception as e:
+        logger.error(f"Error fetching stats from DB: {e}")
+    
+    # Sort activities by time (optional, they are already grouped)
     return {
         "total_users": total_users,
+        "total_commands": total_commands,
+        "ai_reflections": ai_reflections,
+        "vibe_distribution": vibe_distribution,
+        "activities": activities,
         "system_status": "ONLINE",
         "cpu_load": cpu_usage,
         "ram_usage": ram_usage,

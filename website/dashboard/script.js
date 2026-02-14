@@ -52,10 +52,10 @@ function initializeDashboard(data) {
         welcomeDesc.textContent = `Prime AI is currently connected to ${guilds.length} of your servers.`;
     }
 
-    // Populate Guilds List in Activity Feed area (or dedicated section)
-    const logList = document.querySelector('.log-list');
-    if (logList && guilds.length > 0) {
-        logList.innerHTML = '<h3>Your Connected Servers</h3>';
+    // Populate Guilds List
+    const guildList = document.getElementById('guildList');
+    if (guildList && guilds.length > 0) {
+        guildList.innerHTML = '';
         guilds.slice(0, 8).forEach(guild => {
             const iconUrl = guild.icon
                 ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
@@ -70,7 +70,7 @@ function initializeDashboard(data) {
                     <span style="font-size:0.8rem; opacity:0.6;">${guild.permissions_new ? 'Administrator' : 'Member'}</span>
                 </div>
             `;
-            logList.appendChild(guildItem);
+            guildList.appendChild(guildItem);
         });
     }
 }
@@ -81,16 +81,79 @@ async function loadStats() {
         const stats = await response.json();
 
         // Update Stats Cards
-        const totalUsersEl = document.querySelectorAll('.stat-info h3')[0];
+        const totalUsersEl = document.getElementById('totalUsersVal');
         if (totalUsersEl) totalUsersEl.textContent = stats.total_users.toLocaleString();
+
+        const totalCmdsEl = document.getElementById('totalCmdsVal');
+        if (totalCmdsEl) totalCmdsEl.textContent = stats.total_commands >= 1000
+            ? (stats.total_commands / 1000).toFixed(1) + 'k'
+            : stats.total_commands;
+
+        const aiReflectionsEl = document.getElementById('aiReflectionsVal');
+        if (aiReflectionsEl) aiReflectionsEl.textContent = stats.ai_reflections >= 1000
+            ? (stats.ai_reflections / 1000).toFixed(1) + 'k'
+            : stats.ai_reflections;
 
         const statusLabel = document.querySelector('.status-indicator span');
         if (statusLabel) statusLabel.textContent = `SYSTEM ${stats.system_status}`;
 
-        const uptimeVal = document.querySelector('.m-val');
-        if (uptimeVal) uptimeVal.textContent = '99.9%';
+        const uptimeVal = document.getElementById('uptimeVal');
+        if (uptimeVal) {
+            const h = Math.floor(stats.uptime_seconds / 3600);
+            const m = Math.floor((stats.uptime_seconds % 3600) / 60);
+            uptimeVal.textContent = `${h}h ${m}m`;
+        }
+
+        const ramVal = document.getElementById('ramVal');
+        if (ramVal) ramVal.textContent = `${Math.round(stats.ram_usage)}%`;
+
+        // Update Vibe Chart
+        const vibeChart = document.getElementById('vibeChart');
+        if (vibeChart && stats.vibe_distribution) {
+            const totalVibes = Object.values(stats.vibe_distribution).reduce((a, b) => a + b, 0);
+            if (totalVibes > 0) {
+                vibeChart.innerHTML = '';
+                const colors = {
+                    'creative': 'var(--p)',
+                    'technical': 'var(--s)',
+                    'casual': '#fff',
+                    'respectful': 'var(--t)',
+                    'rude': '#ff5555'
+                };
+
+                Object.entries(stats.vibe_distribution).forEach(([vibe, count]) => {
+                    const percent = Math.round((count / totalVibes) * 100);
+                    const bar = document.createElement('div');
+                    bar.className = 'vibe-bar';
+                    bar.style = `--val: ${percent}%; --color: ${colors[vibe.toLowerCase()] || '#888'};`;
+                    bar.innerHTML = `
+                        <span class="v-label">${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</span>
+                        <div class="v-progress"></div>
+                        <span class="v-percent">${percent}%</span>
+                    `;
+                    vibeChart.appendChild(bar);
+                });
+            }
+        }
+
+        // Update Activity Feed
+        const activityList = document.getElementById('activityList');
+        if (activityList && stats.activities && stats.activities.length > 0) {
+            activityList.innerHTML = '';
+            stats.activities.forEach(act => {
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `
+                    <div class="log-time">${act.time}</div>
+                    <div class="log-content">
+                        <strong>${act.type}:</strong> ${act.content}
+                    </div>
+                `;
+                activityList.appendChild(item);
+            });
+        }
     } catch (error) {
-        console.warn('Failed to load stats');
+        console.warn('Failed to load stats', error);
     }
 }
 
