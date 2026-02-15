@@ -213,31 +213,21 @@ async def ai_suggest_config(guild_id: str, request: Request):
         roles = r_res.json() if r_res.status_code == 200 else []
         channels = c_res.json() if c_res.status_code == 200 else []
 
-    # Prepare context for AI
-    chan_list = [{"id": c["id"], "name": c["name"], "type": c["type"]} for c in channels if c["type"] in [0, 5]]
-    role_list = [{"id": r["id"], "name": r["name"], "color": r["color"]} for r in roles if r["name"] != "@everyone" and not r.get("managed")]
+    # Prepare context for AI (TRIMMED for performance)
+    chan_list = [{"id": c["id"], "name": c["name"]} for c in channels if c["type"] in [0, 5]][:60]
+    role_list = [{"id": r["id"], "name": r["name"]} for r in roles if r["name"] != "@everyone" and not r.get("managed")][:60]
 
     system_instr = """You are a Discord AI Auditor.
-Analyze the provided lists of channels and roles. Map them to the following internal configuration keys based on their names and purpose.
-Keys to map:
-- welcome_channel: (Channel for welcome messages)
-- log_channel: (Channel for logs/audits)
-- rules_channel: (Channel for rules)
-- roles_channel: (Channel for role selection)
-- verification_channel: (Channel for newcomer verification)
-- leveling_channel: (Channel for level up alerts)
-- general_channel: (Main chat channel)
-- verified_role: (Role for verified members)
-- unverified_role: (Role for new members)
-- muted_role: (Role for muted users)
+1. Map existing channels/roles to these keys: welcome_channel, log_channel, rules_channel, roles_channel, verification_channel, leveling_channel, general_channel, verified_role, unverified_role, muted_role.
+2. If a key from the list above cannot be mapped to an existing channel/role (i.e. it's MISSING), add it to a 'creation_suggestions' list with a recommended name and type.
+3. If a role has no color, suggest a creative hex color.
 
-Also, if a role has the default color (0), suggest a creative hex color that fits its name.
-
-OUTPUT FORMAT: Return ONLY a JSON object:
+OUTPUT JSON ONLY:
 {
   "mappings": { "key": "id", ... },
+  "creation_suggestions": [ {"key": "...", "recommended_name": "...", "type": "channel|role"}, ... ],
   "role_color_suggestions": [ {"id": "...", "suggested_color": "#hex"}, ... ],
-  "reasoning": "A very brief explanation of why you chose these."
+  "reasoning": "Quick logic summary."
 }
 """
 
@@ -245,10 +235,11 @@ OUTPUT FORMAT: Return ONLY a JSON object:
     
     try:
         from brain import safe_generate_content, PRIMARY_MODEL, types
+        # Use a slightly lower temperature for deterministic & faster results
         response = await safe_generate_content(
             model=PRIMARY_MODEL, 
             contents=f"{system_instr}\n\nSERVER CONTEXT:\n{context_str}\n\nOutput JSON:",
-            config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.2)
+            config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.1)
         )
         
         if not response or not response.text:

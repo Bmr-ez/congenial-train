@@ -423,30 +423,41 @@ async function aiAutoLink() {
             const sug = data.suggestions;
             Dashboard.activeSuggestions = sug;
 
-            // Show Modal
             document.getElementById('aiSuggestModal').classList.add('active');
             document.getElementById('aiReasoning').textContent = sug.reasoning;
 
             const list = document.getElementById('aiSuggestList');
             let html = "";
 
-            // Render Mappings
             for (const [key, id] of Object.entries(sug.mappings)) {
                 if (!id) continue;
                 html += `
                     <div class="plan-item">
+                        <i class="fas fa-link" style="color: var(--p); margin-right: 0.5rem; font-size: 0.8rem;"></i>
                         <b>${key.replace('_', ' ')}</b>
-                        <span>Detected ID: ${id}</span>
+                        <span>Linked to ID: ${id}</span>
                     </div>
                 `;
             }
 
-            // Render Colors
+            if (sug.creation_suggestions && sug.creation_suggestions.length > 0) {
+                html += `<h4 style="margin: 1.5rem 0 0.5rem 0; font-size: 0.7rem; color: #ffab40; opacity: 0.8;"><i class="fas fa-exclamation-triangle"></i> MISSING INFRASTRUCTURE</h4>`;
+                sug.creation_suggestions.forEach(s => {
+                    html += `
+                        <div class="plan-item" style="border-left: 2px solid #ffab40;">
+                            <b>${s.key.replace('_', ' ')}</b>
+                            <span style="opacity: 0.7;">MISSING: Suggest creating "${s.recommended_name}"</span>
+                        </div>
+                    `;
+                });
+                html += `<p style="font-size: 0.7rem; opacity: 0.5; margin-top: 1rem;"><i>* You can use the <b>AI Architect</b> below to build these missing channels instantly.</i></p>`;
+            }
+
             if (sug.role_color_suggestions && sug.role_color_suggestions.length > 0) {
-                html += `<h4 style="margin: 1.5rem 0 0.5rem 0; font-size: 0.7rem; opacity: 0.5;">AESTHETIC UPGRADES</h4>`;
+                html += `<h4 style="margin: 1.5rem 0 0.5rem 0; font-size: 0.7rem; color: var(--p); opacity: 0.8;"><i class="fas fa-palette"></i> AESTHETIC UPGRADES</h4>`;
                 sug.role_color_suggestions.forEach(c => {
                     html += `
-                        <div class="plan-item">
+                        <div class="plan-item" style="border-left: 2px solid var(--p);">
                             <b>ROLE COLOR</b>
                             <span style="color: ${c.suggested_color}">${c.suggested_color} (Suggested)</span>
                         </div>
