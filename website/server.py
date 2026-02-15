@@ -21,6 +21,10 @@ import brain
 
 load_dotenv()
 
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("prime_os")
+
 # Configuration Audit & Sanitization
 def get_env_safe(key, default=""):
     val = os.getenv(key, default).strip().replace('"', '').replace("'", "")
@@ -47,10 +51,6 @@ SESSIONS = {}
 BOT_GUILDS = set()
 
 app = FastAPI()
-
-# Logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("prime_os")
 
 app.add_middleware(
     CORSMiddleware,
