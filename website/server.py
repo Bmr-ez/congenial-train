@@ -31,6 +31,15 @@ REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI", "http://localhost:8000/callback
 SESSIONS = {}
 BOT_GUILDS = set()
 
+# Configuration Audit
+REQUIRED_KEYS = ["DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_TOKEN", "GEMINI_KEY"]
+missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
+if missing:
+    print("\n" + "!"*60)
+    print(f"CRITICAL CONFIG ERROR: Missing variables: {', '.join(missing)}")
+    print("Ensure these are added to your Railway Variables tab!")
+    print("!"*60 + "\n")
+
 app = FastAPI()
 
 # Logging
