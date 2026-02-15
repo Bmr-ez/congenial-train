@@ -25,7 +25,7 @@ load_dotenv()
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID", "")
 CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET", "")
 BOT_TOKEN = os.getenv("DISCORD_TOKEN", "")
-REDIRECT_URI = "http://localhost:8000/callback"
+REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI", "http://localhost:8000/callback")
 
 # SERVER-SIDE STORAGE
 SESSIONS = {}
