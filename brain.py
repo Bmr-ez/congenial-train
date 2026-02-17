@@ -28,9 +28,8 @@ FALLBACK_MODEL = "gemini-3-flash-preview"
 SECRET_LOG_CHANNEL_ID = int(os.getenv("SECRET_LOG_CHANNEL_ID", "0"))
 
 # --- API KEY MANAGEMENT ---
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-if XAI_API_KEY and "your_xai_api_key" in XAI_API_KEY:
-    XAI_API_KEY = None
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 def find_keys():
     found = []
@@ -51,10 +50,42 @@ else:
     logger.error("❌ BRAIN: NO Gemini API KEY DETECTED.")
     gemini_client = None
 
-if XAI_API_KEY:
-    logger.info("✅ BRAIN: Grok (xAI) API Key Detected. Chatting will use Grok.")
+if GROQ_API_KEY:
+    logger.info(f"✅ BRAIN: Groq API Key Detected. Chatting will use {GROQ_MODEL}.")
 else:
-    logger.warning("⚠️ BRAIN: No Grok API Key found. Falling back to Gemini for all tasks.")
+    logger.warning("⚠️ BRAIN: No Groq API Key found. Falling back to Gemini for all tasks.")
+
+async def get_groq_response(prompt, system_prompt, model=GROQ_MODEL):
+    """Call Groq API for lightning fast chat responses."""
+    if not GROQ_API_KEY:
+        return None
+    
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.7
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=30.0)
+            if response.status_code == 200:
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
+            else:
+                logger.error(f"Groq API error: {response.status_code} - {response.text}")
+                return None
+        except Exception as e:
+            logger.error(f"Groq Request failed: {e}")
+            return None
 
 def rotate_gemini_key():
     global current_key_index, gemini_client
@@ -257,26 +288,61 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             db_manager.save_message(user_id, "user", f"[Sent Image] {prompt if prompt else ''}")
             db_manager.save_message(user_id, "model", result_text)
             return result_text
-        else:
-            history = db_manager.get_history(user_id, limit=15)
-            # Simplification for history processing
-            contents = [types.Part.from_text(text=modified_system_prompt + user_context)]
+        
+        # --- ROUTING LOGIC: Groq vs Gemini ---
+        # Groq handles general chat (fast, cheap), Gemini handles specialized tasks (vision, tutorials, modes)
+        is_specialized = model is not None or mode is not None or is_tutorial or use_thought
+        
+        history = db_manager.get_history(user_id, limit=12)
+        
+        if not is_specialized and GROQ_API_KEY:
+            # ROUTE TO GROQ (CHAT)
+            logger.info(f"🚀 ROUTING TO GROQ: {username or 'User'}")
+            
+            groq_messages = [{"role": "system", "content": modified_system_prompt + user_context}]
             for msg in history:
-                role = "user" if msg['role'] == 'user' else "model"
-                contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg['parts'][0]['text'])]))
+                role = "user" if msg['role'] == 'user' else "assistant"
+                content = msg['parts'][0]['text']
+                groq_messages.append({"role": role, "content": content})
             
-            contents.append(types.Content(role="user", parts=[types.Part.from_text(text=user_question)]))
+            groq_messages.append({"role": "user", "content": user_question})
             
-            response = await safe_generate_content(model=model if model else PRIMARY_MODEL, contents=contents)
-            if not response or not response.text:
-                return "I'm having trouble thinking right now."
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+            payload = {"model": GROQ_MODEL, "messages": groq_messages, "temperature": 0.8}
             
-            result_text = response.text
-            db_manager.save_message(user_id, "user", user_question)
-            db_manager.save_message(user_id, "model", result_text)
-            
-            asyncio.create_task(reflect_on_user(user_id, username, user_question, result_text))
-            return result_text
+            async with httpx.AsyncClient() as client:
+                try:
+                    g_res = await client.post(url, headers=headers, json=payload, timeout=25.0)
+                    if g_res.status_code == 200:
+                        result_text = g_res.json()["choices"][0]["message"]["content"]
+                        db_manager.save_message(user_id, "user", user_question)
+                        db_manager.save_message(user_id, "model", result_text)
+                        asyncio.create_task(reflect_on_user(user_id, username, user_question, result_text))
+                        return result_text
+                except Exception as e:
+                    logger.error(f"Groq Chat Failed: {e}")
+
+            logger.warning("⚠️ Groq unavailable, falling back to Gemini.")
+
+        # --- GEMINI FALLBACK/DEFAULT ---
+        contents = [types.Part.from_text(text=modified_system_prompt + user_context)]
+        for msg in history:
+            role = "user" if msg['role'] == 'user' else "model"
+            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg['parts'][0]['text'])]))
+        
+        contents.append(types.Content(role="user", parts=[types.Part.from_text(text=user_question)]))
+        
+        response = await safe_generate_content(model=model if model else PRIMARY_MODEL, contents=contents)
+        if not response or not response.text:
+            return "I'm having trouble thinking right now."
+        
+        result_text = response.text
+        db_manager.save_message(user_id, "user", user_question)
+        db_manager.save_message(user_id, "model", result_text)
+        
+        asyncio.create_task(reflect_on_user(user_id, username, user_question, result_text))
+        return result_text
     except Exception as e:
         logger.error(f"Brain Error: {e}")
         return "Critical brain failure. Try again later."
