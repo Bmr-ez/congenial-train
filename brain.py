@@ -462,10 +462,10 @@ async def search_google(query):
     return []
 
 async def search_images_google(query):
-    """Search for images via Serper API and return the top image URL."""
+    """Search for images via Serper API and return a list of top image URLs."""
     api_key = os.getenv("SERPER_API_KEY")
     if not api_key:
-        return None
+        return []
     
     url = "https://google.serper.dev/images"
     payload = json.dumps({"q": query})
@@ -477,7 +477,7 @@ async def search_images_google(query):
                 res_data = await response.json()
                 images = res_data.get('images', [])
                 if images:
-                    return images[0].get('imageUrl')
+                    return [img.get('imageUrl') for img in images[:10] if img.get('imageUrl')]
     except Exception as e:
         logger.error(f"Google image search error: {e}")
-    return None
+    return []

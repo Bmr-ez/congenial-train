@@ -1203,11 +1203,11 @@ async def handle_automatic_resources(message):
                         image_path = await search_and_download_image(search_query)
                     
                     if image_path and os.path.exists(image_path):
-                         await status_msg.edit(content=f"✅ **Found it.** Fulfilling your request for **{search_query}**.")
-                         await message.reply(content=f"here's the **{search_query}** asset you needed. hope it hits.", file=discord.File(image_path))
-                         try: os.remove(image_path)
-                         except: pass
-                         return True
+                        await status_msg.edit(content=f"✅ **Found it.** Fulfilling your request for **{search_query}**.")
+                        await message.reply(content=f"here's the **{search_query}** asset you needed. hope it hits.", file=discord.File(image_path), view=FindMoreImageView(search_query))
+                        try: os.remove(image_path)
+                        except: pass
+                        return True
 
                 # --- LINK SUGGESTIONS (Fallback) ---
                 # Perform real-time Google Search
@@ -2054,8 +2054,10 @@ async def search_and_download_image(query: str, limit: int = 1):
         # Method 1: Google Image Search (via Serper) - MOST ACCURATE
         try:
             logger.info(f"Trying Google Image Search for: {query}")
-            img_url = await brain.search_images_google(query)
-            if img_url:
+            img_urls = await brain.search_images_google(query)
+            if img_urls:
+                # Pick a random image from top results to ensure variety on "Find More"
+                img_url = random.choice(img_urls)
                 async with aiohttp.ClientSession() as session:
                     async with session.get(img_url, timeout=10) as response:
                         if response.status == 200:
@@ -2544,6 +2546,27 @@ class CaptchaEntryView(discord.ui.View):
             await interaction.response.send_message("❌ Captcha entry expired. Please click 'Verify Myself' again.", ephemeral=True)
             return
         await interaction.response.send_modal(CaptchaModal())
+
+class FindMoreImageView(discord.ui.View):
+    """View that allows users to find another image on the same topic."""
+    def __init__(self, query):
+        super().__init__(timeout=300)
+        self.query = query
+
+    @discord.ui.button(label="Find More", style=discord.ButtonStyle.secondary, emoji="🔎")
+    async def find_more(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # We don't defer here to show "typing" or similar, just act
+        try:
+            # We use interaction.followup to send new messages
+            image_path = await search_and_download_image(self.query)
+            if image_path and os.path.exists(image_path):
+                await interaction.response.send_message(f"found another one for **{self.query}**.", file=discord.File(image_path), view=FindMoreImageView(self.query))
+            else:
+                await interaction.response.send_message("❌ couldn't find any more unique images for that.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"Error in find more: {e}")
+            if not interaction.response.is_done():
+                await interaction.response.send_message("❌ error fetching more images.", ephemeral=True)
 
 class AssetFinderView(discord.ui.View):
     """View that generates link buttons for creative assets."""
@@ -3765,7 +3788,7 @@ async def on_message(message):
                 try:
                     image_path = await search_and_download_image(search_query, limit=1)
                     if image_path and os.path.exists(image_path):
-                        await message.channel.send(f"fulfilled your request. found/created this **{search_query}** for you.", file=discord.File(image_path))
+                        await message.channel.send(f"fulfilled your request. found/created this **{search_query}** for you.", file=discord.File(image_path), view=FindMoreImageView(search_query))
                         return
                 except Exception as e:
                     logger.error(f"Image search error: {str(e)}")
