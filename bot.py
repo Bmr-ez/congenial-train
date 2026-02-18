@@ -3807,7 +3807,8 @@ async def on_message(message):
                         'software': mentioned_software
                     }
                     async with message.channel.typing():
-                        response = await get_gemini_response(prompt_lower, user_id, username=message.author.name, is_tutorial=True, software=mentioned_software, brief=True, model="gemini-1.5-flash", guild_id=message.guild.id if message.guild else None)
+                        # Using Groq for tutorials/help for speed, Gemini 3 Flash Preview as fallback handled in brain.py
+                        response = await get_gemini_response(prompt_lower, user_id, username=message.author.name, is_tutorial=True, software=mentioned_software, brief=True, model=None, guild_id=message.guild.id if message.guild else None)
                     
                     if response and len(response.strip()) > 20:
                         await message.reply(response)
