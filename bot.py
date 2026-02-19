@@ -3830,6 +3830,37 @@ async def on_message(message):
             await message.reply("❌ Image generation failed!")
             return
         
+        # *** THE PRIME EYE (VISUAL INTELLIGENCE) - PRIORITY #1.5 ***
+        vision_triggers = ['look', 'see', 'what', 'analyze', 'fix', 'check', 'read', 'solve', 'price', 'identify', 'where', 'tell me', 'who']
+        if message.attachments and (any(kw in prompt_lower for kw in vision_triggers) or 'prime eye' in prompt_lower):
+            attachment = message.attachments[0]
+            if any(attachment.filename.lower().endswith(ext) for ext in ['png', 'jpg', 'jpeg', 'webp']):
+                async with message.channel.typing():
+                    try:
+                        # Download image to bytes
+                        image_bytes = await attachment.read()
+                        
+                        # Use Gemini Vision via get_gemini_response
+                        analysis = await brain.get_gemini_response(
+                            prompt=message.content if message.content else "Analyze this image and provide a helpful solution or identification.",
+                            user_id=user_id,
+                            username=message.author.name,
+                            image_bytes=image_bytes
+                        )
+                        
+                        embed = discord.Embed(
+                            title="👁️ The Prime Eye | Visual Intelligence",
+                            color=0x00FFB4, # Cyber Green
+                            description=analysis
+                        )
+                        embed.set_footer(text="Prime Intelligence • Vision Sync Active")
+                        await message.reply(embed=embed)
+                        return
+                    except Exception as e:
+                        logger.error(f"Prime Eye Error: {e}")
+                        await message.reply("❌ **Prime Eye Error**: Could not reconstruct the visual data.")
+                        return
+
         # *** IMAGE SEARCH - PRIORITY #2 ***
         search_words = ['gimme', 'give me', 'send me', 'get me', 'find me', 'show me', 'find', 'search', 'get', 'show', 'view', 'who is', 'what is', 'link']
         image_keywords = ['png', 'jpg', 'jpeg', 'image', 'img', 'picture', 'photo', 'gif', 'webp']
