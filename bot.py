@@ -3863,62 +3863,55 @@ async def on_message(message):
                 await message.reply(f"❌ Couldn't find images for '{search_query}'")
                 return
         
-        # *** DISCORD PROFILE/PFP - PRIORITY #2.1 ***
-        profile_keywords = ['pfp', 'avatar', 'profile picture', 'profile pic', 'stats', 'info', 'profile', 'bio', 'about me', 'discord acc']
-        if any(kw in prompt_lower for kw in profile_keywords) and ('show' in prompt_lower or 'get' in prompt_lower or 'give' in prompt_lower or 'send' in prompt_lower or 'view' in prompt_lower or 'what is' in prompt_lower or 'who is' in prompt_lower):
+        # *** DISCORD IDENTITY (PFP/Profile) - PRIORITY #2.1 ***
+        pfp_keywords = ['pfp', 'avatar', 'profile picture', 'profile pic']
+        stat_keywords = ['stats', 'info', 'profile', 'bio', 'about me', 'discord acc']
+        
+        is_pfp_req = any(kw in prompt_lower for kw in pfp_keywords)
+        is_stat_req = any(kw in prompt_lower for kw in stat_keywords)
+        
+        if (is_pfp_req or is_stat_req) and any(verb in prompt_lower for verb in ['show', 'get', 'give', 'send', 'view', 'what is', 'who is']):
             target_user = message.author
             if message.mentions:
                 mentions = [u for u in message.mentions if u.id != bot.user.id]
-                if mentions:
-                    target_user = mentions[0]
+                if mentions: target_user = mentions[0]
             
             async with message.channel.typing():
                 try:
-                    # Fetching full user can be heavy, use bot.get_user first
                     member = message.guild.get_member(target_user.id) if message.guild else None
                     
-                    embed = discord.Embed(
-                        title=f"👤 Discord Identity: {target_user.name}",
-                        color=discord.Color.from_rgb(0, 255, 255) # Cyber Cyan
-                    )
+                    if is_pfp_req and not is_stat_req:
+                        # SIMPLE PFP VIEW
+                        embed = discord.Embed(title=f"👤 {target_user.name}'s Identity", color=0x00FFFF)
+                        embed.set_image(url=target_user.display_avatar.url)
+                        embed.set_footer(text=f"Prime Intelligence • High-Res Sync")
+                        await message.reply(embed=embed)
+                        return
                     
+                    # FULL PROFILE STATS
+                    embed = discord.Embed(title=f"📊 Status Profile: {target_user.name}", color=0x00FFFF)
                     embed.set_thumbnail(url=target_user.display_avatar.url)
                     
-                    # Account Milestones
+                    embed.description = f"Current Level: **{db_manager.get_user_level(target_user.id)}**"
+                    
+                    # Account Age
                     created_at = target_user.created_at.strftime("%b %d, %Y")
-                    embed.add_field(name="🗓️ Account Age", value=f"Created {created_at}", inline=True)
+                    embed.add_field(name="🗓️ Created", value=created_at, inline=True)
                     
                     if member:
                         joined_at = member.joined_at.strftime("%b %d, %Y")
-                        embed.add_field(name="🚀 Server Journey", value=f"Joined {joined_at}", inline=True)
+                        embed.add_field(name="🚀 Joined", value=joined_at, inline=True)
                         
-                        # Top Role
-                        if member.top_role:
-                            embed.add_field(name="👑 Top Role", value=member.top_role.mention, inline=True)
-                        
-                        # Status/Pulse
                         if member.activities:
-                            pulse_lines = []
-                            for activity in member.activities:
-                                if isinstance(activity, discord.Spotify):
-                                    pulse_lines.append(f"🎧 Listening to **{activity.title}**")
-                                elif activity.type == discord.ActivityType.playing:
-                                    pulse_lines.append(f"🎮 Playing **{activity.name}**")
-                                elif activity.type == discord.ActivityType.custom:
-                                    pulse_lines.append(f"💬 {activity.name}")
-                            
-                            if pulse_lines:
-                                embed.add_field(name="✨ Pulse", value="\n".join(pulse_lines), inline=False)
-                    
-                    # Bio/Connections Fallback (Bots can't natively see Bios of others easily)
-                    embed.description = f"User level: **{db_manager.get_user_level(target_user.id)}**"
+                            pulse = "\n".join([f"✨ {a.name}" for a in member.activities[:2]])
+                            if pulse: embed.add_field(name="📡 Pulse", value=pulse, inline=False)
                     
                     embed.set_footer(text=f"Prime Intelligence • Data fetched live")
                     await message.reply(embed=embed)
                     return
                 except Exception as e:
-                    logger.error(f"Profile Error: {e}")
-                    await message.reply("❌ Error fetching the full profile.")
+                    logger.error(f"Identity Error: {e}")
+                    await message.reply("❌ Error syncing the identity data.")
                     return
         
         # *** YOUTUBE VIDEO SEARCH - PRIORITY #2.6 ***
