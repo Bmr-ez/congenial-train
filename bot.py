@@ -3831,7 +3831,7 @@ async def on_message(message):
             return
         
         # *** IMAGE SEARCH - PRIORITY #2 ***
-        search_words = ['gimme', 'give me', 'send me', 'get me', 'find me', 'show me', 'find', 'search']
+        search_words = ['gimme', 'give me', 'send me', 'get me', 'find me', 'show me', 'find', 'search', 'get', 'show', 'view', 'who is', 'what is', 'link']
         image_keywords = ['png', 'jpg', 'jpeg', 'image', 'img', 'picture', 'photo', 'gif', 'webp']
         
         has_search_word = any(w in prompt_lower for w in search_words)
@@ -3915,8 +3915,8 @@ async def on_message(message):
                     return
         
         # *** YOUTUBE VIDEO SEARCH - PRIORITY #2.6 ***
-        video_keywords = ['video', 'song', 'music', 'track', 'phonk', 'beat', 'clip', 'youtube', 'yt']
-        if has_search_word and any(kw in prompt_lower for kw in video_keywords):
+        video_keywords = ['video', 'song', 'music', 'track', 'phonk', 'beat', 'clip', 'youtube', 'yt', 'ep', 'episode', 'series', 'part', 'movie']
+        if (has_search_word or any(k in prompt_lower for k in ['ep', 'episode', 'part'])) and any(kw in prompt_lower for kw in video_keywords):
             # Extract search query
             search_query = None
             clean_text = message.content.replace(f'<@{bot.user.id}>', '').strip()
