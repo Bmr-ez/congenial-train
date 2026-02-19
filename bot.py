@@ -3867,34 +3867,22 @@ async def on_message(message):
         profile_keywords = ['pfp', 'avatar', 'profile picture', 'profile pic', 'stats', 'info', 'profile', 'bio', 'about me', 'discord acc']
         if any(kw in prompt_lower for kw in profile_keywords) and ('show' in prompt_lower or 'get' in prompt_lower or 'give' in prompt_lower or 'send' in prompt_lower or 'view' in prompt_lower or 'what is' in prompt_lower or 'who is' in prompt_lower):
             target_user = message.author
-            is_self = True
             if message.mentions:
                 mentions = [u for u in message.mentions if u.id != bot.user.id]
                 if mentions:
                     target_user = mentions[0]
-                    is_self = target_user.id == message.author.id
             
             async with message.channel.typing():
                 try:
-                    # Fetch full user object for Bio/About Me
-                    full_user = await bot.fetch_user(target_user.id)
-                    
-                    # Try to get member object for roles/join date
+                    # Fetching full user can be heavy, use bot.get_user first
                     member = message.guild.get_member(target_user.id) if message.guild else None
                     
                     embed = discord.Embed(
                         title=f"👤 Discord Identity: {target_user.name}",
-                        description=full_user.bio if full_user.bio else "_No bio set._",
                         color=discord.Color.from_rgb(0, 255, 255) # Cyber Cyan
                     )
                     
                     embed.set_thumbnail(url=target_user.display_avatar.url)
-                    
-                    # Extract links from bio if any
-                    import re
-                    links = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', full_user.bio or "")
-                    if links:
-                        embed.add_field(name="🔗 Connections", value="\n".join(links[:3]), inline=False)
                     
                     # Account Milestones
                     created_at = target_user.created_at.strftime("%b %d, %Y")
@@ -3904,21 +3892,28 @@ async def on_message(message):
                         joined_at = member.joined_at.strftime("%b %d, %Y")
                         embed.add_field(name="🚀 Server Journey", value=f"Joined {joined_at}", inline=True)
                         
-                        # Current Activity
+                        # Top Role
+                        if member.top_role:
+                            embed.add_field(name="👑 Top Role", value=member.top_role.mention, inline=True)
+                        
+                        # Status/Pulse
                         if member.activities:
-                            activity_text = ""
+                            pulse_lines = []
                             for activity in member.activities:
                                 if isinstance(activity, discord.Spotify):
-                                    activity_text += f"🎧 Listening to **{activity.title}**\n"
+                                    pulse_lines.append(f"🎧 Listening to **{activity.title}**")
                                 elif activity.type == discord.ActivityType.playing:
-                                    activity_text += f"🎮 Playing **{activity.name}**\n"
+                                    pulse_lines.append(f"🎮 Playing **{activity.name}**")
                                 elif activity.type == discord.ActivityType.custom:
-                                    activity_text += f"💬 {activity.name}\n"
+                                    pulse_lines.append(f"💬 {activity.name}")
                             
-                            if activity_text:
-                                embed.add_field(name="✨ Pulse", value=activity_text, inline=False)
+                            if pulse_lines:
+                                embed.add_field(name="✨ Pulse", value="\n".join(pulse_lines), inline=False)
                     
-                    embed.set_footer(text=f"Prime Intelligence • Identity Verified")
+                    # Bio/Connections Fallback (Bots can't natively see Bios of others easily)
+                    embed.description = f"User level: **{db_manager.get_user_level(target_user.id)}**"
+                    
+                    embed.set_footer(text=f"Prime Intelligence • Data fetched live")
                     await message.reply(embed=embed)
                     return
                 except Exception as e:
