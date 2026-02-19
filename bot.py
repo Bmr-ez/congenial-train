@@ -3871,7 +3871,7 @@ async def on_message(message):
         is_stat_req = any(kw in prompt_lower for kw in stat_keywords)
         
         if (is_pfp_req or is_stat_req) and any(verb in prompt_lower for verb in ['show', 'get', 'give', 'send', 'view', 'what is', 'who is']):
-            target_user = message.author
+            target_user = None
             
             # 1. Check for mentions
             if message.mentions:
@@ -3879,15 +3879,18 @@ async def on_message(message):
                 if mentions: target_user = mentions[0]
             
             # 2. Check for raw User ID in the message (17-20 digits)
-            else:
-                id_match = re.search(r'(\d{17,20})', message.content)
-                if id_match:
+            id_match = re.search(r'(\d{17,20})', message.content)
+            if not target_user and id_match:
+                async with message.channel.typing():
                     try:
-                        fetched_user = await bot.fetch_user(int(id_match.group(1)))
-                        if fetched_user:
-                            target_user = fetched_user
-                    except:
-                        pass # Valid ID but user not found/private
+                        target_user = await bot.fetch_user(int(id_match.group(1)))
+                    except Exception as e:
+                        await message.reply(f"❌ **Invalid Identity**: I couldn't find any user with the ID `{id_match.group(1)}`.")
+                        return
+            
+            # Default to author if no mention and no ID was found
+            if not target_user:
+                target_user = message.author
             
             async with message.channel.typing():
                 try:
