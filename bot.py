@@ -3870,7 +3870,7 @@ async def on_message(message):
         is_pfp_req = any(kw in prompt_lower for kw in pfp_keywords)
         is_stat_req = any(kw in prompt_lower for kw in stat_keywords)
         
-        if (is_pfp_req or is_stat_req) and any(verb in prompt_lower for verb in ['show', 'get', 'give', 'send', 'view', 'what is', 'who is']):
+        if (is_pfp_req or is_stat_req) and any(verb in prompt_lower for verb in ['show', 'get', 'give', 'send', 'view', 'what is', 'who is', 'shoe', 'find', 'check', 'look', 'display', 'sent', 'look up']):
             target_user = None
             
             # 1. Check for mentions
@@ -4953,7 +4953,7 @@ async def analyze_command(ctx, *, content=None):
         for chunk in chunks:
             await ctx.send(chunk)
 
-@bot.command(name="idea")
+@bot.command(name="idea", aliases=["ideas", "ideea", "ideaz"])
 async def idea_command(ctx, *, topic=None):
     """Generate creative ideas for videos, designs, content, or posts. Usage: !idea gaming video ideas"""
     if not topic:
