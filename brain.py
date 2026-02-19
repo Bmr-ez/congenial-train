@@ -288,12 +288,12 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
         current_time_str = datetime.now(timezone.utc).strftime("%A, %B %d, %Y - %I:%M %p UTC")
         global_instruction = (
             f"\n\n[SYSTEM CLOCK: {current_time_str}]\n"
-            "CRITICAL: "
-            "1. Use history to identify 'it/that'. "
-            "2. If code was just provided, focus ONLY on execution/instructions. DO NOT RE-GENERATE FILES. "
-            "3. NEVER cite search results or say 'According to...'. Just state the facts chill. "
-            "4. NO laziness. Provide full answers. "
-            "5. END with a specific 'What's next?' question."
+            "CRITICAL RULES:\n"
+            "1. CONTEXT SYNC: Use history to identify what 'it' or 'that' refers to. \n"
+            "2. ANTI-HALLUCINATION: If an image was analyzed in the PREVIOUS message, but NO image is attached in THIS message, do NOT attempt to see pixels. Use your previous text description from history as your source of truth. NEVER describe a random image (like cityscapes or landmarks) if no image is present.\n"
+            "3. ROBOT-TALK VOID: NEVER say 'According to my search' or 'As an AI'. Just state the facts directly.\n"
+            "4. NO LAZINESS: Give full, precise answers. Talk like a real, competent human.\n"
+            "5. FINAL PING: End with a short, relevant 'What's next?' question."
         )
         modified_system_prompt = f"{system_prompt}{memory_context}{overlay_context}{search_context}{global_instruction}"
 
