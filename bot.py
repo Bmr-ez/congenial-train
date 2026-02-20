@@ -4315,12 +4315,20 @@ async def on_message(message):
                     response = await get_gemini_response(prompt, message.author.id, username=message.author.name, image_bytes=None, guild_id=message.guild.id if message.guild else None)
             
             # --- CODE EXPORT ---
-            # Detect and extract code blocks for file attachment
-            code_blocks = re.findall(r'```(\w*)\n([\s\S]*?)```', response)
-            clean_response = re.sub(r'```(\w*)\n([\s\S]*?)```', '*(Code attached as file below)*', response)
+            # Only extract code blocks as files if they are substantial (> 15 lines) or JSON
+            all_blocks = re.findall(r'```(\w*)\n([\s\S]*?)```', response)
+            code_blocks = []
+            final_text = response
             
-            # If no code blocks, clean_response is just response
-            final_text = clean_response if code_blocks else response
+            for lang, code in all_blocks:
+                is_json = lang.lower() == "json"
+                is_large = len(code.splitlines()) > 15
+                
+                if is_json or is_large:
+                    code_blocks.append((lang, code))
+                    # Replace the block with a placeholder in the text
+                    placeholder = f"\n*(Extracted {lang.upper()} logic to file below)*\n"
+                    final_text = final_text.replace(f"```{lang}\n{code}```", placeholder)
             
             # --- TOOL EXECUTION ---
             # Automatically parse and execute tool calls (JSON blocks) in the response
