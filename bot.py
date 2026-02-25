@@ -3211,9 +3211,9 @@ async def setup_content_roles(ctx):
     except: pass
     logger.info(f"Content Creator roles setup triggered by {ctx.author.name} in {ctx.guild.name}")
     
-@bot.command(name="setup_verification")
+@bot.command(name="vmsg")
 @commands.has_permissions(administrator=True)
-async def setup_verification(ctx):
+async def verification_msg(ctx):
     """(Admin) Send the verification message to the current channel."""
     embed = discord.Embed(
         title="🛡️ Server Verification Required",

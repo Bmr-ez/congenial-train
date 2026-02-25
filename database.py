@@ -129,6 +129,19 @@ class DatabaseManager:
                 )
             ''')
 
+            # Migration: Ensure guild_id column exists for existing levels tables
+            try:
+                cursor.execute('ALTER TABLE user_levels ADD COLUMN IF NOT EXISTS guild_id BIGINT DEFAULT 0')
+                # Note: IF NOT EXISTS for column is Postgres specific. For SQLite we handle differently.
+                if not self.is_postgres:
+                    # SQLite doesn't support IF NOT EXISTS in ALTER TABLE
+                    # But we can try-except
+                    try: cursor.execute('ALTER TABLE user_levels ADD COLUMN guild_id BIGINT DEFAULT 0')
+                    except: pass
+                conn.commit()
+            except Exception as e:
+                pass
+
             # Table for Warnings
             create_table('''
                 CREATE TABLE IF NOT EXISTS user_warnings (
