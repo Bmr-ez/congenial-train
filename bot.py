@@ -2657,19 +2657,22 @@ class VerificationSetupView(discord.ui.View):
                 "**Why are these required?**\n"
                 "• **Verified Role**: Automatically granted to users after successful captcha completion.\n"
                 "• **Unverified Role**: The restricted role given to new members (prevents server access).\n"
-                "• **Muted Role (Optional)**: Used for server safety; accounts younger than 30 days will receive this role automatically upon verification until they reach the required age.\n\n"
-                "*All IDs are saved per-server and persist through restarts.*"
+                "• **Muted Role (Optional)**: Used for server safety; accounts younger than 30 days will receive this role automatically upon verification until they reach the required age.\n"
             ),
             color=0x00FFB4
         )
         
-        verified_display = f"<@&{self.verified_id}>" if self.verified_id else "❌ *Not Set*"
-        unverified_display = f"<@&{self.unverified_id}>" if self.unverified_id else "❌ *Not Set*"
+        v_emo = "<:Verified:1476140071135613101>"
+        u_emo = "<:Notverified:1476139672349573173>"
+        m_emo = "<:Muted:1476140288497160285>"
+
+        verified_display = f"<@&{self.verified_id}>" if self.verified_id else f"{u_emo} *Not Set*"
+        unverified_display = f"<@&{self.unverified_id}>" if self.unverified_id else f"{u_emo} *Not Set*"
         muted_display = f"<@&{self.muted_id}>" if self.muted_id else "⚪ *Optional (Not Set)*"
         
-        embed.add_field(name="✅ Verified Role", value=verified_display, inline=True)
-        embed.add_field(name="🌑 Unverified Role", value=unverified_display, inline=True)
-        embed.add_field(name="🔇 Muted Role", value=muted_display, inline=True)
+        embed.add_field(name=f"{v_emo} Verified Role", value=verified_display, inline=True)
+        embed.add_field(name=f"{u_emo} Unverified Role", value=unverified_display, inline=True)
+        embed.add_field(name=f"{m_emo} Muted Role", value=muted_display, inline=True)
         
         if self.verified_id and self.unverified_id:
             embed.set_footer(text="Ready to save. Hit the button below.")
@@ -2721,7 +2724,7 @@ class VerificationSetupView(discord.ui.View):
             
         db_manager.save_guild_setting(self.guild_id, "all_settings", settings)
         
-        await interaction.response.send_message("✅ **Configuration Saved!** Roles have been successfully mapped to this guild.", ephemeral=False)
+        await interaction.response.send_message("<:Verified:1476140071135613101> **Configuration Saved!** Roles have been successfully mapped to this guild.\n\n*Note: You can update these roles anytime by using the `!fixsetupverification` command.*", ephemeral=False)
         self.stop()
 
 class CaptchaModal(discord.ui.Modal, title='Verify You Are Human'):
@@ -7997,11 +8000,19 @@ async def access_instructions_command(ctx):
         logger.warning(f"Failed to pin access instructions: {e}")
         await ctx.send("⚠️ **Warning**: Instructions posted, but I couldn't pin them (check my permissions).", delete_after=10)
 
-@bot.command(name="setup_verification", aliases=["fix_setupverification"])
+@bot.command(name="setup_verification", aliases=["fixsetupverification"])
 @commands.has_permissions(administrator=True)
 async def setup_verification_cmd(ctx):
     """Interactive role setup for the verification system."""
-    view = VerificationSetupView(ctx.guild.id, ctx.author.id)
+    guild_id = ctx.guild.id
+    settings = db_manager.get_guild_setting(guild_id, "all_settings", {})
+    
+    # If setup is already done and user used !setup_verification, redirect them to fix
+    if ctx.invoked_with == "setup_verification" and settings.get("verified_role") and settings.get("unverified_role"):
+        await ctx.reply("<:Muted:1476140288497160285> **Server roles are already saved!** Please use the `!fixsetupverification` command if you wish to modify them.")
+        return
+
+    view = VerificationSetupView(guild_id, ctx.author.id)
     embed = view.create_embed()
     await ctx.send(embed=embed, view=view)
 
