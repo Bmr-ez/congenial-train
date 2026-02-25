@@ -79,10 +79,30 @@ body.authenticated .gate {
     font-size: 5rem;
     letter-spacing: -4px;
     margin-bottom: 2rem;
+    position: relative;
+    animation: glitch 3s infinite;
 }
 
-.gate h1 span {
-    color: var(--p);
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+        text-shadow: none;
+    }
+
+    2% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px 0 #bc00ff, -2px 0 #00ffaa;
+    }
+
+    4% {
+        transform: translate(2px, -2px);
+        text-shadow: -2px 0 #bc00ff, 2px 0 #00ffaa;
+    }
+
+    6% {
+        transform: translate(0);
+        text-shadow: none;
+    }
 }
 
 .btn-main {
@@ -94,13 +114,34 @@ body.authenticated .gate {
     letter-spacing: 3px;
     text-decoration: none;
     text-transform: uppercase;
-    transition: 0.3s;
+    transition: 0.3s forwards;
+    box-shadow: 0 0 0 #00ffaa;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-main::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: var(--p);
+    transition: 0.5s;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: -1;
+    border-radius: 50%;
+}
+
+.btn-main:hover::after {
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .btn-main:hover {
-    background: var(--p);
+    color: #000;
     transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(0, 255, 170, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 255, 170, 0.4);
 }
 
 /* --- MAIN INTERFACE --- */

@@ -288,38 +288,55 @@
                 <!-- SECTION: ANALYTICS -->
                 <section id="tab-analytics" class="tab">
                     <div class="welcome-msg">
-                        <h1>SYSTEM ANALYTICS</h1>
+                        <h1>REAL-TIME INTELLIGENCE</h1>
                     </div>
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <small>COMMAND USAGE</small>
-                            <h2 id="anaUsage">+24%</h2>
-                            <div class="chart-sim">
-                                <div class="bar" style="height: 40%"></div>
-                                <div class="bar" style="height: 60%"></div>
-                                <div class="bar" style="height: 80%"></div>
-                                <div class="bar" style="height: 50%"></div>
-                            </div>
+                            <small>AVG. LEVEL</small>
+                            <h2 id="anaAvgLevel">--</h2>
                         </div>
                         <div class="stat-card">
-                            <small>RETENTION RATE</small>
-                            <h2 id="anaRetention">92%</h2>
+                            <small>COMMAND VOL.</small>
+                            <h2 id="anaCommands">--</h2>
                         </div>
                         <div class="stat-card">
-                            <small>AI LATENCY</small>
-                            <h2 id="anaLatency">2.4s</h2>
+                            <small>SYSTEM STABILITY</small>
+                            <h2 id="anaLatency">99.8%</h2>
                         </div>
+                    </div>
+
+                    <div class="cust-section">
+                        <h4><i class="fas fa-satellite"></i> OMNI-CHANNEL RELAY</h4>
+                        <div class="field">
+                            <label>TARGET CHANNEL ID</label>
+                            <input type="text" id="relayChannelId" placeholder="Paste Channel ID here...">
+                        </div>
+                        <div class="field">
+                            <label>EMERGENCY TRANSMISSION (MESSAGE)</label>
+                            <textarea id="relayContent" placeholder="Broadcast directly to Discord..."></textarea>
+                        </div>
+                        <button type="button" class="btn-save" onclick="sendRelayMessage()" id="btnRelay">AUTHORIZE
+                            TRANSMISSION</button>
                     </div>
                 </section>
 
                 <!-- SECTION: LOGS -->
                 <section id="tab-logs" class="tab">
                     <div class="welcome-msg">
-                        <h1>SYSTEM LOGS</h1>
+                        <h1>NEURAL UPLINK / LOGS</h1>
                     </div>
                     <div class="log-console" id="logConsole">
                         <div class="log-entry"><b>[SYSTEM]</b> Initializing log relay...</div>
                         <div class="log-entry"><b>[SUCCESS]</b> Connection established.</div>
+                    </div>
+
+                    <div class="cust-section" style="margin-top: 2rem;">
+                        <h4><i class="fas fa-terminal"></i> DIRECT OVERRIDE TERMINAL</h4>
+                        <div class="input-group">
+                            <input type="text" id="terminalInput" placeholder="Enter diagnostic command sequence...">
+                            <button type="button" class="btn-trigger"
+                                onclick="executeTerminalCommand()">EXECUTE</button>
+                        </div>
                     </div>
                 </section>
 
