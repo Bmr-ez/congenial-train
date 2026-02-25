@@ -3547,20 +3547,41 @@ async def on_message(message):
     user_id = message.author.id
     is_bot_self = (message.author == bot.user)
     
-    # --- DM COMMAND PROTECTION ---
-    if is_dm and message.content.startswith('!') and not is_bot_self:
-        # Ignore common user states/flows, only block triggered commands
-        if user_id not in user_states:
-            embed = discord.Embed(
-                title="🚫 SERVER-ONLY ACCESS",
-                description=(
-                    "Most **PRIME** commands are designed to work within a server environment to ensure correct permissions and context.\n\n"
-                    "Please use this command in the server where PRIME is installed."
-                ),
-                color=0xFF5555
-            )
-            await message.channel.send(embed=embed)
-            return
+    # --- COMMAND ACCESS RESTRICTIONS ---
+    if message.content.startswith('!') and not is_bot_self:
+        cmd_name = message.content.split()[0][1:].lower()
+        
+        # Commands that are strictly tied to a server context (Moderation/Guild-Specific)
+        SERVER_REQUIRED_CMDS = [
+            'ban', 'kick', 'warn', 'timeout', 'mute', 'unmute', 'clear', 'warnings', 'warns',
+            'vmsg', 'setup_verification', 'fixsetupverification', 'serverinfo', 'leaderboard',
+            'level', 'rank', 'lv', 'portfolio', 'profile', 'set_verified_role', 'set_unverified_role'
+        ]
+        
+        # Commands that are strictly for Moderators (to be used in server)
+        MOD_CMDS = [
+            'ban', 'kick', 'warn', 'timeout', 'mute', 'unmute', 'clear', 
+            'vmsg', 'setup_verification', 'fixsetupverification'
+        ]
+
+        if is_dm:
+            # Block moderation/server-heavy commands in DMs
+            if cmd_name in SERVER_REQUIRED_CMDS:
+                embed = discord.Embed(
+                    title="🚫 SERVER-ONLY ACCESS",
+                    description=(
+                        f"The `!{cmd_name}` command is linked to server data or moderation permissions.\n\n"
+                        "Please use this command inside a server where **PRIME** is installed."
+                    ),
+                    color=0xFF5555
+                )
+                await message.channel.send(embed=embed)
+                return
+        else:
+            # OPTIONAL: If it's in a server and NOT a MOD command, 
+            # and the user wants "ONLY mod commands in server", we could suggest DMs.
+            # But we'll keep it simple for now and just fix the DM block.
+            pass
 
     # We only log if it's an interaction and NOT already in the log channel (to prevent loops)
     if (is_dm or is_mentioned or is_reply_to_bot or is_bot_self) and SECRET_LOG_CHANNEL_ID and message.channel.id != SECRET_LOG_CHANNEL_ID:
