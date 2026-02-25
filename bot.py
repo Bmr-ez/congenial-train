@@ -193,8 +193,10 @@ def save_yt_cooldowns(cooldowns):
 
 
 def save_levels(levels_data):
-    for uid, data in levels_data.items():
-        db_manager.save_level(uid, data['xp'], data['level'])
+    """Save the entire levels cache to the database."""
+    for gid, users in levels_data.items():
+        for uid, data in users.items():
+            db_manager.save_level(gid, uid, data['xp'], data['level'])
 
 def save_active_captchas(captchas):
     for uid, code in captchas.items():
@@ -4573,8 +4575,25 @@ async def level_command(ctx, member: discord.Member = None):
     """Check your current level and XP. Usage: !level [@user]"""
     member = member or ctx.author
     user_id = member.id
+    guild_id = ctx.guild.id
     
+    # 1. Check for specific guild data
     guild_levels = user_levels.get(guild_id, {})
+    
+    # 2. LEGACY DATA MIGRATION FALLBACK
+    # If user has no data in current guild, check if they have "Legacy" data (guild_id=0)
+    if user_id not in guild_levels:
+        legacy_data = user_levels.get(0, {}).get(user_id)
+        if legacy_data:
+            # Found legacy data! Migrate it to this guild.
+            if guild_id not in user_levels: user_levels[guild_id] = {}
+            user_levels[guild_id][user_id] = legacy_data.copy()
+            guild_levels = user_levels[guild_id]
+            
+            # Save to Database immediately
+            db_manager.save_level(guild_id, user_id, legacy_data['xp'], legacy_data['level'])
+            logger.info(f"💾 MIGRATION: Restored legacy levels for {member.name} in guild {guild_id}")
+    
     if user_id not in guild_levels:
         await ctx.send(f"📊 **{member.display_name}** hasn't started earning XP in this server yet. Start chatting to join the leaderboard!")
         return
@@ -4621,6 +4640,23 @@ async def level_command(ctx, member: discord.Member = None):
 async def leaderboard_command(ctx):
     """Show the top 10 users with the most XP."""
     guild_id = ctx.guild.id
+    
+    # 1. Check for legacy data and adopt it if guild levels are empty or missing individuals
+    if 0 in user_levels and user_levels[0]:
+        if guild_id not in user_levels: user_levels[guild_id] = {}
+        
+        # Adopt every user from legacy who isn't already in this guild
+        adopted_count = 0
+        for uid, data in user_levels[0].items():
+            if uid not in user_levels[guild_id]:
+                user_levels[guild_id][uid] = data.copy()
+                db_manager.save_level(guild_id, uid, data['xp'], data['level'])
+                adopted_count += 1
+        
+        if adopted_count > 0:
+            logger.info(f"💾 LEADERBOARD MIGRATION: Adopted {adopted_count} legacy users into guild {guild_id}")
+            # Optional: Clear legacy data for these users? No, keep as backup.
+
     guild_levels = user_levels.get(guild_id, {})
     if not guild_levels:
         await ctx.send("🌑 **The leaderboard is currently empty.** Be the first to start the journey.")
