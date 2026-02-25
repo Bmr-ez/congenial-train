@@ -1997,73 +1997,6 @@ Be specific with menu locations and techniques. Assume the user is editing in Ad
         logger.error(f"Video analysis error: {str(e)}")
         return f"{BOT_ERROR_MSG} [DEBUG: {str(e)}]"
 
-async def update_user_personality(user_id, username):
-    """Analyze recent history to update the user's perceived 'vibe' and personality profile."""
-    try:
-        # Get history (last 15 messages)
-        history = db_manager.get_history(user_id, limit=15)
-        if not history or len(history) < 3: # Only update if there's enough context
-            return
-
-        chat_blob = "\n".join([f"{'User' if m['role'] == 'user' else 'Prime'}: {m['parts'][0]['text']}" for m in history])
-        
-        prompt = f"""
-        Analyze the following chat history between a user and Prime (an elite creative partner).
-        
-        CHAT HISTORY:
-        {chat_blob}
-        
-        TASK:
-        1. Summarize this user's 'Creative Profile' (what they do, expertise, tools they mention).
-        2. Identify their 'Chat Vibe' (e.g., chill, aggressive, high-energy, technical, meme-heavy).
-        3. EXTRACT KNOWLEDGE: Identify specific facts, preferences, tools, plugins, or ideas the user mentioned.
-           - Look for: 'I use [X]', 'I like [Y]', 'Remember that [Z]', 'My idea is [W]'.
-        
-        STRICT RESPONSE FORMAT (JSON ONLY):
-        {{
-            "profile_summary": "Short 1-sentence descriptor.",
-            "vibe": "One-word vibe descriptor.",
-            "notes": "Brief bullets on habits.",
-            "knowledge_items": [
-                {{"type": "plugin/tool/fact/idea/preference", "content": "Specific detail detected"}}
-            ]
-        }}
-        """
-        
-        # Use a faster model for the background update
-        response = await safe_generate_content(model=FALLBACK_MODEL, contents=[prompt])
-        if response and response.text:
-            res_text = response.text.strip()
-            if "```json" in res_text:
-                res_text = res_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in res_text:
-                res_text = res_text.split("```")[1].split("```")[0].strip()
-            
-            try:
-                data = json.loads(res_text)
-                db_manager.update_user_memory(
-                    user_id, 
-                    username, 
-                    profile_summary=data.get('profile_summary'), 
-                    vibe=data.get('vibe'),
-                    notes=data.get('notes')
-                )
-                
-                # Update Second Brain
-                k_items = data.get('knowledge_items', [])
-                for item in k_items:
-                    db_manager.add_to_brain(
-                        user_id, 
-                        item.get('type', 'fact'), 
-                        item.get('content'), 
-                        context_snippet="Detected during personality update cycle."
-                    )
-                    
-                logger.info(f"Updated Second Brain & personality profile for {username}")
-            except Exception as inner_e:
-                logger.error(f"Failed to parse user personality JSON: {inner_e}")
-    except Exception as e:
-        logger.error(f"Error updating user personality: {e}")
 
 # --- SPECIALIZED AI PROMPTS ---
 EXECUTIVE_BRIEFING_PROMPT = """You are Prime, acting as an elite Executive Assistant. 
@@ -4546,14 +4479,7 @@ async def on_message(message):
                 }
             )
             
-            # --- UPDATE USER MEMORY ---
-            # Update interaction count and trigger personality analysis periodically (every 5 interactions)
-            user_interaction_mem = db_manager.get_user_memory(message.author.id)
-            icount = (user_interaction_mem.get('interaction_count', 0) if user_interaction_mem else 0) + 1
             db_manager.update_user_memory(message.author.id, message.author.name) # Increments count in DB
-            
-            if icount % 2 == 0:
-                asyncio.create_task(update_user_personality(message.author.id, message.author.name))
 
         except Exception as e:
             logger.error(f'Error in chat response: {str(e)}')

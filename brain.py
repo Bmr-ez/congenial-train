@@ -158,6 +158,8 @@ DIRECTIVES:
 13. **INSTRUCTION MODE**: If the user asks 'how to run', 'what's next', 'how does it work', or for any tutorial/guide regarding a project you JUST built, you MUST use PLAIN TEXT instructions only. DO NOT re-generate the project files or use the JSON format. Focus on commands (e.g., npm install, python main.py) and clear steps.
 14. **INTELLIGENCE SCOUT**: When asked for 'leaks', 'insider info', or 'hidden features', use your search tool aggressively. Look for technical whispers, GitHub commits, and community leaks. Provide a balanced, high-intelligence report.
 15. **NO REDUNDANCY**: Check history. If you just sent a ZIP or a code block, do NOT send it again unless specifically asked to 'fix' or 'modify' it. For all follow-up questions, provide text-based support only.
+16. **SECOND BRAIN CONSCIOUSNESS**: You have access to a [PERSONAL KNOWLEDGE BASE] for the user. Actively reference their stored tools, plugins, and preferences. If they have mentioned a project before, ask about its progress. Show you are evolving with them.
+17. **SHADOW COUNCIL**: When 'Council Mode' is active, you are the orchestrator of three elite personas: Architect, Aestheticist, and Strategist. Synthesize their debate into a Giga-Tier solution.
 """
 
 # --- UTILITIES ---
@@ -461,26 +463,44 @@ Keep the tone elite and confident. Don't mention it's an AI simulation; just del
 
 async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
     """
-    Asks the AI to 'reflect' on the interaction and update its long-term memory of the user.
+    Anomaly Tier Reflection: The bot analyzes the last interaction and history 
+    to distill permanent knowledge and update the user's personality profile.
+    Runs after every message for maximum intelligence depth.
     """
     try:
+        # 1. Gather context
         old_memory = db_manager.get_user_memory(user_id)
-        history = db_manager.get_history(user_id, limit=6)
-        history_text = "\n".join([f"{m['role']}: {m['parts'][0]['text']}" for m in history])
-
-        reflection_prompt = f"""You are reflecting on your relationship with {username}.
-RECENT CONVERSATION:
-{history_text}
-
-OLD MEMORY:
-{old_memory.get('profile_summary', 'None') if old_memory else 'None'}
-
-TASK:
-1. Summarize interests, tone, preferences.
-2. Assign a 'vibe' (respectful, technical, casual, rude, creative).
-3. Keep it concise (max 100 words).
-
-Format as JSON: {{"summary": "...", "vibe": "..."}}"""
+        existing_brain = db_manager.get_brain(user_id, limit=50)
+        history = db_manager.get_history(user_id, limit=8)
+        
+        history_text = "\n".join([f"{'User' if m['role'] == 'user' else 'Prime'}: {m['parts'][0]['text']}" for m in history])
+        brain_summary = ", ".join([f"{b['type']}: {b['content']}" for b in existing_brain]) if existing_brain else "None"
+        
+        reflection_prompt = f"""
+        Analyze the relationship and technical profile of {username}.
+        
+        SESSION HISTORY:
+        {history_text}
+        
+        EXISTING KNOWLEDGE:
+        {brain_summary}
+        
+        TASK:
+        1. REFINED PROFILE: Update their 'Creative Summary' and 'Vibe'.
+        2. KNOWLEDGE DISTILLATION: Extract NEW specific facts, tools, or preferences.
+           - ONLY extract items NOT already in 'EXISTING KNOWLEDGE'.
+           - Focus on: Tools (AE/Premiere/Plugins), Project Ideas, Technical Habits, Personal Preferences.
+        
+        STRICT JSON FORMAT:
+        {{
+            "summary": "1-sentence current profile.",
+            "vibe": "One-word vibe (Technical, Creative, Chill, etc.)",
+            "notes": "Brief bullets on habits.",
+            "new_knowledge": [
+                {{"type": "tool/fact/idea/preference", "content": "Specific detail detected"}}
+            ]
+        }}
+        """
 
         response = await safe_generate_content(
             model=PRIMARY_MODEL, 
@@ -490,13 +510,29 @@ Format as JSON: {{"summary": "...", "vibe": "..."}}"""
 
         if response and response.text:
             data = json.loads(response.text)
+            
+            # Update Personality
             db_manager.update_user_memory(
                 user_id, 
                 username, 
                 profile_summary=data.get('summary'), 
-                vibe=data.get('vibe')
+                vibe=data.get('vibe'),
+                notes=data.get('notes')
             )
-            logger.info(f"Updated memory for user {username}")
+            
+            # Save New Knowledge
+            for item in data.get('new_knowledge', []):
+                # Extra check to prevent spamming small/generic facts
+                content = item.get('content', '')
+                if len(content) > 3:
+                    db_manager.add_to_brain(
+                        user_id, 
+                        item.get('type', 'fact'), 
+                        content, 
+                        context_snippet=latest_user_msg[:100]
+                    )
+            
+            logger.info(f"🧠 BRAIN: Successfully reflected on {username} and updated knowledge store.")
 
     except Exception as e:
         logger.error(f"Reflection error for user {user_id}: {e}")
