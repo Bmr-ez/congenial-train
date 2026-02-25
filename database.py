@@ -121,9 +121,11 @@ class DatabaseManager:
             # Table for Levels
             create_table('''
                 CREATE TABLE IF NOT EXISTS user_levels (
-                    user_id BIGINT PRIMARY KEY,
+                    guild_id BIGINT,
+                    user_id BIGINT,
                     xp BIGINT DEFAULT 0,
-                    level INTEGER DEFAULT 0
+                    level INTEGER DEFAULT 0,
+                    PRIMARY KEY (guild_id, user_id)
                 )
             ''')
 
@@ -304,45 +306,66 @@ class DatabaseManager:
             logger.error(f"Error updating user memory: {e}")
 
     # --- Levels ---
-    def get_levels(self):
+    def get_levels(self, guild_id=None):
+        p = self.get_placeholder()
         try:
             with self.get_connection() as conn:
                 with self.get_cursor(conn) as cursor:
-                    cursor.execute('SELECT user_id, xp, level FROM user_levels')
-                    return {row[0]: {"xp": row[1], "level": row[2]} for row in cursor.fetchall()}
+                    if guild_id:
+                        cursor.execute(f'SELECT user_id, xp, level FROM user_levels WHERE guild_id = {p}', (int(guild_id),))
+                        return {row[0]: {"xp": row[1], "level": row[2]} for row in cursor.fetchall()}
+                    else:
+                        cursor.execute('SELECT guild_id, user_id, xp, level FROM user_levels')
+                        levels = {}
+                        for row in cursor.fetchall():
+                            gid, uid, xp, lvl = row
+                            if gid not in levels: levels[gid] = {}
+                            levels[gid][uid] = {"xp": xp, "level": lvl}
+                        return levels
         except Exception as e:
             logger.error(f"Error getting levels: {e}"); return {}
 
-    def save_level(self, user_id, xp, level):
+    def save_level(self, guild_id, user_id, xp, level):
         p = self.get_placeholder()
         try:
             with self.get_connection() as conn:
                 with self.get_cursor(conn) as cursor:
                     if self.is_postgres:
                         cursor.execute(
-                            'INSERT INTO user_levels (user_id, xp, level) VALUES (%s, %s, %s) ON CONFLICT (user_id) DO UPDATE SET xp = EXCLUDED.xp, level = EXCLUDED.level',
-                            (user_id, xp, level)
+                            'INSERT INTO user_levels (guild_id, user_id, xp, level) VALUES (%s, %s, %s, %s) ON CONFLICT (guild_id, user_id) DO UPDATE SET xp = EXCLUDED.xp, level = EXCLUDED.level',
+                            (int(guild_id), user_id, xp, level)
                         )
                     else:
                         cursor.execute(
-                            'INSERT OR REPLACE INTO user_levels (user_id, xp, level) VALUES (?, ?, ?)',
-                            (user_id, xp, level)
+                            'INSERT OR REPLACE INTO user_levels (guild_id, user_id, xp, level) VALUES (?, ?, ?, ?)',
+                            (int(guild_id), user_id, xp, level)
                         )
                 conn.commit()
         except Exception as e:
             logger.error(f"Error saving level: {e}")
 
-    def get_user_level(self, user_id):
+    def get_user_level(self, guild_id, user_id):
         p = self.get_placeholder()
         try:
             with self.get_connection() as conn:
                 with self.get_cursor(conn) as cursor:
-                    cursor.execute(f'SELECT level FROM user_levels WHERE user_id = {p}', (user_id,))
+                    cursor.execute(f'SELECT level FROM user_levels WHERE guild_id = {p} AND user_id = {p}', (int(guild_id), user_id))
                     row = cursor.fetchone()
                     return row[0] if row else 0
         except Exception as e:
             logger.error(f"Error getting user level: {e}")
             return 0
+
+    def get_leaderboard(self, guild_id, limit=10):
+        p = self.get_placeholder()
+        try:
+            with self.get_connection() as conn:
+                with self.get_cursor(conn) as cursor:
+                    cursor.execute(f'SELECT user_id, xp, level FROM user_levels WHERE guild_id = {p} ORDER BY xp DESC LIMIT {limit}', (int(guild_id),))
+                    return [{"user_id": row[0], "xp": row[1], "level": row[2]} for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error getting leaderboard: {e}")
+            return []
 
     # --- Warnings ---
     def get_warnings(self):

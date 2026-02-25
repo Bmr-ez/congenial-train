@@ -125,6 +125,7 @@ user_states = {}
 user_warnings = db_manager.get_warnings()
 yt_cooldowns = db_manager.get_yt_cooldowns()
 active_captchas = db_manager.get_active_captchas()
+user_levels = db_manager.get_levels() # {guild_id: {user_id: {"xp": n, "level": m}}}
 
 # Global Defaults/Thresholds
 VERIFICATION_AGE_THRESHOLD_DAYS = 30
@@ -295,6 +296,92 @@ async def generate_portfolio_card(member, level_data, work_link=None):
         draw.text((340, link_y + 15), "NO PORTFOLIO LINK SET", font=font_link, fill=(100, 100, 120, 255))
 
     # 5. Save to bytes
+    img_byte_arr = io.BytesIO()
+    bg.save(img_byte_arr, format='PNG')
+    img_byte_arr.seek(0)
+    return img_byte_arr
+
+async def generate_leaderboard_card(guild, top_users):
+    """Generate a high-end, visual leaderboard card."""
+    # top_users: list of (user_id, data)
+    width, height = 1000, 1000
+    bg = Image.new('RGB', (width, height), (10, 10, 15))
+    draw = ImageDraw.Draw(bg, 'RGBA')
+
+    # 1. Background Visuals
+    def draw_glow(center, radius, color):
+        for r in range(radius, 0, -10):
+            alpha = int(60 * (1 - (r / radius))**2)
+            draw.ellipse([center[0]-r, center[1]-r, center[0]+r, center[1]+r], fill=(color[0], color[1], color[2], alpha))
+
+    draw_glow((width//2, 0), 500, (0, 255, 180)) # Emerald top glow
+    draw_glow((0, height), 400, (0, 100, 255)) # Blue bottom left
+    draw_glow((width, height), 400, (150, 0, 255)) # Purple bottom right
+
+    # 2. Header
+    try:
+        font_title = ImageFont.truetype("arialbd.ttf", 60)
+        font_header = ImageFont.truetype("arial.ttf", 30)
+        font_name = ImageFont.truetype("arialbd.ttf", 32)
+        font_stats = ImageFont.truetype("arial.ttf", 28)
+        font_rank = ImageFont.truetype("arialbd.ttf", 40)
+    except:
+        font_title = font_header = font_name = font_stats = font_rank = ImageFont.load_default()
+
+    draw.text((width//2 - 250, 50), f"{guild.name.upper()}", font=font_title, fill=(255, 255, 255, 255))
+    draw.text((width//2 - 120, 120), "XP LEADERBOARD", font=font_header, fill=(0, 255, 180, 255))
+    draw.line([100, 170, 900, 170], fill=(255, 255, 255, 30), width=2)
+
+    # 3. Avatar and Data Fetching
+    async def fetch_avatar(user_id):
+        user = bot.get_user(user_id) or await bot.fetch_user(user_id)
+        if not user: return None
+        url = user.display_avatar.url
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    if resp.status == 200:
+                        return Image.open(io.BytesIO(await resp.read())).convert("RGBA"), user.display_name
+        except: pass
+        return None, f"User {user_id}"
+
+    tasks = [fetch_avatar(uid) for uid, _ in top_users]
+    results = await asyncio.gather(*tasks)
+
+    # 4. Rows
+    start_y = 210
+    row_height = 75
+    for i, ((avatar, name), (uid, data)) in enumerate(zip(results, top_users)):
+        curr_y = start_y + (i * row_height)
+        
+        # Row Background (Subtle highlight for top 3)
+        row_alpha = 15 if i < 3 else 5
+        draw.rounded_rectangle([80, curr_y - 10, 920, curr_y + 55], radius=15, fill=(255, 255, 255, row_alpha))
+        if i < 3:
+            glow_colors = [(255, 215, 0), (192, 192, 192), (205, 127, 50)]
+            draw.rounded_rectangle([80, curr_y - 10, 85, curr_y + 55], radius=5, fill=glow_colors[i])
+
+        # Rank
+        rank_text = f"#{i+1}"
+        draw.text((100, curr_y), rank_text, font=font_rank, fill=(255, 255, 255, 200))
+
+        # Avatar
+        if avatar:
+            a_size = 50
+            avatar = avatar.resize((a_size, a_size), Image.Resampling.LANCZOS)
+            mask = Image.new('L', (a_size, a_size), 0)
+            ImageDraw.Draw(mask).ellipse((0, 0, a_size, a_size), fill=255)
+            bg.paste(avatar, (200, curr_y - 5), mask)
+
+        # Name
+        display_name = name[:20] + "..." if len(name) > 20 else name
+        draw.text((270, curr_y), display_name, font=font_name, fill=(255, 255, 255, 255))
+
+        # Stats
+        stats_text = f"LVL {data['level']}  |  {data['xp']} XP"
+        draw.text((650, curr_y + 5), stats_text, font=font_stats, fill=(180, 180, 200, 255))
+
+    # 5. Save
     img_byte_arr = io.BytesIO()
     bg.save(img_byte_arr, format='PNG')
     img_byte_arr.seek(0)
@@ -874,10 +961,8 @@ async def warn_user(user, guild, reason):
 # Temporary tracker for spam (not persisted)
 spam_tracker = {} # user_id: {"count": n, "last_spam_time": timestamp}
 
-# Hype Train Tracking
-hype_messages = [] # list of timestamps
-hype_active = False
-hype_end_time = None
+
+# Leveling System Cooldowns
 
 # Prime Sniper Storage (Temporary)
 deleted_messages = {} # channel_id: [messages]
@@ -1784,6 +1869,7 @@ async def leveling_handler(message):
         return
 
     user_id = message.author.id
+    guild_id = message.guild.id
     current_time = datetime.now(timezone.utc)
     
     # Cooldown check (60 seconds)
@@ -1804,17 +1890,15 @@ async def leveling_handler(message):
     if message.attachments:
         xp_to_add += 15
         logger.info(f"Media bonus awarded to {message.author.name}")
-
-    # HYPE TRAIN MODIFIER (2x XP)
-    global hype_active
-    if hype_active:
-        xp_to_add *= 2
     
-    if user_id not in user_levels:
-        user_levels[user_id] = {"xp": 0, "level": 0}
+    # Initialize guild/user in cache if not present
+    if guild_id not in user_levels:
+        user_levels[guild_id] = {}
+    if user_id not in user_levels[guild_id]:
+        user_levels[guild_id][user_id] = {"xp": 0, "level": 0}
     
-    old_level = user_levels[user_id]["level"]
-    user_levels[user_id]["xp"] += xp_to_add
+    old_level = user_levels[guild_id][user_id]["level"]
+    user_levels[guild_id][user_id]["xp"] += xp_to_add
     
     # Update cooldown
     user_xp_cooldowns[user_id] = current_time
@@ -1823,16 +1907,17 @@ async def leveling_handler(message):
     new_level = old_level
     while True:
         xp_needed = 100 * (new_level + 1) ** 2
-        if user_levels[user_id]["xp"] >= xp_needed:
+        if user_levels[guild_id][user_id]["xp"] >= xp_needed:
             new_level += 1
         else:
             break
             
     if new_level > old_level:
-        user_levels[user_id]["level"] = new_level
+        user_levels[guild_id][user_id]["level"] = new_level
         
         # Determine where to send level-up alert (only in the specific channel)
-        alert_channel = bot.get_channel(get_leveling_chan(ctx.guild.id))
+        alert_chan_id = get_leveling_chan(guild_id)
+        alert_channel = bot.get_channel(alert_chan_id)
         if alert_channel:
             embed = discord.Embed(
                 title="🎊 LEVEL UP!",
@@ -1844,10 +1929,10 @@ async def leveling_handler(message):
             try:
                 await alert_channel.send(embed=embed, delete_after=30)
             except Exception as e:
-                logger.error(f"Failed to send level-up alert to channel {get_leveling_chan(ctx.guild.id)}: {e}")
+                logger.error(f"Failed to send level-up alert to channel {alert_chan_id}: {e}")
     
     # Save levels immediately to prevent data loss on restart
-    db_manager.save_level(user_id, user_levels[user_id]["xp"], user_levels[user_id]["level"])
+    db_manager.save_level(guild_id, user_id, user_levels[guild_id][user_id]["xp"], user_levels[guild_id][user_id]["level"])
 
 
 @bot.event
@@ -2514,6 +2599,127 @@ class AppealReviewView(discord.ui.View):
             logger.error(f"Error declining appeal: {e}")
             await interaction.response.send_message(f"Error: {str(e)}", ephemeral=True)
 
+class RoleIDModal(discord.ui.Modal):
+    def __init__(self, role_type, parent_view):
+        super().__init__(title=f"Set {role_type}")
+        self.role_type = role_type
+        self.parent_view = parent_view
+        self.role_id_input = discord.ui.TextInput(
+            label="Role ID",
+            placeholder="Paste the role ID here...",
+            min_length=15,
+            max_length=20,
+            required=True
+        )
+        self.add_item(self.role_id_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        role_id = self.role_id_input.value
+        if not role_id.strip().isdigit():
+            await interaction.response.send_message("❌ Invalid ID! Please provide a numeric role ID.", ephemeral=True)
+            return
+
+        role = interaction.guild.get_role(int(role_id))
+        if not role:
+            await interaction.response.send_message("❌ Role not found in this server! Double-check the ID.", ephemeral=True)
+            return
+
+        if self.role_type == "Verified Role":
+            self.parent_view.verified_id = int(role_id)
+        elif self.role_type == "Unverified Role":
+            self.parent_view.unverified_id = int(role_id)
+        elif self.role_type == "Muted Role":
+            self.parent_view.muted_id = int(role_id)
+
+        await self.parent_view.update_message(interaction)
+
+class VerificationSetupView(discord.ui.View):
+    def __init__(self, guild_id, ctx_author_id):
+        super().__init__(timeout=300)
+        self.guild_id = guild_id
+        self.author_id = ctx_author_id
+        
+        # Load existing if available
+        settings = db_manager.get_guild_setting(guild_id, "all_settings", {})
+        self.verified_id = settings.get("verified_role")
+        self.unverified_id = settings.get("unverified_role")
+        self.muted_id = settings.get("muted_role")
+
+    async def update_message(self, interaction: discord.Interaction):
+        embed = self.create_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    def create_embed(self):
+        embed = discord.Embed(
+            title="🛡️ VERIFICATION ENGINE SETUP",
+            description=(
+                "Configure the essential roles required for the verification system to function correctly.\n\n"
+                "**Why are these required?**\n"
+                "• **Verified Role**: Automatically granted to users after successful captcha completion.\n"
+                "• **Unverified Role**: The restricted role given to new members (prevents server access).\n"
+                "• **Muted Role (Optional)**: Used to restrict users who violate community guidelines.\n\n"
+                "*All IDs are saved per-server and persist through restarts.*"
+            ),
+            color=0x00FFB4
+        )
+        
+        verified_display = f"<@&{self.verified_id}>" if self.verified_id else "❌ *Not Set*"
+        unverified_display = f"<@&{self.unverified_id}>" if self.unverified_id else "❌ *Not Set*"
+        muted_display = f"<@&{self.muted_id}>" if self.muted_id else "⚪ *Optional (Not Set)*"
+        
+        embed.add_field(name="✅ Verified Role", value=verified_display, inline=True)
+        embed.add_field(name="🌑 Unverified Role", value=unverified_display, inline=True)
+        embed.add_field(name="🔇 Muted Role", value=muted_display, inline=True)
+        
+        if self.verified_id and self.unverified_id:
+            embed.set_footer(text="Ready to save. Hit the button below.")
+        else:
+            embed.set_footer(text="Verified and Unverified roles are REQUIRED.")
+            
+        return embed
+
+    @discord.ui.button(label="Set Verified Role", style=discord.ButtonStyle.success)
+    async def set_verified(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.author_id: 
+            await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
+            return
+        await interaction.response.send_modal(RoleIDModal("Verified Role", self))
+
+    @discord.ui.button(label="Set Unverified Role", style=discord.ButtonStyle.secondary)
+    async def set_unverified(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.author_id: 
+            await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
+            return
+        await interaction.response.send_modal(RoleIDModal("Unverified Role", self))
+
+    @discord.ui.button(label="Set Muted Role", style=discord.ButtonStyle.danger)
+    async def set_muted(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.author_id: 
+            await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
+            return
+        await interaction.response.send_modal(RoleIDModal("Muted Role", self))
+
+    @discord.ui.button(label="💾 SAVE CONFIGURATION", style=discord.ButtonStyle.primary, row=2)
+    async def save_config(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.author_id: 
+            await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
+            return
+        
+        if not self.verified_id or not self.unverified_id:
+            await interaction.response.send_message("❌ You must set both **Verified** and **Unverified** roles before saving!", ephemeral=True)
+            return
+
+        settings = db_manager.get_guild_setting(self.guild_id, "all_settings", {})
+        settings["verified_role"] = int(self.verified_id)
+        settings["unverified_role"] = int(self.unverified_id)
+        if self.muted_id:
+            settings["muted_role"] = int(self.muted_id)
+            
+        db_manager.save_guild_setting(self.guild_id, "all_settings", settings)
+        
+        await interaction.response.send_message("✅ **Configuration Saved!** Roles have been successfully mapped to this guild.", ephemeral=False)
+        self.stop()
+
 class CaptchaModal(discord.ui.Modal, title='Verify You Are Human'):
     captcha_input = discord.ui.TextInput(
         label='Enter the code from the image',
@@ -3132,7 +3338,7 @@ def migrate_json_to_db():
                     if filename == "warnings.json":
                         for uid, d in data.items(): save_func(uid, d['count'], d['history'])
                     elif filename == "levels.json":
-                        for uid, d in data.items(): save_func(int(uid), d['xp'], d['level'])
+                        for uid, d in data.items(): save_func(0, int(uid), d['xp'], d['level'])
                     elif filename == "portfolios.json":
                         for uid, d in data.items(): save_func(int(uid), d)
                     else:
@@ -3455,26 +3661,6 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     """Handle all messages, including those that aren't commands."""
-    # --- HYPE TRAIN DETECTION ---
-    if not message.guild:
-        pass
-    else:
-        global hype_active, hype_end_time, hype_messages
-        now = datetime.now(timezone.utc)
-        hype_messages.append(now)
-        # Filter only last 60 seconds
-        hype_messages = [t for t in hype_messages if (now - t).total_seconds() < 60]
-        
-        if len(hype_messages) > 15 and not hype_active:
-            hype_active = True
-            hype_end_time = now + timedelta(minutes=10)
-            await message.channel.send("🔥 **HYPE TRAIN DETECTED!** 🔥\nChat is peaking! **2x XP** is now active for 10 minutes!")
-            logger.info(f"Hype Train triggered in {message.guild.name}")
-        
-        if hype_active and now > hype_end_time:
-            hype_active = False
-            await message.channel.send("🏁 **Hype Train has reached the station.** 2x XP is now over.")
-
     # --- SECRET CHAT LOGGING ---
     # Only log interactions with the bot (DMs, Mentions, Replies to bot, or Bot's own replies)
     is_dm = isinstance(message.channel, discord.DMChannel)
@@ -4499,23 +4685,15 @@ async def help_command(ctx):
 @bot.command(name="level", aliases=["rank", "lv"])
 async def level_command(ctx, member: discord.Member = None):
     """Check your current level and XP. Usage: !level [@user]"""
-    # Channel restriction check
-    if ctx.channel.id != get_leveling_chan(ctx.guild.id):
-        try:
-            await ctx.message.delete()
-        except:
-            pass
-        await ctx.send(f"❌ {ctx.author.mention}, you can only check levels in <#{get_leveling_chan(ctx.guild.id)}>!", delete_after=10)
-        return
-
     member = member or ctx.author
     user_id = member.id
     
-    if user_id not in user_levels:
-        await ctx.send(f"📊 **{member.display_name}** hasn't started earning XP yet. Start chatting to join the leaderboard!")
+    guild_levels = user_levels.get(guild_id, {})
+    if user_id not in guild_levels:
+        await ctx.send(f"📊 **{member.display_name}** hasn't started earning XP in this server yet. Start chatting to join the leaderboard!")
         return
         
-    data = user_levels[user_id]
+    data = guild_levels[user_id]
     xp = data["xp"]
     level = data["level"]
     next_level_xp = 100 * (level + 1) ** 2
@@ -4556,46 +4734,38 @@ async def level_command(ctx, member: discord.Member = None):
 @bot.command(name="leaderboard", aliases=["top", "lb"])
 async def leaderboard_command(ctx):
     """Show the top 10 users with the most XP."""
-    if ctx.channel.id != get_leveling_chan(ctx.guild.id):
-        try: await ctx.message.delete()
-        except: pass
-        await ctx.send(f"❌ {ctx.author.mention}, the leaderboard is only available in <#{get_leveling_chan(ctx.guild.id)}>!", delete_after=10)
-        return
-
-    if not user_levels:
+    guild_id = ctx.guild.id
+    guild_levels = user_levels.get(guild_id, {})
+    if not guild_levels:
         await ctx.send("🌑 **The leaderboard is currently empty.** Be the first to start the journey.")
         return
         
-    sorted_users = sorted(user_levels.items(), key=lambda x: x[1]["xp"], reverse=True)
-    
-    embed = discord.Embed(
-        title="🏆  **EPIC LEADERBOARD**",
-        description="*The most active creators in the collective.*",
-        color=0xFFD700 # Gold
-    )
-    
-    lb_lines = []
-    for i, (uid, data) in enumerate(sorted_users[:10], 1):
-        user = bot.get_user(uid)
-        user_name = user.name if user else f"User {uid}"
+    async with ctx.typing():
+        sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)[:10]
         
-        # Medal styling for top 3
-        prefix = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"`#{i}`"
-        
-        line = f"{prefix} **{user_name}** • Lvl {data['level']} `({data['xp']} XP)`"
-        lb_lines.append(line)
-        
-    lb_text = "\n".join(lb_lines) or "No data available."
-    embed.add_field(name="✨ TOP REPUTATION", value=lb_text, inline=False)
-    
-    # Add User's Rank at the bottom
-    user_rank = "Unknown"
-    for i, (uid, _) in enumerate(sorted_users, 1):
-        if uid == ctx.author.id:
-            user_rank = i
-            break
-    
-    await ctx.send(embed=embed)
+        # Generate the card image
+        try:
+            img_data = await generate_leaderboard_card(ctx.guild, sorted_users)
+            file = discord.File(fp=img_data, filename=f"leaderboard_{guild_id}.png")
+            
+            # Simple metadata embed to go with the image
+            embed = discord.Embed(
+                title=f"🏆 {ctx.guild.name} TOP CREATORS",
+                description="The digital elite of this server.",
+                color=0x00FFB4
+            )
+            embed.set_image(url=f"attachment://leaderboard_{guild_id}.png")
+            embed.set_footer(text="Keep grinding. Keep creating.")
+            
+            await ctx.send(embed=embed, file=file)
+        except Exception as e:
+            logger.error(f"Leaderboard image gen failed: {e}")
+            # Fallback to text
+            lb_text = ""
+            for i, (uid, data) in enumerate(sorted_users, 1):
+                user = bot.get_user(uid)
+                lb_text += f"**#{i}** | {user.name if user else uid} - Lvl {data['level']} ({data['xp']} XP)\n"
+            await ctx.send(f"**XP LEADERBOARD**\n{lb_text}")
 
 @bot.command(name="intercept", aliases=["snitch", "sniff"])
 async def intercept_command(ctx):
@@ -4604,8 +4774,9 @@ async def intercept_command(ctx):
     user_id = ctx.author.id
     
     # Check if user has enough XP
-    if user_id not in user_levels or user_levels[user_id]["xp"] < cost:
-        await ctx.reply(f"🚫 **ACCESS DENIED**: You need at least `{cost} XP` to intercept spectral data.")
+    guild_levels = user_levels.get(ctx.guild.id, {})
+    if user_id not in guild_levels or guild_levels[user_id]["xp"] < cost:
+        await ctx.reply(f"🚫 **ACCESS DENIED**: You need at least `{cost} XP` in this server to intercept spectral data.")
         return
         
     # Get latest deleted message
@@ -4619,8 +4790,8 @@ async def intercept_command(ctx):
     attachments = json.loads(attachments_json) if attachments_json else []
     
     # Deduct XP
-    user_levels[user_id]["xp"] -= cost
-    db_manager.save_level(user_id, user_levels[user_id]["xp"], user_levels[user_id]["level"])
+    user_levels[ctx.guild.id][user_id]["xp"] -= cost
+    db_manager.save_level(ctx.guild.id, user_id, user_levels[ctx.guild.id][user_id]["xp"], user_levels[ctx.guild.id][user_id]["level"])
     
     # Aesthetic Reveal
     embed = discord.Embed(
@@ -4643,7 +4814,7 @@ async def intercept_command(ctx):
                 embed.set_image(url=a['url'])
                 break
 
-    embed.set_footer(text=f"Intercepted by {ctx.author.display_name} | Your XP: {user_levels[user_id]['xp']}")
+    embed.set_footer(text=f"Intercepted by {ctx.author.display_name} | Your XP: {user_levels[ctx.guild.id][user_id]['xp']}")
     
     await ctx.send(embed=embed)
     logger.info(f"{ctx.author.name} intercepted message from {msg_username}")
@@ -5336,19 +5507,16 @@ async def slash_commands(interaction: discord.Interaction):
 @bot.tree.command(name="level", description="Check your current level and XP")
 @app_commands.describe(member="The user to check")
 async def slash_level(interaction: discord.Interaction, member: discord.Member = None):
-    # Channel restriction check
-    if interaction.channel_id != get_leveling_chan(interaction.guild_id):
-        await interaction.response.send_message(f"❌ You can only use leveling commands in <#{get_leveling_chan(interaction.guild_id)}>!", ephemeral=True)
-        return
-
+    guild_id = interaction.guild_id
     member = member or interaction.user
     user_id = member.id
     
-    if user_id not in user_levels:
-        await interaction.response.send_message(f"📊 **{member.display_name}** hasn't started their journey yet!", ephemeral=False)
+    guild_levels = user_levels.get(guild_id, {})
+    if user_id not in guild_levels:
+        await interaction.response.send_message(f"📊 **{member.display_name}** hasn't started their journey in this server yet!", ephemeral=False)
         return
         
-    data = user_levels[user_id]
+    data = guild_levels[user_id]
     xp = data["xp"]
     level = data["level"]
     next_level_xp = 100 * (level + 1) ** 2
@@ -5368,24 +5536,34 @@ async def slash_level(interaction: discord.Interaction, member: discord.Member =
 
 @bot.tree.command(name="leaderboard", description="Show the top active users")
 async def slash_lb(interaction: discord.Interaction):
-    # Channel restriction check
-    if interaction.channel_id != get_leveling_chan(interaction.guild_id):
-        await interaction.response.send_message(f"❌ You can only view the leaderboard in <#{get_leveling_chan(interaction.guild_id)}>!", ephemeral=True)
+    guild_id = interaction.guild_id
+    guild_levels = user_levels.get(guild_id, {})
+    if not guild_levels:
+        await interaction.response.send_message("No data available for this server yet.", ephemeral=True)
         return
 
-    if not user_levels:
-        await interaction.response.send_message("No data available yet.", ephemeral=True)
-        return
+    await interaction.response.defer()
+    
+    sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)[:10]
+    
+    try:
+        img_data = await generate_leaderboard_card(interaction.guild, sorted_users)
+        file = discord.File(fp=img_data, filename=f"leaderboard_{guild_id}.png")
         
-    sorted_users = sorted(user_levels.items(), key=lambda x: x[1]["xp"], reverse=True)
-    lb_text = ""
-    for i, (uid, data) in enumerate(sorted_users[:10], 1):
-        user = bot.get_user(uid)
-        user_name = user.name if user else f"User {uid}"
-        lb_text += f"**#{i}** | {user_name} - **Level {data['level']}** ({data['xp']} XP)\n"
+        embed = discord.Embed(
+            title=f"🏆 {interaction.guild.name} TOP CREATORS",
+            color=0x00FFB4
+        )
+        embed.set_image(url=f"attachment://leaderboard_{guild_id}.png")
         
-    embed = discord.Embed(title="🏆 XP LEADERBOARD", description=lb_text, color=0xF1C40F)
-    await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed, file=file)
+    except Exception as e:
+        logger.error(f"Slash Leaderboard image gen failed: {e}")
+        lb_text = ""
+        for i, (uid, data) in enumerate(sorted_users, 1):
+            user = bot.get_user(uid)
+            lb_text += f"**#{i}** | {user.name if user else uid} - Lvl {data['level']} ({data['xp']} XP)\n"
+        await interaction.followup.send(f"**XP LEADERBOARD**\n{lb_text}")
 @commands.is_owner()
 async def manual_sync(ctx):
     """Owner-only command to manually sync slash commands"""
@@ -6086,7 +6264,7 @@ async def profile_command(ctx, member: discord.Member = None):
             await ctx.send("⌛ Timed out. Showing basic card.", delete_after=5)
 
     async with ctx.typing():
-        level_data = user_levels.get(member.id, {"level": 0, "xp": 0})
+        level_data = user_levels.get(ctx.guild.id, {}).get(member.id, {"level": 0, "xp": 0})
         
         # Generate the card image
         try:
@@ -7814,6 +7992,14 @@ async def access_instructions_command(ctx):
     except Exception as e:
         logger.warning(f"Failed to pin access instructions: {e}")
         await ctx.send("⚠️ **Warning**: Instructions posted, but I couldn't pin them (check my permissions).", delete_after=10)
+
+@bot.command(name="setup_verification", aliases=["fix_setupverification"])
+@commands.has_permissions(administrator=True)
+async def setup_verification_cmd(ctx):
+    """Interactive role setup for the verification system."""
+    view = VerificationSetupView(ctx.guild.id, ctx.author.id)
+    embed = view.create_embed()
+    await ctx.send(embed=embed, view=view)
 
 def run_bot():
     """Function to start the bot with the token from environment variables."""
