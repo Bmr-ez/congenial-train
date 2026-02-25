@@ -4552,7 +4552,7 @@ async def on_message(message):
             icount = (user_interaction_mem.get('interaction_count', 0) if user_interaction_mem else 0) + 1
             db_manager.update_user_memory(message.author.id, message.author.name) # Increments count in DB
             
-            if icount % 5 == 0:
+            if icount % 2 == 0:
                 asyncio.create_task(update_user_personality(message.author.id, message.author.name))
 
         except Exception as e:
