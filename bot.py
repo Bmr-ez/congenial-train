@@ -301,89 +301,6 @@ async def generate_portfolio_card(member, level_data, work_link=None):
     img_byte_arr.seek(0)
     return img_byte_arr
 
-async def generate_leaderboard_card(guild, top_users):
-    """Generate a high-end, visual leaderboard card."""
-    # top_users: list of (user_id, data)
-    width, height = 1000, 1000
-    bg = Image.new('RGB', (width, height), (10, 10, 15))
-    draw = ImageDraw.Draw(bg, 'RGBA')
-
-    # 1. Background Visuals
-    def draw_glow(center, radius, color):
-        for r in range(radius, 0, -10):
-            alpha = int(60 * (1 - (r / radius))**2)
-            draw.ellipse([center[0]-r, center[1]-r, center[0]+r, center[1]+r], fill=(color[0], color[1], color[2], alpha))
-
-    draw_glow((width//2, 0), 500, (0, 255, 180)) # Emerald top glow
-    draw_glow((0, height), 400, (0, 100, 255)) # Blue bottom left
-    draw_glow((width, height), 400, (150, 0, 255)) # Purple bottom right
-
-    # 2. Header
-    try:
-        font_title = ImageFont.truetype("arialbd.ttf", 60)
-        font_header = ImageFont.truetype("arial.ttf", 30)
-        font_name = ImageFont.truetype("arialbd.ttf", 32)
-        font_stats = ImageFont.truetype("arial.ttf", 28)
-        font_rank = ImageFont.truetype("arialbd.ttf", 40)
-    except:
-        font_title = font_header = font_name = font_stats = font_rank = ImageFont.load_default()
-
-    draw.text((width//2 - 250, 50), f"{guild.name.upper()}", font=font_title, fill=(255, 255, 255, 255))
-    draw.text((width//2 - 120, 120), "XP LEADERBOARD", font=font_header, fill=(0, 255, 180, 255))
-    draw.line([100, 170, 900, 170], fill=(255, 255, 255, 30), width=2)
-
-    # 3. Avatar and Data Fetching
-    async def fetch_avatar(user_id):
-        user = bot.get_user(user_id) or await bot.fetch_user(user_id)
-        if not user: return None
-        url = user.display_avatar.url
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as resp:
-                    if resp.status == 200:
-                        return Image.open(io.BytesIO(await resp.read())).convert("RGBA"), user.display_name
-        except: pass
-        return None, f"User {user_id}"
-
-    tasks = [fetch_avatar(uid) for uid, _ in top_users]
-    results = await asyncio.gather(*tasks)
-
-    # 4. Rows
-    start_y = 210
-    row_height = 75
-    for i, ((avatar, name), (uid, data)) in enumerate(zip(results, top_users)):
-        curr_y = start_y + (i * row_height)
-        
-        # Row Background (Subtle highlight for top 3)
-        row_alpha = 15 if i < 3 else 5
-        draw.rounded_rectangle([80, curr_y - 10, 920, curr_y + 55], radius=15, fill=(255, 255, 255, row_alpha))
-        if i < 3:
-            glow_colors = [(255, 215, 0), (192, 192, 192), (205, 127, 50)]
-            draw.rounded_rectangle([80, curr_y - 10, 85, curr_y + 55], radius=5, fill=glow_colors[i])
-
-        # Rank
-        rank_text = f"#{i+1}"
-        draw.text((100, curr_y), rank_text, font=font_rank, fill=(255, 255, 255, 200))
-
-        # Avatar
-        if avatar:
-            a_size = 50
-            avatar = avatar.resize((a_size, a_size), Image.Resampling.LANCZOS)
-            mask = Image.new('L', (a_size, a_size), 0)
-            ImageDraw.Draw(mask).ellipse((0, 0, a_size, a_size), fill=255)
-            bg.paste(avatar, (200, curr_y - 5), mask)
-
-        # Name
-        display_name = name[:20] + "..." if len(name) > 20 else name
-        draw.text((270, curr_y), display_name, font=font_name, fill=(255, 255, 255, 255))
-
-        # Stats
-        stats_text = f"LVL {data['level']}  |  {data['xp']} XP"
-        draw.text((650, curr_y + 5), stats_text, font=font_stats, fill=(180, 180, 200, 255))
-
-    # 5. Save
-    img_byte_arr = io.BytesIO()
-    bg.save(img_byte_arr, format='PNG')
     img_byte_arr.seek(0)
     return img_byte_arr
 
@@ -4747,32 +4664,41 @@ async def leaderboard_command(ctx):
         await ctx.send("🌑 **The leaderboard is currently empty.** Be the first to start the journey.")
         return
         
-    async with ctx.typing():
-        sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)[:10]
+    # Get sorted users
+    sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)
+    top_10 = sorted_users[:10]
+    
+    lb_text = ""
+    for i, (uid, data) in enumerate(top_10, 1):
+        user = bot.get_user(uid)
+        name = user.display_name if user else f"User {uid}"
         
-        # Generate the card image
-        try:
-            img_data = await generate_leaderboard_card(ctx.guild, sorted_users)
-            file = discord.File(fp=img_data, filename=f"leaderboard_{guild_id}.png")
+        # Styling for top ranks
+        if i == 1: emoji = "🥇"
+        elif i == 2: emoji = "🥈"
+        elif i == 3: emoji = "🥉"
+        else: emoji = f"`#{i}`"
+        
+        lb_text += f"{emoji} **{name}**\n╰─ Level {data['level']} • `{data['xp']:,} XP`\n\n"
+        
+    embed = discord.Embed(
+        title=f"🏆 {ctx.guild.name.upper()} LEADERBOARD",
+        description=lb_text,
+        color=0x00FFB4
+    )
+    
+    # Find author rank
+    user_rank = "N/A"
+    for i, (uid, _) in enumerate(sorted_users, 1):
+        if uid == ctx.author.id:
+            user_rank = i
+            break
             
-            # Simple metadata embed to go with the image
-            embed = discord.Embed(
-                title=f"🏆 {ctx.guild.name} TOP CREATORS",
-                description="The digital elite of this server.",
-                color=0x00FFB4
-            )
-            embed.set_image(url=f"attachment://leaderboard_{guild_id}.png")
-            embed.set_footer(text="Keep grinding. Keep creating.")
-            
-            await ctx.send(embed=embed, file=file)
-        except Exception as e:
-            logger.error(f"Leaderboard image gen failed: {e}")
-            # Fallback to text
-            lb_text = ""
-            for i, (uid, data) in enumerate(sorted_users, 1):
-                user = bot.get_user(uid)
-                lb_text += f"**#{i}** | {user.name if user else uid} - Lvl {data['level']} ({data['xp']} XP)\n"
-            await ctx.send(f"**XP LEADERBOARD**\n{lb_text}")
+    embed.set_footer(text=f"Your Rank: #{user_rank} | Keep creating.")
+    if ctx.guild.icon:
+        embed.set_thumbnail(url=ctx.guild.icon.url)
+        
+    await ctx.send(embed=embed)
 
 @bot.command(name="intercept", aliases=["snitch", "sniff"])
 async def intercept_command(ctx):
@@ -5549,28 +5475,39 @@ async def slash_lb(interaction: discord.Interaction):
         await interaction.response.send_message("No data available for this server yet.", ephemeral=True)
         return
 
-    await interaction.response.defer()
+    # Get sorted users
+    sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)
+    top_10 = sorted_users[:10]
     
-    sorted_users = sorted(guild_levels.items(), key=lambda x: x[1]["xp"], reverse=True)[:10]
+    lb_text = ""
+    for i, (uid, data) in enumerate(top_10, 1):
+        user = bot.get_user(uid)
+        name = user.display_name if user else f"User {uid}"
+        
+        if i == 1: emoji = "🥇"
+        elif i == 2: emoji = "🥈"
+        elif i == 3: emoji = "🥉"
+        else: emoji = f"`#{i}`"
+        
+        lb_text += f"{emoji} **{name}**\n╰─ Level {data['level']} • `{data['xp']:,} XP`\n\n"
+        
+    embed = discord.Embed(
+        title=f"🏆 {interaction.guild.name.upper()} LEADERBOARD",
+        description=lb_text,
+        color=0x00FFB4
+    )
     
-    try:
-        img_data = await generate_leaderboard_card(interaction.guild, sorted_users)
-        file = discord.File(fp=img_data, filename=f"leaderboard_{guild_id}.png")
+    user_rank = "N/A"
+    for i, (uid, _) in enumerate(sorted_users, 1):
+        if uid == interaction.user.id:
+            user_rank = i
+            break
+            
+    embed.set_footer(text=f"Your Rank: #{user_rank} | Stay active!")
+    if interaction.guild.icon:
+        embed.set_thumbnail(url=interaction.guild.icon.url)
         
-        embed = discord.Embed(
-            title=f"🏆 {interaction.guild.name} TOP CREATORS",
-            color=0x00FFB4
-        )
-        embed.set_image(url=f"attachment://leaderboard_{guild_id}.png")
-        
-        await interaction.followup.send(embed=embed, file=file)
-    except Exception as e:
-        logger.error(f"Slash Leaderboard image gen failed: {e}")
-        lb_text = ""
-        for i, (uid, data) in enumerate(sorted_users, 1):
-            user = bot.get_user(uid)
-            lb_text += f"**#{i}** | {user.name if user else uid} - Lvl {data['level']} ({data['xp']} XP)\n"
-        await interaction.followup.send(f"**XP LEADERBOARD**\n{lb_text}")
+    await interaction.response.send_message(embed=embed)
 @commands.is_owner()
 async def manual_sync(ctx):
     """Owner-only command to manually sync slash commands"""
