@@ -171,16 +171,21 @@ class DatabaseManager:
             create_table('''
                 CREATE TABLE IF NOT EXISTS user_portfolios (
                     user_id BIGINT PRIMARY KEY,
-                    portfolio_data TEXT -- JSON string
+                    portfolio_url TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
 
-            # Table for Captchas
-            create_table('''
-                CREATE TABLE IF NOT EXISTS active_captchas (
-                    user_id BIGINT PRIMARY KEY,
-                    code TEXT,
-                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            # --- THE SECOND BRAIN (Personal Knowledge Store) ---
+            pk_type = "SERIAL" if self.is_postgres else "INTEGER"
+            create_table(f'''
+                CREATE TABLE IF NOT EXISTS user_brain (
+                    id {pk_type} PRIMARY KEY{' AUTOINCREMENT' if not self.is_postgres else ''},
+                    user_id BIGINT,
+                    knowledge_type TEXT, -- 'plugin', 'workflow', 'preference', 'fact', 'idea'
+                    content TEXT,
+                    context_snippet TEXT,
+                    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
 
@@ -678,5 +683,46 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting guild setting: {e}")
             return default
+
+    def add_to_brain(self, user_id, knowledge_type, content, context_snippet=None):
+        """Add a specific item to the user's second brain."""
+        with self.get_connection() as conn:
+            with self.get_cursor(conn) as cursor:
+                query = '''
+                    INSERT INTO user_brain (user_id, knowledge_type, content, context_snippet)
+                    VALUES (%s, %s, %s, %s)
+                ''' if self.is_postgres else '''
+                    INSERT INTO user_brain (user_id, knowledge_type, content, context_snippet)
+                    VALUES (?, ?, ?, ?)
+                '''
+                cursor.execute(query, (user_id, knowledge_type, content, context_snippet))
+                conn.commit()
+
+    def get_brain(self, user_id, limit=20):
+        """Retrieve the latest knowledge items from the user's brain."""
+        with self.get_connection() as conn:
+            with self.get_cursor(conn) as cursor:
+                query = '''
+                    SELECT knowledge_type, content, added_at 
+                    FROM user_brain 
+                    WHERE user_id = %s 
+                    ORDER BY added_at DESC LIMIT %s
+                ''' if self.is_postgres else '''
+                    SELECT knowledge_type, content, added_at 
+                    FROM user_brain 
+                    WHERE user_id = ? 
+                    ORDER BY added_at DESC LIMIT ?
+                '''
+                cursor.execute(query, (user_id, limit))
+                results = cursor.fetchall()
+                
+                brain_items = []
+                for row in results:
+                    brain_items.append({
+                        "type": row[0],
+                        "content": row[1],
+                        "added_at": row[2]
+                    })
+                return brain_items
 
 db_manager = DatabaseManager()

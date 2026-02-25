@@ -239,14 +239,20 @@ Your task is to break down complex problems into strategic phases.
 # --- CORE AI FUNCTION ---
 async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, is_tutorial=False, software=None, brief=False, model=None, mode=None, use_thought=False, guild_id=None):
     try:
-        # 1. Load User Memory from Database
+        # 1. Load User Memory and Personal Brain
         user_memory = db_manager.get_user_memory(user_id)
+        brain_items = db_manager.get_brain(user_id, limit=8)
+        
         memory_context = ""
         if user_memory:
             profile_summary = user_memory.get("profile_summary", "")
             vibe = user_memory.get("vibe", "neutral")
             notes = user_memory.get("notes", "")
-            memory_context = f"\n\n[USER MEMORY: '{vibe}'. Profile: {profile_summary}. Notes: {notes}]"
+            memory_context = f"\n\n[USER PROFILE: Vibe is '{vibe}'. Summary: {profile_summary}. Notes: {notes}]"
+            
+        if brain_items:
+            brain_text = "\n".join([f"- {i['type'].upper()}: {i['content']}" for i in brain_items])
+            memory_context += f"\n\n[PERSONAL KNOWLEDGE BASE (SECOND BRAIN):]\n{brain_text}"
         
         # 2. Check for Server Aesthetic Overlay & System Prompt
         overlay_context = ""

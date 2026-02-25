@@ -2016,13 +2016,17 @@ async def update_user_personality(user_id, username):
         TASK:
         1. Summarize this user's 'Creative Profile' (what they do, expertise, tools they mention).
         2. Identify their 'Chat Vibe' (e.g., chill, aggressive, high-energy, technical, meme-heavy).
-        3. Identify how they chat (e.g., uses lowercase, short sentences, technical jargon, emojis).
+        3. EXTRACT KNOWLEDGE: Identify specific facts, preferences, tools, plugins, or ideas the user mentioned.
+           - Look for: 'I use [X]', 'I like [Y]', 'Remember that [Z]', 'My idea is [W]'.
         
         STRICT RESPONSE FORMAT (JSON ONLY):
         {{
-            "profile_summary": "Short 1-sentence descriptor (e.g. 'Advanced AE editor focused on liquid motion').",
+            "profile_summary": "Short 1-sentence descriptor.",
             "vibe": "One-word vibe descriptor.",
-            "notes": "Brief bullets on their technical style and chat habits."
+            "notes": "Brief bullets on habits.",
+            "knowledge_items": [
+                {{"type": "plugin/tool/fact/idea/preference", "content": "Specific detail detected"}}
+            ]
         }}
         """
         
@@ -2044,9 +2048,20 @@ async def update_user_personality(user_id, username):
                     vibe=data.get('vibe'),
                     notes=data.get('notes')
                 )
-                logger.info(f"Updated personality profile for {username}")
-            except:
-                pass
+                
+                # Update Second Brain
+                k_items = data.get('knowledge_items', [])
+                for item in k_items:
+                    db_manager.add_to_brain(
+                        user_id, 
+                        item.get('type', 'fact'), 
+                        item.get('content'), 
+                        context_snippet="Detected during personality update cycle."
+                    )
+                    
+                logger.info(f"Updated Second Brain & personality profile for {username}")
+            except Exception as inner_e:
+                logger.error(f"Failed to parse user personality JSON: {inner_e}")
     except Exception as e:
         logger.error(f"Error updating user personality: {e}")
 
@@ -6243,18 +6258,66 @@ async def portfolio_group(ctx):
 async def portfolio_add(ctx, link: str = None):
     """Add or update your portfolio link."""
     if not link:
-        await ctx.send("❌ Please provide a link! Usage: `!portfolio add https://youtube.com/@yourchannel`")
+        await ctx.send("❌ Please provide a link! Usage: `!portfolio add [link]`")
         return
-        
-    # Basic URL validation
+    
     if not link.startswith(("http://", "https://")):
-        await ctx.send("❌ Please provide a valid URL starting with http:// or https://")
+        await ctx.send("❌ That's not a valid link! Make sure it starts with `https://`.")
         return
-        
+
+    # Assuming user_portfolios is a global dict or we need to update DB
     user_portfolios[ctx.author.id] = link
     save_portfolios(user_portfolios)
     
-    await ctx.send("✅ **Portfolio updated!** Use `!profile` to see your new card.")
+    await ctx.send(f"✅ Portfolio link updated to: <{link}>\nRun `!profile` to see your updated card!")
+
+@bot.command(name="brain", aliases=["memory", "mind"])
+async def brain_command(ctx, member: discord.Member = None):
+    """View the bot's stored knowledge about a user."""
+    member = member or ctx.author
+    
+    # Check if user has memory
+    user_mem = db_manager.get_user_memory(member.id)
+    brain_items = db_manager.get_brain(member.id, limit=15)
+    
+    embed = discord.Embed(
+        title=f"🧠 SECOND BRAIN | {member.display_name}",
+        description=(
+            f"Here is the knowledge and context I've distilled from conversations with {member.mention}.\n"
+            "*This data is used to provide self-aware and personalized responses.*"
+        ),
+        color=0x00FFB4
+    )
+    
+    if user_mem:
+        profile = user_mem.get("profile_summary", "Calculating...")
+        vibe = user_mem.get("vibe", "Neutral")
+        embed.add_field(name="✨ CORE VIBE", value=f"`{vibe.upper()}`", inline=True)
+        embed.add_field(name="📝 PROFILE", value=profile, inline=False)
+
+    if brain_items:
+        kb_text = ""
+        seen_content = set()
+        for item in brain_items:
+            content = item['content']
+            if content.lower() in seen_content: continue
+            seen_content.add(content.lower())
+            
+            icon = "🛠️" if item['type'] in ['tool', 'plugin'] else "💡" if item['type'] == 'idea' else "📌"
+            kb_text += f"{icon} **{item['type'].upper()}**: {item['content']}\n"
+        
+        if len(kb_text) > 1024:
+            kb_text = kb_text[:1020] + "..."
+            
+        embed.add_field(name="🧠 KNOWLEDGE REPOSITORY", value=kb_text, inline=False)
+    else:
+        embed.add_field(name="🧠 KNOWLEDGE REPOSITORY", value="*The brain is currently empty. Chat more to populate it.*", inline=False)
+
+    embed.set_footer(text="Updated via Anomaly Tier Intelligence")
+    if member.display_avatar:
+        embed.set_thumbnail(url=member.display_avatar.url)
+        
+    await ctx.send(embed=embed)
 
 @portfolio_group.command(name="remove")
 async def portfolio_remove(ctx):
