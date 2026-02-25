@@ -4570,7 +4570,7 @@ async def help_command(ctx):
     except discord.Forbidden:
         await ctx.send("❌ **Error**: I can't DM you. Please open your DMs and try again.")
 
-@bot.command(name="level", aliases=["rank", "lv"])
+@bot.hybrid_command(name="level", aliases=["rank", "lv"])
 async def level_command(ctx, member: discord.Member = None):
     """Check your current level and XP. Usage: !level [@user]"""
     member = member or ctx.author
@@ -4608,35 +4608,40 @@ async def level_command(ctx, member: discord.Member = None):
     user_memory = db_manager.get_user_memory(user_id)
     aura_vibe = user_memory.get('vibe', 'Neutral') if user_memory else 'Neutral'
     
+    # Aesthetic Reveal - Premium Card Design
     embed = discord.Embed(
-        title=f"👾  {member.display_name}'s Status",
+        title=f"📊  {member.display_name}'s Level Info",
         color=0x00FFB4
     )
-    if member.display_avatar:
-        embed.set_thumbnail(url=member.display_avatar.url)
     
-    # Stats row
-    embed.add_field(name="📶 LEVEL", value=f"**{level}**", inline=True)
-    embed.add_field(name="🔋 TOTAL XP", value=f"**{xp}**", inline=True)
-    embed.add_field(name="🌊 VIBE", value=f"`{aura_vibe.upper()}`", inline=True)
+    # Information Rows
+    embed.add_field(name="Level", value=f"**{level}**", inline=True)
+    embed.add_field(name="Total XP", value=f"**{xp}**", inline=True)
+    embed.add_field(name="XP to Next", value=f"**{xp_to_next}**", inline=True)
     
     # Progress visualization
     bar_length = 15
     progress = min(xp / next_level_xp, 1.0)
     filled = int(progress * bar_length)
-    # Using more modern symbols for the bar
     bar = "■" * filled + "□" * (bar_length - filled)
     
+    # Progress Bar Field
     embed.add_field(
-        name=f"📈 PROGRESS TO LEVEL {level + 1}", 
-        value=f"`{bar}` **{int(progress * 100)}%**\n`{xp_to_next}` XP remaining", 
+        name="Progress", 
+        value=f"`{bar}` **{int(progress * 100)}%**", 
         inline=False
     )
     
-    embed.set_footer(text="Keep it technical. Keep it creative.")
+    # Vibe/Aura Tag
+    embed.add_field(name="Aura / Vibe", value=f"✨ `{aura_vibe.upper()}`", inline=False)
+
+    if member.display_avatar:
+        embed.set_thumbnail(url=member.display_avatar.url)
+    
+    embed.set_footer(text="Prime Collective | Intelligence Sync Complete")
     await ctx.send(embed=embed)
 
-@bot.command(name="leaderboard", aliases=["top", "lb"])
+@bot.hybrid_command(name="leaderboard", aliases=["top", "lb"])
 async def leaderboard_command(ctx):
     """Show the top 10 users with the most XP."""
     guild_id = ctx.guild.id
@@ -6254,7 +6259,7 @@ async def portfolio_add(ctx, link: str = None):
     
     await ctx.send(f"✅ Portfolio link updated to: <{link}>\nRun `!profile` to see your updated card!")
 
-@bot.command(name="brain", aliases=["memory", "mind"])
+@bot.hybrid_command(name="brain", aliases=["memory", "mind"])
 async def brain_command(ctx, member: discord.Member = None):
     """View the bot's stored knowledge about a user."""
     member = member or ctx.author
