@@ -2678,21 +2678,21 @@ class VerificationSetupView(discord.ui.View):
             
         return embed
 
-    @discord.ui.button(label="Set Verified Role", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="Set Verified Role", style=discord.ButtonStyle.success, emoji=discord.PartialEmoji(name="Verified", id=1476140071135613101))
     async def set_verified(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.author_id: 
             await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
             return
         await interaction.response.send_modal(RoleIDModal("Verified Role", self))
 
-    @discord.ui.button(label="Set Unverified Role", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="Set Unverified Role", style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name="Notverified", id=1476139672349573173))
     async def set_unverified(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.author_id: 
             await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
             return
         await interaction.response.send_modal(RoleIDModal("Unverified Role", self))
 
-    @discord.ui.button(label="Set Muted Role", style=discord.ButtonStyle.danger)
+    @discord.ui.button(label="Set Muted Role", style=discord.ButtonStyle.danger, emoji=discord.PartialEmoji(name="Muted", id=1476140288497160285))
     async def set_muted(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.author_id: 
             await interaction.response.send_message("Only the command user can interact.", ephemeral=True)
