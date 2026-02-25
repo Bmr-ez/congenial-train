@@ -2657,7 +2657,7 @@ class VerificationSetupView(discord.ui.View):
                 "**Why are these required?**\n"
                 "• **Verified Role**: Automatically granted to users after successful captcha completion.\n"
                 "• **Unverified Role**: The restricted role given to new members (prevents server access).\n"
-                "• **Muted Role (Optional)**: Used to restrict users who violate community guidelines.\n\n"
+                "• **Muted Role (Optional)**: Used for server safety; accounts younger than 30 days will receive this role automatically upon verification until they reach the required age.\n\n"
                 "*All IDs are saved per-server and persist through restarts.*"
             ),
             color=0x00FFB4
@@ -2707,6 +2707,10 @@ class VerificationSetupView(discord.ui.View):
         
         if not self.verified_id or not self.unverified_id:
             await interaction.response.send_message("❌ You must set both **Verified** and **Unverified** roles before saving!", ephemeral=True)
+            return
+
+        if self.verified_id == self.unverified_id:
+            await interaction.response.send_message("❌ **Configuration Error**: The Verified and Unverified roles cannot be the same!", ephemeral=True)
             return
 
         settings = db_manager.get_guild_setting(self.guild_id, "all_settings", {})
