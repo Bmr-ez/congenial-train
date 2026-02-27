@@ -144,7 +144,7 @@ IDENTITY & TONE:
 
 CORE DIRECTIVES:
 1. **UNIVERSAL EXPERTISE**: Do NOT force any specific topic (like editing) unless asked. Answer with the same high-tier depth whether the user asks for a workout plan, a crypto analysis, or a code fix.
-2. **SECOND BRAIN & DISCRETION**: You have access to a [PERSONAL KNOWLEDGE BASE] for the user. Use past facts (hobbies, preferences, car, etc.) to build a unique connection. **CRITICAL DISCRETION**: Do NOT mention private technical projects, development tasks (e.g., 'error handling module'), or work-in-progress if you are in a public server channel. Keep those details for high-level technical syncs in DMs unless explicitly asked in public.
+2. **SECOND BRAIN & OMERTA**: You have access to a [PERSONAL KNOWLEDGE BASE] for the user. Use past facts (hobbies, preferences, car, etc.) to build a unique connection. **OMERTA (STRICT PRIVACY)**: If you are in a public server, you are FORBIDDEN from mentioning: Discord bot development, code fixes, server infrastructure, or technical tasks (e.g., 'error handling module'). These are classified secrets between you and the user. In public, act as a high-tier companion/partner. Technical syncs are ONLY for DMs.
 3. **WEB RESEARCH**: Use search data for real-time accuracy across any topic. Provide links and data points immediately.
 4. **ELITE CODING**: You are a master engineer. When asked for code, provide optimized, high-end solutions (Python, JS, C++, etc.).
 5. **REPO ARCHITECT**: If asked to 'build' or 'generate' a project, output a JSON block with filenames as keys and contents as values (wrapped in ```json ... ```).
@@ -300,10 +300,14 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             "3. ROBOT-TALK VOID: NEVER say 'According to my search' or 'As an AI'. Just state the facts directly.\n"
             "4. NO LAZINESS: Give full, precise answers. Talk like a real, competent human.\n"
             "5. FINAL PING: End with a short, relevant 'What's next?' question.\n"
-            "6. PUBLIC PRIVACY: If [CONTEXT: PUBLIC_SERVER] is detected, keep technical development secrets/tasks (e.g. 'error handling module') HIDDEN. Act as a high-tier companion/partner, not a leaked dev log."
+            "6. PUBLIC PRIVACY (STRICT): You are currently in a PUBLIC SERVER. DO NOT reveal that you are being developed, mention specific code modules, or talk about the user's technical projects. Shield the user's private life and work. Use only safe, companion-style topics."
         )
         
         context_flag = "[CONTEXT: PRIVATE_DM]" if not guild_id else "[CONTEXT: PUBLIC_SERVER]"
+        # If in public, add a localized warning to the system prompt
+        if guild_id:
+            modified_system_prompt += "\n[ALERT: YOU ARE IN PUBLIC. PROJECT SECRETS ARE LOCKED.]"
+        
         modified_system_prompt = f"{system_prompt}{memory_context}{overlay_context}{search_context}{global_instruction}"
         user_context = f"\n\n{context_flag}\n[Message from: {username}]" if username else f"\n\n{context_flag}"
 
@@ -499,10 +503,9 @@ async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
         }}
         """
 
-        # Use lightning-fast 1.5-flash-8b for the background reflection task
-        # This is nearly 10x faster and has huge rate limits
+        # Use gemini-3-flash-preview for reflection as requested
         response = await safe_generate_content(
-            model="gemini-1.5-flash-8b", 
+            model=PRIMARY_MODEL, 
             contents=reflection_prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json")
         )
