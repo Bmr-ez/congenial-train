@@ -357,7 +357,7 @@ async def get_gemini_response(prompt, user_id, username=None, image_bytes=None, 
             
             async with httpx.AsyncClient() as client:
                 try:
-                    g_res = await client.post(url, headers=headers, json=payload, timeout=25.0)
+                    g_res = await client.post(url, headers=headers, json=payload, timeout=15.0)
                     if g_res.status_code == 200:
                         result_text = g_res.json()["choices"][0]["message"]["content"]
                         db_manager.save_message(user_id, "user", user_question)
@@ -499,8 +499,10 @@ async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
         }}
         """
 
+        # Use lightning-fast 1.5-flash-8b for the background reflection task
+        # This is nearly 10x faster and has huge rate limits
         response = await safe_generate_content(
-            model=PRIMARY_MODEL, 
+            model="gemini-1.5-flash-8b", 
             contents=reflection_prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json")
         )
@@ -521,7 +523,7 @@ async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
             for item in data.get('new_knowledge', []):
                 # Extra check to prevent spamming small/generic facts
                 content = item.get('content', '')
-                if len(content) > 3:
+                if content and len(content) > 3:
                     db_manager.add_to_brain(
                         user_id, 
                         item.get('type', 'fact'), 
@@ -529,7 +531,7 @@ async def reflect_on_user(user_id, username, latest_user_msg, latest_bot_res):
                         context_snippet=latest_user_msg[:100]
                     )
             
-            logger.info(f"🧠 BRAIN: Successfully reflected on {username} and updated knowledge store.")
+            logger.info(f"🧠 BRAIN: Lightning reflection complete for {username}.")
 
     except Exception as e:
         logger.error(f"Reflection error for user {user_id}: {e}")
